@@ -1,0 +1,57 @@
+/* =========================================================
+   Данные, одинаковые для всех языков: ссылки, теги, даты, id.
+   Тексты к ним лежат в i18n.js в том же порядке.
+
+   Правило: i-й проект здесь — это i-й проект в i18n.projects.
+   Добавляете проект тут — добавьте описание во все три словаря.
+   ========================================================= */
+window.SITE = {
+  name: 'Pahlavon Numonjonov',
+  handle: 'pn@site',
+  email: 'numonjonovpahlavon1@gmail.com',
+
+  socials: [
+    { key: 'github',   url: 'https://github.com/' },
+    { key: 'telegram', url: 'https://t.me/' },
+    { key: 'linkedin', url: 'https://linkedin.com/' }
+  ],
+
+  experience: [
+    { date: '2024 — now' },
+    { date: '2023 — 2024' },
+    { date: '2022 — 2023' }
+  ],
+
+  projects: [
+    {
+      id: '001',
+      featured: true,
+      tags: ['html', 'css', 'javascript'],
+      links: [
+        { key: 'demo', url: '#' },
+        { key: 'code', url: '#' }
+      ]
+    },
+    {
+      id: '002',
+      tags: ['python', 'api'],
+      links: [
+        { key: 'demo', url: '#' },
+        { key: 'code', url: '#' }
+      ]
+    },
+    {
+      id: '003',
+      tags: ['design', 'figma'],
+      links: [
+        { key: 'more', url: '#' }
+      ]
+    }
+  ],
+
+  skills: [
+    ['html', 'css', 'javascript', 'python', 'git'],
+    ['vs code', 'figma', 'github'],
+    []                                   /* третья группа — из переводов */
+  ]
+};

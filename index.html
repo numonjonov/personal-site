@@ -5,38 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pahlavon Numonjonov</title>
   <meta name="description" content="Personal website of Pahlavon Numonjonov — about, experience, projects and contacts." />
-  <meta name="theme-color" content="#f2f2f2" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#f2f2f0" media="(prefers-color-scheme: light)" />
   <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
 
   <meta property="og:title" content="Pahlavon Numonjonov" />
   <meta property="og:description" content="Personal website — about, experience, projects and contacts." />
   <meta property="og:type" content="website" />
 
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000'/><circle cx='50' cy='50' r='26' fill='none' stroke='%23fff' stroke-width='10'/></svg>" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000'/><text x='50' y='68' font-family='monospace' font-size='62' fill='%23fff' text-anchor='middle'>%3E_</text></svg>" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Doto:wght@500;700;900&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Doto:wght@500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
+  <a class="skip-link" href="#input" data-i18n="ui.skip">Skip to the command line</a>
 
-  <div class="dot-grid" aria-hidden="true"></div>
-  <div class="scroll-progress" id="scroll-progress" aria-hidden="true"></div>
+  <main class="window" id="window">
+    <!-- Заголовок окна -->
+    <header class="win-bar">
+      <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="win-title">pn@site — ~</span>
 
-  <header class="site-header" id="header">
-    <div class="shell header-inner">
-      <a class="logo" href="#top">PN<span class="logo-r">(R)</span></a>
-
-      <nav class="nav" id="nav" aria-label="Main navigation">
-        <a href="#about"><span class="idx">01</span><span data-i18n="nav.about">About</span></a>
-        <a href="#experience"><span class="idx">02</span><span data-i18n="nav.experience">Experience</span></a>
-        <a href="#projects"><span class="idx">03</span><span data-i18n="nav.projects">Projects</span></a>
-        <a href="#skills"><span class="idx">04</span><span data-i18n="nav.skills">Skills</span></a>
-        <a href="#contact"><span class="idx">05</span><span data-i18n="nav.contact">Contact</span></a>
-      </nav>
-
-      <div class="header-actions">
+      <div class="win-actions">
         <div class="lang-switch" id="lang-switch" role="group" aria-label="Language">
           <span class="lang-thumb" aria-hidden="true"></span>
           <button type="button" data-lang="en" lang="en">EN</button>
@@ -44,300 +35,73 @@
           <button type="button" data-lang="uz" lang="uz">UZ</button>
         </div>
 
-        <button class="icon-btn" id="theme-toggle" type="button" data-i18n-aria="a11y.theme" aria-label="Toggle theme">
+        <button class="icon-btn" id="theme-toggle" type="button" data-i18n-aria="ui.themeLabel" aria-label="Toggle theme">
           <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
           <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
         </button>
-
-        <button class="icon-btn menu-btn" id="menu-toggle" type="button"
-                data-i18n-aria="a11y.menu" aria-label="Menu" aria-expanded="false" aria-controls="nav">
-          <span class="burger"></span>
-        </button>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <main id="main">
-    <!-- ==================== HERO ==================== -->
-    <section class="hero" id="top">
-      <div class="shell">
-        <div class="meta-row reveal">
-          <span class="meta-item"><span class="status-dot" aria-hidden="true"></span><span data-i18n="hero.eyebrow">Available for work</span></span>
-          <span class="meta-item meta-dim">PERSONAL SITE — V1.0</span>
-          <span class="meta-item meta-dim" id="clock">--:--:--</span>
-        </div>
+    <!-- Экран вывода -->
+    <div class="screen" id="screen" role="log" aria-live="polite" aria-label="Terminal output"></div>
 
-        <h1 class="hero-title reveal">
-          <span class="line">Pahlavon</span>
-          <span class="line">Numonjonov</span>
-        </h1>
+    <!-- Подсказки -->
+    <div class="hints" id="hints"></div>
 
-        <p class="hero-role reveal">
-          <span class="role-prefix" data-i18n="hero.rolePrefix">I'm a</span>
-          <span class="role-wrap"><span class="role" id="role"></span><span class="caret" aria-hidden="true"></span></span>
-        </p>
+    <!-- Строка ввода -->
+    <form class="prompt" id="form" autocomplete="off">
+      <label class="prompt-sign" for="input">$</label>
+      <span class="prompt-field">
+        <input id="input" class="prompt-input" type="text" spellcheck="false"
+               autocapitalize="off" autocorrect="off"
+               data-i18n-attr="placeholder|ui.placeholder"
+               aria-label="Command" placeholder="type help and press enter" />
+      </span>
+    </form>
 
-        <p class="hero-tagline reveal" data-i18n="hero.tagline">
-          One short line about what you do — for example, “I build web apps and
-          automation tools, and I care about how they feel to use”.
-        </p>
-
-        <div class="hero-actions reveal">
-          <a class="btn btn-solid" href="#projects" data-i18n="hero.cta1">View projects</a>
-          <a class="btn" href="#contact" data-i18n="hero.cta2">Get in touch</a>
-        </div>
-      </div>
-
-      <ul class="stats">
-        <li class="stat reveal">
-          <span class="stat-value"><span class="counter" data-count="3">0</span>+</span>
-          <span class="stat-label" data-i18n="stats.1">Years of practice</span>
-        </li>
-        <li class="stat reveal">
-          <span class="stat-value"><span class="counter" data-count="12">0</span></span>
-          <span class="stat-label" data-i18n="stats.2">Projects shipped</span>
-        </li>
-        <li class="stat reveal">
-          <span class="stat-value"><span class="counter" data-count="3">0</span></span>
-          <span class="stat-label" data-i18n="stats.3">Languages spoken</span>
-        </li>
-      </ul>
-    </section>
-
-    <!-- ==================== ABOUT ==================== -->
-    <section class="section" id="about">
-      <div class="shell">
-        <h2 class="section-title reveal">
-          <span class="num">01</span>
-          <span class="rule" aria-hidden="true"></span>
-          <span data-i18n="about.title">About me</span>
-        </h2>
-
-        <div class="about-grid">
-          <div class="about-text reveal">
-            <p data-i18n="about.p1">
-              Replace this paragraph with a few words about yourself: who you
-              are, what you do and what you find interesting. Two or three
-              sentences is plenty — people skim personal sites.
-            </p>
-            <p data-i18n="about.p2">
-              The second paragraph works best with specifics: where you study or
-              work, what you are building right now, and what you can help with.
-            </p>
-          </div>
-
-          <aside class="panel about-card reveal">
-            <span class="corner corner-tl" aria-hidden="true"></span>
-            <span class="corner corner-tr" aria-hidden="true"></span>
-            <span class="corner corner-bl" aria-hidden="true"></span>
-            <span class="corner corner-br" aria-hidden="true"></span>
-
-            <div class="avatar" aria-hidden="true">PN</div>
-            <dl class="facts">
-              <div>
-                <dt data-i18n="about.locationLabel">Location</dt>
-                <dd data-i18n="about.locationValue">City, Country</dd>
-              </div>
-              <div>
-                <dt data-i18n="about.statusLabel">Status</dt>
-                <dd data-i18n="about.statusValue">Open to opportunities</dd>
-              </div>
-              <div>
-                <dt data-i18n="about.languagesLabel">Languages</dt>
-                <dd data-i18n="about.languagesValue">English, Русский, Oʻzbekcha</dd>
-              </div>
-            </dl>
-          </aside>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==================== EXPERIENCE ==================== -->
-    <section class="section" id="experience">
-      <div class="shell">
-        <h2 class="section-title reveal">
-          <span class="num">02</span>
-          <span class="rule" aria-hidden="true"></span>
-          <span data-i18n="exp.title">Experience</span>
-        </h2>
-
-        <ol class="timeline">
-          <li class="tl-item reveal">
-            <span class="tl-date" data-i18n="exp.1.date">2024 — now</span>
-            <div class="tl-body">
-              <h3 class="tl-role" data-i18n="exp.1.role">Your role</h3>
-              <p class="tl-org" data-i18n="exp.1.org">Company or university</p>
-              <p class="tl-text" data-i18n="exp.1.text">
-                What you do there and what you are responsible for. One or two
-                sentences — the specifics matter more than the length.
-              </p>
-            </div>
-          </li>
-          <li class="tl-item reveal">
-            <span class="tl-date" data-i18n="exp.2.date">2023 — 2024</span>
-            <div class="tl-body">
-              <h3 class="tl-role" data-i18n="exp.2.role">Your role</h3>
-              <p class="tl-org" data-i18n="exp.2.org">Company or university</p>
-              <p class="tl-text" data-i18n="exp.2.text">
-                What you did there and what you achieved. Numbers work well
-                here: users, revenue, hours saved.
-              </p>
-            </div>
-          </li>
-          <li class="tl-item reveal">
-            <span class="tl-date" data-i18n="exp.3.date">2022 — 2023</span>
-            <div class="tl-body">
-              <h3 class="tl-role" data-i18n="exp.3.role">Where it started</h3>
-              <p class="tl-org" data-i18n="exp.3.org">Course, school or first job</p>
-              <p class="tl-text" data-i18n="exp.3.text">
-                How you got into this field and what you learned along the way.
-              </p>
-            </div>
-          </li>
-        </ol>
-      </div>
-    </section>
-
-    <!-- ==================== PROJECTS ==================== -->
-    <section class="section" id="projects">
-      <div class="shell">
-        <h2 class="section-title reveal">
-          <span class="num">03</span>
-          <span class="rule" aria-hidden="true"></span>
-          <span data-i18n="projects.title">Projects</span>
-        </h2>
-      </div>
-
-      <div class="cards" id="cards">
-        <article class="card reveal">
-          <div class="card-head">
-            <span class="card-index">001</span>
-            <span class="card-badge" data-i18n="projects.featured">Featured</span>
-          </div>
-          <h3 class="card-title" data-i18n="projects.p1.title">Project name</h3>
-          <p class="card-text" data-i18n="projects.p1.text">
-            One or two sentences: what problem the project solves and what you
-            personally built.
-          </p>
-          <ul class="tags"><li>HTML</li><li>CSS</li><li>JavaScript</li></ul>
-          <div class="card-links">
-            <a href="#" target="_blank" rel="noopener" data-i18n="projects.demo">Live demo ↗</a>
-            <a href="#" target="_blank" rel="noopener" data-i18n="projects.code">Source ↗</a>
-          </div>
-        </article>
-
-        <article class="card reveal">
-          <div class="card-head"><span class="card-index">002</span></div>
-          <h3 class="card-title" data-i18n="projects.p2.title">Project name</h3>
-          <p class="card-text" data-i18n="projects.p2.text">
-            One or two sentences: what problem the project solves and what you
-            personally built.
-          </p>
-          <ul class="tags"><li>Python</li><li>API</li></ul>
-          <div class="card-links">
-            <a href="#" target="_blank" rel="noopener" data-i18n="projects.demo">Live demo ↗</a>
-            <a href="#" target="_blank" rel="noopener" data-i18n="projects.code">Source ↗</a>
-          </div>
-        </article>
-
-        <article class="card reveal">
-          <div class="card-head"><span class="card-index">003</span></div>
-          <h3 class="card-title" data-i18n="projects.p3.title">Project name</h3>
-          <p class="card-text" data-i18n="projects.p3.text">
-            One or two sentences: what problem the project solves and what you
-            personally built.
-          </p>
-          <ul class="tags"><li>Design</li><li>Figma</li></ul>
-          <div class="card-links">
-            <a href="#" target="_blank" rel="noopener" data-i18n="projects.more">Read more ↗</a>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <!-- ==================== SKILLS ==================== -->
-    <section class="section" id="skills">
-      <div class="shell">
-        <h2 class="section-title reveal">
-          <span class="num">04</span>
-          <span class="rule" aria-hidden="true"></span>
-          <span data-i18n="skills.title">Skills</span>
-        </h2>
-
-        <div class="skills-grid">
-          <div class="skill-group reveal">
-            <h3 data-i18n="skills.g1">Development</h3>
-            <ul class="tags"><li>HTML</li><li>CSS</li><li>JavaScript</li><li>Python</li><li>Git</li></ul>
-          </div>
-          <div class="skill-group reveal">
-            <h3 data-i18n="skills.g2">Tools</h3>
-            <ul class="tags"><li>VS Code</li><li>Figma</li><li>GitHub</li></ul>
-          </div>
-          <div class="skill-group reveal">
-            <h3 data-i18n="skills.g3">Other</h3>
-            <ul class="tags">
-              <li data-i18n="skills.communication">Communication</li>
-              <li data-i18n="skills.english">English</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div class="marquee" aria-hidden="true">
-        <div class="marquee-track">
-          <span>HTML</span><span class="mq-dot"></span><span>CSS</span><span class="mq-dot"></span>
-          <span>JAVASCRIPT</span><span class="mq-dot"></span><span>PYTHON</span><span class="mq-dot"></span>
-          <span>GIT</span><span class="mq-dot"></span><span>FIGMA</span><span class="mq-dot"></span>
-          <span>HTML</span><span class="mq-dot"></span><span>CSS</span><span class="mq-dot"></span>
-          <span>JAVASCRIPT</span><span class="mq-dot"></span><span>PYTHON</span><span class="mq-dot"></span>
-          <span>GIT</span><span class="mq-dot"></span><span>FIGMA</span><span class="mq-dot"></span>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==================== CONTACT ==================== -->
-    <section class="section section-contact" id="contact">
-      <div class="shell contact-inner">
-        <h2 class="section-title reveal">
-          <span class="num">05</span>
-          <span class="rule" aria-hidden="true"></span>
-          <span data-i18n="contact.title">Contact</span>
-        </h2>
-
-        <p class="contact-lead reveal" data-i18n="contact.lead">
-          Drop me a line — I read every email and message.
-        </p>
-
-        <div class="mail-row reveal">
-          <a class="btn btn-solid btn-lg" href="mailto:numonjonovpahlavon1@gmail.com">
-            numonjonovpahlavon1@gmail.com
-          </a>
-          <button class="btn btn-lg" type="button" id="copy-mail"
-                  data-mail="numonjonovpahlavon1@gmail.com" data-i18n="contact.copy">Copy</button>
-        </div>
-
-        <ul class="socials reveal">
-          <li><a href="https://github.com/"   target="_blank" rel="noopener">GitHub ↗</a></li>
-          <li><a href="https://t.me/"         target="_blank" rel="noopener">Telegram ↗</a></li>
-          <li><a href="https://linkedin.com/" target="_blank" rel="noopener">LinkedIn ↗</a></li>
-        </ul>
-      </div>
-    </section>
+    <!-- Статусная строка -->
+    <footer class="status-bar">
+      <span><span class="status-key" data-i18n="ui.statusLang">lang</span> <b id="status-lang">en</b></span>
+      <span><span class="status-key" data-i18n="ui.statusTheme">theme</span> <b id="status-theme">dark</b></span>
+      <span><span class="status-key" data-i18n="ui.statusHint">try</span> <b>help</b></span>
+      <span class="status-clock" id="clock">--:--:--</span>
+    </footer>
   </main>
 
-  <footer class="site-footer">
-    <div class="shell footer-inner">
-      <p>© <span id="year"></span> PAHLAVON NUMONJONOV</p>
-      <p class="footer-mid">MADE WITH HTML, CSS &amp; JS</p>
-      <a href="#top" data-i18n="footer.top">Back to top ↑</a>
+  <!-- Версия без JavaScript: то же содержимое обычным текстом -->
+  <noscript>
+    <div class="noscript">
+      <h1>Pahlavon Numonjonov</h1>
+      <p>Developer — one short line about what you do.</p>
+
+      <h2>About</h2>
+      <p>Replace this paragraph with a few words about yourself: who you are, what
+         you do and what you find interesting.</p>
+
+      <h2>Experience</h2>
+      <ul>
+        <li><b>2024 — now</b> — Your role, company or university.</li>
+        <li><b>2023 — 2024</b> — Your role, company or university.</li>
+        <li><b>2022 — 2023</b> — Where it started: course, school or first job.</li>
+      </ul>
+
+      <h2>Projects</h2>
+      <ul>
+        <li><b>Project name</b> — what problem it solves and what you built.</li>
+        <li><b>Project name</b> — what problem it solves and what you built.</li>
+        <li><b>Project name</b> — what problem it solves and what you built.</li>
+      </ul>
+
+      <h2>Skills</h2>
+      <p>HTML, CSS, JavaScript, Python, Git, Figma.</p>
+
+      <h2>Contact</h2>
+      <p><a href="mailto:numonjonovpahlavon1@gmail.com">numonjonovpahlavon1@gmail.com</a></p>
     </div>
-  </footer>
+  </noscript>
 
-  <button class="to-top" id="to-top" type="button" data-i18n-aria="a11y.toTop" aria-label="Back to top">↑</button>
-
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
-
+  <script src="site.js"></script>
   <script src="i18n.js"></script>
-  <script src="script.js"></script>
+  <script src="terminal.js"></script>
 </body>
 </html>

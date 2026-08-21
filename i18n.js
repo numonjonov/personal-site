@@ -1,240 +1,267 @@
 /* =========================================================
    Переводы: English (по умолчанию), Русский, Oʻzbekcha.
 
-   Как добавить строку:
-     1. повесить data-i18n="some.key" на элемент в index.html
-     2. добавить "some.key" во все три словаря ниже
-   Текст, написанный прямо в index.html, — английский запасной вариант:
-   если ключа нет в ru/uz, на странице останется английский.
+   Как править: нашли нужный блок — поправили текст во всех трёх
+   словарях. Названия команд (help, about, projects…) не переводятся:
+   это команды, их набирают одинаково на любом языке.
 
-   hero.roles — массив слов, которые по очереди печатаются в hero.
+   Порядок элементов в projects.items и experience.items должен
+   совпадать с порядком в site.js.
    ========================================================= */
 window.I18N = {
+
+  /* ===================== ENGLISH ===================== */
   en: {
-    'skip': 'Skip to content',
-    'meta.description': 'Personal website of Pahlavon Numonjonov — about, experience, projects and contacts.',
+    ui: {
+      skip: 'Skip to the command line',
+      placeholder: 'type help and press enter',
+      themeLabel: 'Toggle theme',
+      statusLang: 'lang', statusTheme: 'theme', statusHint: 'try',
+      boot1: 'pn@site v1.0 — personal terminal',
+      boot2: 'type <b>help</b> for the list of commands',
+      notFound: 'command not found:',
+      notFoundHint: 'type <b>help</b> to see what works',
+      featured: 'featured',
+      langChanged: 'language →',
+      themeChanged: 'theme →',
+      langUsage: 'usage: lang en | ru | uz',
+      themeUsage: 'usage: theme light | dark',
+      openUsage: 'usage: open 001 | 002 | 003',
+      openMissing: 'no project with id',
+      opening: 'opening',
+      sudo: 'nice try. permission denied — but I like the way you think.'
+    },
 
-    'a11y.theme': 'Toggle theme',
-    'a11y.menu': 'Menu',
-    'a11y.toTop': 'Back to top',
+    help: {
+      intro: 'Available commands:',
+      rows: [
+        ['whoami',     'who I am, in one line'],
+        ['about',      'longer intro and basic facts'],
+        ['experience', 'where I worked and studied'],
+        ['projects',   'selected work with links'],
+        ['skills',     'what I use day to day'],
+        ['contact',    'email and social links'],
+        ['open <id>',  'open a project link, e.g. open 001'],
+        ['lang <code>','switch language: en, ru, uz'],
+        ['theme',      'switch light / dark'],
+        ['clear',      'clear the screen']
+      ],
+      footer: 'Tip: ↑ and ↓ walk through history, Tab completes a command.'
+    },
 
-    'nav.about': 'About',
-    'nav.experience': 'Experience',
-    'nav.projects': 'Projects',
-    'nav.skills': 'Skills',
-    'nav.contact': 'Contact',
+    whoami: {
+      role: 'developer',
+      line: 'One short line about what you do — replace it with your own.'
+    },
 
-    'hero.eyebrow': 'Available for work',
-    'hero.rolePrefix': "I'm a",
-    'hero.roles': ['developer', 'designer', 'problem solver', 'lifelong learner'],
-    'hero.tagline': 'One short line about what you do — for example, “I build web apps and automation tools, and I care about how they feel to use”.',
-    'hero.cta1': 'View projects',
-    'hero.cta2': 'Get in touch',
+    about: {
+      paragraphs: [
+        'Replace this paragraph with a few words about yourself: who you are, what you do and what you find interesting.',
+        'The second paragraph works best with specifics: where you study or work, what you are building right now, and what you can help with.'
+      ],
+      facts: [
+        ['location',  'City, Country'],
+        ['status',    'open to opportunities'],
+        ['languages', 'English / Русский / Oʻzbekcha']
+      ]
+    },
 
-    'stats.1': 'Years of practice',
-    'stats.2': 'Projects shipped',
-    'stats.3': 'Languages spoken',
+    experience: {
+      items: [
+        { role: 'Your role',        org: 'Company or university',      text: 'What you do there and what you are responsible for.' },
+        { role: 'Your role',        org: 'Company or university',      text: 'What you did there and what you achieved. Numbers work well here.' },
+        { role: 'Where it started', org: 'Course, school or first job', text: 'How you got into this field and what you learned.' }
+      ]
+    },
 
-    'about.title': 'About me',
-    'about.p1': 'Replace this paragraph with a few words about yourself: who you are, what you do and what you find interesting. Two or three sentences is plenty — people skim personal sites.',
-    'about.p2': 'The second paragraph works best with specifics: where you study or work, what you are building right now, and what you can help with.',
-    'about.locationLabel': 'Location',
-    'about.locationValue': 'City, Country',
-    'about.statusLabel': 'Status',
-    'about.statusValue': 'Open to opportunities',
-    'about.languagesLabel': 'Languages',
-    'about.languagesValue': 'English, Русский, Oʻzbekcha',
+    projects: {
+      items: [
+        { title: 'Project name', text: 'What problem the project solves and what you personally built.' },
+        { title: 'Project name', text: 'What problem the project solves and what you personally built.' },
+        { title: 'Project name', text: 'What problem the project solves and what you personally built.' }
+      ],
+      linkLabels: { demo: 'live demo', code: 'source', more: 'read more' },
+      note: 'Run <b>open 001</b> to follow the first link of a project.'
+    },
 
-    'exp.title': 'Experience',
-    'exp.1.date': '2024 — now',
-    'exp.1.role': 'Your role',
-    'exp.1.org': 'Company or university',
-    'exp.1.text': 'What you do there and what you are responsible for. One or two sentences — the specifics matter more than the length.',
-    'exp.2.date': '2023 — 2024',
-    'exp.2.role': 'Your role',
-    'exp.2.org': 'Company or university',
-    'exp.2.text': 'What you did there and what you achieved. Numbers work well here: users, revenue, hours saved.',
-    'exp.3.date': '2022 — 2023',
-    'exp.3.role': 'Where it started',
-    'exp.3.org': 'Course, school or first job',
-    'exp.3.text': 'How you got into this field and what you learned along the way.',
+    skills: {
+      groups: ['development', 'tools', 'other'],
+      extra: ['communication', 'english']
+    },
 
-    'projects.title': 'Projects',
-    'projects.featured': 'Featured',
-    'projects.p1.title': 'Project name',
-    'projects.p1.text': 'One or two sentences: what problem the project solves and what you personally built.',
-    'projects.p2.title': 'Project name',
-    'projects.p2.text': 'One or two sentences: what problem the project solves and what you personally built.',
-    'projects.p3.title': 'Project name',
-    'projects.p3.text': 'One or two sentences: what problem the project solves and what you personally built.',
-    'projects.demo': 'Live demo ↗',
-    'projects.code': 'Source ↗',
-    'projects.more': 'Read more ↗',
-
-    'skills.title': 'Skills',
-    'skills.g1': 'Development',
-    'skills.g2': 'Tools',
-    'skills.g3': 'Other',
-    'skills.communication': 'Communication',
-    'skills.english': 'English',
-
-    'contact.title': 'Contact',
-    'contact.lead': 'Drop me a line — I read every email and message.',
-    'contact.copy': 'Copy',
-    'contact.copied': 'Email copied',
-
-    'footer.top': 'Back to top ↑'
+    contact: {
+      lead: 'Drop me a line — I read every email and message.',
+      labels: { email: 'email', github: 'github', telegram: 'telegram', linkedin: 'linkedin' }
+    }
   },
 
+  /* ===================== РУССКИЙ ===================== */
   ru: {
-    'skip': 'Перейти к содержимому',
-    'meta.description': 'Личный сайт Pahlavon Numonjonov: о себе, опыт, проекты, контакты.',
+    ui: {
+      skip: 'Перейти к командной строке',
+      placeholder: 'наберите help и нажмите enter',
+      themeLabel: 'Переключить тему',
+      statusLang: 'язык', statusTheme: 'тема', statusHint: 'наберите',
+      boot1: 'pn@site v1.0 — личный терминал',
+      boot2: 'наберите <b>help</b>, чтобы увидеть список команд',
+      notFound: 'команда не найдена:',
+      notFoundHint: 'наберите <b>help</b> — там список рабочих команд',
+      featured: 'главный',
+      langChanged: 'язык →',
+      themeChanged: 'тема →',
+      langUsage: 'как пользоваться: lang en | ru | uz',
+      themeUsage: 'как пользоваться: theme light | dark',
+      openUsage: 'как пользоваться: open 001 | 002 | 003',
+      openMissing: 'нет проекта с номером',
+      opening: 'открываю',
+      sudo: 'хорошая попытка. доступ запрещён — но ход мысли мне нравится.'
+    },
 
-    'a11y.theme': 'Переключить тему',
-    'a11y.menu': 'Меню',
-    'a11y.toTop': 'Наверх',
+    help: {
+      intro: 'Доступные команды:',
+      rows: [
+        ['whoami',     'кто я, одной строкой'],
+        ['about',      'подробнее о себе и основные факты'],
+        ['experience', 'где работал и учился'],
+        ['projects',   'избранные проекты со ссылками'],
+        ['skills',     'чем пользуюсь каждый день'],
+        ['contact',    'почта и ссылки'],
+        ['open <id>',  'открыть ссылку проекта, например open 001'],
+        ['lang <code>','сменить язык: en, ru, uz'],
+        ['theme',      'светлая / тёмная тема'],
+        ['clear',      'очистить экран']
+      ],
+      footer: 'Подсказка: ↑ и ↓ листают историю, Tab дополняет команду.'
+    },
 
-    'nav.about': 'Обо мне',
-    'nav.experience': 'Опыт',
-    'nav.projects': 'Проекты',
-    'nav.skills': 'Навыки',
-    'nav.contact': 'Контакты',
+    whoami: {
+      role: 'разработчик',
+      line: 'Короткая строка о том, чем вы занимаетесь — замените своей.'
+    },
 
-    'hero.eyebrow': 'Открыт к предложениям',
-    'hero.rolePrefix': 'Я —',
-    'hero.roles': ['разработчик', 'дизайнер', 'решаю задачи', 'постоянно учусь'],
-    'hero.tagline': 'Короткая строка о том, чем вы занимаетесь — например, «делаю веб-приложения и автоматизацию, и мне важно, как ими пользуются».',
-    'hero.cta1': 'Смотреть проекты',
-    'hero.cta2': 'Связаться',
+    about: {
+      paragraphs: [
+        'Замените этот абзац рассказом о себе: кто вы, чем занимаетесь и что вам интересно.',
+        'Во втором абзаце хорошо работает конкретика: где учитесь или работаете, над чем работаете сейчас и чем можете помочь.'
+      ],
+      facts: [
+        ['локация', 'Город, страна'],
+        ['статус',  'открыт к предложениям'],
+        ['языки',   'English / Русский / Oʻzbekcha']
+      ]
+    },
 
-    'stats.1': 'Года в деле',
-    'stats.2': 'Проектов сделано',
-    'stats.3': 'Языка в активе',
+    experience: {
+      items: [
+        { role: 'Ваша роль',           org: 'Компания или университет',       text: 'Чем занимаетесь и за что отвечаете.' },
+        { role: 'Ваша роль',           org: 'Компания или университет',       text: 'Что делали и чего добились. Здесь хорошо работают цифры.' },
+        { role: 'С чего всё началось', org: 'Курс, школа или первая работа',  text: 'Как пришли в эту сферу и чему научились.' }
+      ]
+    },
 
-    'about.title': 'Обо мне',
-    'about.p1': 'Замените этот абзац рассказом о себе: кто вы, чем занимаетесь и что вам интересно. Двух-трёх предложений достаточно — личные сайты читают по диагонали.',
-    'about.p2': 'Во втором абзаце хорошо работает конкретика: где учитесь или работаете, над чем работаете сейчас и чем можете помочь.',
-    'about.locationLabel': 'Локация',
-    'about.locationValue': 'Город, страна',
-    'about.statusLabel': 'Статус',
-    'about.statusValue': 'Открыт к предложениям',
-    'about.languagesLabel': 'Языки',
-    'about.languagesValue': 'English, Русский, Oʻzbekcha',
+    projects: {
+      items: [
+        { title: 'Название проекта', text: 'Какую задачу решает проект и что в нём сделали лично вы.' },
+        { title: 'Название проекта', text: 'Какую задачу решает проект и что в нём сделали лично вы.' },
+        { title: 'Название проекта', text: 'Какую задачу решает проект и что в нём сделали лично вы.' }
+      ],
+      linkLabels: { demo: 'демо', code: 'код', more: 'подробнее' },
+      note: 'Наберите <b>open 001</b>, чтобы открыть первую ссылку проекта.'
+    },
 
-    'exp.title': 'Опыт',
-    'exp.1.date': '2024 — сейчас',
-    'exp.1.role': 'Ваша роль',
-    'exp.1.org': 'Компания или университет',
-    'exp.1.text': 'Чем занимаетесь и за что отвечаете. Одно-два предложения — конкретика важнее объёма.',
-    'exp.2.date': '2023 — 2024',
-    'exp.2.role': 'Ваша роль',
-    'exp.2.org': 'Компания или университет',
-    'exp.2.text': 'Что делали и чего добились. Здесь хорошо работают цифры: пользователи, выручка, сэкономленные часы.',
-    'exp.3.date': '2022 — 2023',
-    'exp.3.role': 'С чего всё началось',
-    'exp.3.org': 'Курс, школа или первая работа',
-    'exp.3.text': 'Как пришли в эту сферу и чему научились по дороге.',
+    skills: {
+      groups: ['разработка', 'инструменты', 'прочее'],
+      extra: ['коммуникация', 'английский']
+    },
 
-    'projects.title': 'Проекты',
-    'projects.featured': 'Главный',
-    'projects.p1.title': 'Название проекта',
-    'projects.p1.text': 'Одно-два предложения: какую задачу решает проект и что в нём сделали лично вы.',
-    'projects.p2.title': 'Название проекта',
-    'projects.p2.text': 'Одно-два предложения: какую задачу решает проект и что в нём сделали лично вы.',
-    'projects.p3.title': 'Название проекта',
-    'projects.p3.text': 'Одно-два предложения: какую задачу решает проект и что в нём сделали лично вы.',
-    'projects.demo': 'Демо ↗',
-    'projects.code': 'Код ↗',
-    'projects.more': 'Подробнее ↗',
-
-    'skills.title': 'Навыки',
-    'skills.g1': 'Разработка',
-    'skills.g2': 'Инструменты',
-    'skills.g3': 'Прочее',
-    'skills.communication': 'Коммуникация',
-    'skills.english': 'Английский',
-
-    'contact.title': 'Контакты',
-    'contact.lead': 'Пишите — читаю все письма и сообщения.',
-    'contact.copy': 'Скопировать',
-    'contact.copied': 'Почта скопирована',
-
-    'footer.top': 'Наверх ↑'
+    contact: {
+      lead: 'Пишите — читаю все письма и сообщения.',
+      labels: { email: 'почта', github: 'github', telegram: 'telegram', linkedin: 'linkedin' }
+    }
   },
 
+  /* ===================== OʻZBEKCHA ===================== */
   uz: {
-    'skip': 'Asosiy qismga oʻtish',
-    'meta.description': 'Pahlavon Numonjonovning shaxsiy sayti: men haqimda, tajriba, loyihalar, aloqa.',
+    ui: {
+      skip: 'Buyruq satriga oʻtish',
+      placeholder: 'help deb yozing va enter bosing',
+      themeLabel: 'Mavzuni almashtirish',
+      statusLang: 'til', statusTheme: 'mavzu', statusHint: 'yozing',
+      boot1: 'pn@site v1.0 — shaxsiy terminal',
+      boot2: 'buyruqlar roʻyxati uchun <b>help</b> deb yozing',
+      notFound: 'buyruq topilmadi:',
+      notFoundHint: 'ishlaydigan buyruqlar uchun <b>help</b> deb yozing',
+      featured: 'asosiy',
+      langChanged: 'til →',
+      themeChanged: 'mavzu →',
+      langUsage: 'qoʻllanishi: lang en | ru | uz',
+      themeUsage: 'qoʻllanishi: theme light | dark',
+      openUsage: 'qoʻllanishi: open 001 | 002 | 003',
+      openMissing: 'bunday raqamli loyiha yoʻq:',
+      opening: 'ochilmoqda',
+      sudo: 'urinish yaxshi. ruxsat yoʻq — lekin fikringiz menga yoqdi.'
+    },
 
-    'a11y.theme': 'Mavzuni almashtirish',
-    'a11y.menu': 'Menyu',
-    'a11y.toTop': 'Yuqoriga',
+    help: {
+      intro: 'Mavjud buyruqlar:',
+      rows: [
+        ['whoami',     'men kimman, bir satrda'],
+        ['about',      'oʻzim haqimda batafsil va asosiy maʼlumotlar'],
+        ['experience', 'qayerda ishlaganman va oʻqiganman'],
+        ['projects',   'tanlangan loyihalar va havolalar'],
+        ['skills',     'har kuni nimadan foydalanaman'],
+        ['contact',    'pochta va havolalar'],
+        ['open <id>',  'loyiha havolasini ochish, masalan open 001'],
+        ['lang <code>','tilni almashtirish: en, ru, uz'],
+        ['theme',      'yorugʻ / qorongʻi mavzu'],
+        ['clear',      'ekranni tozalash']
+      ],
+      footer: 'Maslahat: ↑ va ↓ tarixni varaqlaydi, Tab buyruqni toʻldiradi.'
+    },
 
-    'nav.about': 'Men haqimda',
-    'nav.experience': 'Tajriba',
-    'nav.projects': 'Loyihalar',
-    'nav.skills': 'Koʻnikmalar',
-    'nav.contact': 'Aloqa',
+    whoami: {
+      role: 'dasturchi',
+      line: 'Nima bilan shugʻullanishingiz haqida qisqa satr — oʻzingiznikiga almashtiring.'
+    },
 
-    'hero.eyebrow': 'Takliflarga ochiqman',
-    'hero.rolePrefix': 'Men —',
-    'hero.roles': ['dasturchi', 'dizayner', 'muammolarni yechaman', 'doim oʻrganaman'],
-    'hero.tagline': 'Nima bilan shugʻullanishingiz haqida qisqa satr — masalan, «veb-ilovalar va avtomatlashtirish yarataman, ular qanday ishlatilishi men uchun muhim».',
-    'hero.cta1': 'Loyihalarni koʻrish',
-    'hero.cta2': 'Bogʻlanish',
+    about: {
+      paragraphs: [
+        'Bu xatboshini oʻzingiz haqingizdagi matn bilan almashtiring: kimsiz, nima bilan shugʻullanasiz va sizga nima qiziq.',
+        'Ikkinchi xatboshida aniqlik yaxshi ishlaydi: qayerda oʻqiysiz yoki ishlaysiz, hozir nima ustida ishlayapsiz va nimada yordam bera olasiz.'
+      ],
+      facts: [
+        ['manzil', 'Shahar, davlat'],
+        ['holat',  'takliflarga ochiqman'],
+        ['tillar', 'English / Русский / Oʻzbekcha']
+      ]
+    },
 
-    'stats.1': 'Yillik tajriba',
-    'stats.2': 'Tayyor loyiha',
-    'stats.3': 'Biladigan til',
+    experience: {
+      items: [
+        { role: 'Sizning lavozimingiz',      org: 'Kompaniya yoki universitet',    text: 'U yerda nima qilasiz va nimaga javobgarsiz.' },
+        { role: 'Sizning lavozimingiz',      org: 'Kompaniya yoki universitet',    text: 'Nima qilgansiz va nimaga erishgansiz. Bu yerda raqamlar yaxshi ishlaydi.' },
+        { role: 'Hammasi qayerdan boshlangan', org: 'Kurs, maktab yoki birinchi ish', text: 'Bu sohaga qanday kelgansiz va nimalarni oʻrgangansiz.' }
+      ]
+    },
 
-    'about.title': 'Men haqimda',
-    'about.p1': 'Bu xatboshini oʻzingiz haqingizdagi matn bilan almashtiring: kimsiz, nima bilan shugʻullanasiz va sizga nima qiziq. Ikki-uchta gap yetarli — shaxsiy saytlarni odamlar yuzaki oʻqiydi.',
-    'about.p2': 'Ikkinchi xatboshida aniqlik yaxshi ishlaydi: qayerda oʻqiysiz yoki ishlaysiz, hozir nima ustida ishlayapsiz va nimada yordam bera olasiz.',
-    'about.locationLabel': 'Manzil',
-    'about.locationValue': 'Shahar, davlat',
-    'about.statusLabel': 'Holat',
-    'about.statusValue': 'Takliflarga ochiqman',
-    'about.languagesLabel': 'Tillar',
-    'about.languagesValue': 'English, Русский, Oʻzbekcha',
+    projects: {
+      items: [
+        { title: 'Loyiha nomi', text: 'Loyiha qanday muammoni hal qiladi va unda shaxsan siz nima qildingiz.' },
+        { title: 'Loyiha nomi', text: 'Loyiha qanday muammoni hal qiladi va unda shaxsan siz nima qildingiz.' },
+        { title: 'Loyiha nomi', text: 'Loyiha qanday muammoni hal qiladi va unda shaxsan siz nima qildingiz.' }
+      ],
+      linkLabels: { demo: 'demo', code: 'kod', more: 'batafsil' },
+      note: 'Loyihaning birinchi havolasini ochish uchun <b>open 001</b> deb yozing.'
+    },
 
-    'exp.title': 'Tajriba',
-    'exp.1.date': '2024 — hozir',
-    'exp.1.role': 'Sizning lavozimingiz',
-    'exp.1.org': 'Kompaniya yoki universitet',
-    'exp.1.text': 'U yerda nima qilasiz va nimaga javobgarsiz. Bir-ikki gap — hajmdan koʻra aniqlik muhim.',
-    'exp.2.date': '2023 — 2024',
-    'exp.2.role': 'Sizning lavozimingiz',
-    'exp.2.org': 'Kompaniya yoki universitet',
-    'exp.2.text': 'Nima qilgansiz va nimaga erishgansiz. Bu yerda raqamlar yaxshi ishlaydi: foydalanuvchilar, daromad, tejalgan soatlar.',
-    'exp.3.date': '2022 — 2023',
-    'exp.3.role': 'Hammasi qayerdan boshlangan',
-    'exp.3.org': 'Kurs, maktab yoki birinchi ish',
-    'exp.3.text': 'Bu sohaga qanday kelgansiz va yoʻlda nimalarni oʻrgangansiz.',
+    skills: {
+      groups: ['dasturlash', 'vositalar', 'boshqa'],
+      extra: ['muloqot', 'ingliz tili']
+    },
 
-    'projects.title': 'Loyihalar',
-    'projects.featured': 'Asosiy',
-    'projects.p1.title': 'Loyiha nomi',
-    'projects.p1.text': 'Bir-ikki gap: loyiha qanday muammoni hal qiladi va unda shaxsan siz nima qildingiz.',
-    'projects.p2.title': 'Loyiha nomi',
-    'projects.p2.text': 'Bir-ikki gap: loyiha qanday muammoni hal qiladi va unda shaxsan siz nima qildingiz.',
-    'projects.p3.title': 'Loyiha nomi',
-    'projects.p3.text': 'Bir-ikki gap: loyiha qanday muammoni hal qiladi va unda shaxsan siz nima qildingiz.',
-    'projects.demo': 'Demo ↗',
-    'projects.code': 'Kod ↗',
-    'projects.more': 'Batafsil ↗',
-
-    'skills.title': 'Koʻnikmalar',
-    'skills.g1': 'Dasturlash',
-    'skills.g2': 'Vositalar',
-    'skills.g3': 'Boshqa',
-    'skills.communication': 'Muloqot',
-    'skills.english': 'Ingliz tili',
-
-    'contact.title': 'Aloqa',
-    'contact.lead': 'Yozing — barcha xat va xabarlarni oʻqiyman.',
-    'contact.copy': 'Nusxalash',
-    'contact.copied': 'Pochta nusxalandi',
-
-    'footer.top': 'Yuqoriga ↑'
+    contact: {
+      lead: 'Yozing — barcha xat va xabarlarni oʻqiyman.',
+      labels: { email: 'pochta', github: 'github', telegram: 'telegram', linkedin: 'linkedin' }
+    }
   }
 };
