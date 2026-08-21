@@ -35,7 +35,11 @@ window.I18N = {
       bgMissing: 'background is not available here',
       cursorChanged: 'cursor →',
       cursorUsage: 'usage: cursor on | off',
-      cursorMissing: 'custom cursor is not available on touch screens'
+      cursorMissing: 'custom cursor is not available on touch screens',
+      tiltChanged: 'gyroscope →',
+      tiltUsage: 'usage: tilt on | off',
+      tiltMissing: 'gyroscope works on a phone or tablet — on a desktop the background follows the mouse',
+      tiltDenied: 'motion access denied — allow it in the browser settings and run tilt again'
     },
 
     help: {
@@ -52,6 +56,7 @@ window.I18N = {
         ['theme',      'switch light / dark'],
         ['bg',         'turn the 3D background on or off'],
         ['cursor',     'terminal-style cursor on or off'],
+        ['tilt',       'on a phone: let the gyroscope steer the background'],
         ['clear',      'clear the screen']
       ],
       footer: 'Tip: ↑ and ↓ walk through history, Tab completes a command.'
@@ -128,7 +133,11 @@ window.I18N = {
       bgMissing: 'фон здесь недоступен',
       cursorChanged: 'курсор →',
       cursorUsage: 'как пользоваться: cursor on | off',
-      cursorMissing: 'свой курсор на сенсорных экранах недоступен'
+      cursorMissing: 'свой курсор на сенсорных экранах недоступен',
+      tiltChanged: 'гироскоп →',
+      tiltUsage: 'как пользоваться: tilt on | off',
+      tiltMissing: 'гироскоп работает на телефоне или планшете — на компьютере фон следит за мышью',
+      tiltDenied: 'доступ к датчикам не разрешён — включите его в настройках браузера и повторите tilt'
     },
 
     help: {
@@ -145,6 +154,7 @@ window.I18N = {
         ['theme',      'светлая / тёмная тема'],
         ['bg',         'включить или выключить 3D-фон'],
         ['cursor',     'свой курсор — включить или выключить'],
+        ['tilt',       'на телефоне: управлять фоном наклоном'],
         ['clear',      'очистить экран']
       ],
       footer: 'Подсказка: ↑ и ↓ листают историю, Tab дополняет команду.'
@@ -221,7 +231,11 @@ window.I18N = {
       bgMissing: 'bu yerda fon mavjud emas',
       cursorChanged: 'kursor →',
       cursorUsage: 'qoʻllanishi: cursor on | off',
-      cursorMissing: 'sensorli ekranlarda oʻz kursori mavjud emas'
+      cursorMissing: 'sensorli ekranlarda oʻz kursori mavjud emas',
+      tiltChanged: 'giroskop →',
+      tiltUsage: 'qoʻllanishi: tilt on | off',
+      tiltMissing: 'giroskop telefon yoki planshetda ishlaydi — kompyuterda fon sichqonchani kuzatadi',
+      tiltDenied: 'harakat datchiklariga ruxsat berilmadi — brauzer sozlamalarida ruxsat bering va tilt ni qaytadan yozing'
     },
 
     help: {
@@ -238,6 +252,7 @@ window.I18N = {
         ['theme',      'yorugʻ / qorongʻi mavzu'],
         ['bg',         '3D fonni yoqish yoki oʻchirish'],
         ['cursor',     'oʻz kursorini yoqish yoki oʻchirish'],
+        ['tilt',       'telefonda: fonni giroskop bilan boshqarish'],
         ['clear',      'ekranni tozalash']
       ],
       footer: 'Maslahat: ↑ va ↓ tarixni varaqlaydi, Tab buyruqni toʻldiradi.'

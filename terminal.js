@@ -203,6 +203,20 @@
       printLine('out', esc(t.ui.cursorChanged) + ' ' + (on ? 'on' : 'off'));
     },
 
+    tilt: function (arg) {
+      if (!window.BG || !window.BG.tiltSupported()) { printLine('err', esc(t.ui.tiltMissing)); return; }
+      if (arg && arg !== 'on' && arg !== 'off') { printLine('err', esc(t.ui.tiltUsage)); return; }
+
+      var want = arg ? arg === 'on' : !window.BG.tiltOn();
+
+      window.BG.tilt(want).then(function (state) {
+        if (state === 'denied')      printLine('err', esc(t.ui.tiltDenied));
+        else if (state === 'unsupported') printLine('err', esc(t.ui.tiltMissing));
+        else printLine('out', esc(t.ui.tiltChanged) + ' ' + state);
+        screenEl.scrollTop = screenEl.scrollHeight;
+      });
+    },
+
     clear: function () { screenEl.innerHTML = ''; },
 
     sudo: function () { printLine('accent', esc(t.ui.sudo)); }
@@ -213,6 +227,10 @@
 
   // Что показывать в подсказках и в автодополнении
   var VISIBLE = ['whoami', 'about', 'experience', 'projects', 'skills', 'contact', 'theme', 'bg', 'clear'];
+
+  // На телефоне добавляем кнопку гироскопа: на iOS разрешение
+  // запрашивается только по действию пользователя, нажатие подходит
+  if (window.matchMedia('(pointer: coarse)').matches) VISIBLE.splice(8, 0, 'tilt');
   var COMPLETABLE = Object.keys(COMMANDS).concat(Object.keys(ALIASES));
 
   /* =======================================================
