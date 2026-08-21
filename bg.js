@@ -1,10 +1,11 @@
 /* =========================================================
-   Фон: объёмная решётка точек, которая живёт от мыши.
+   Фон: коридор из рамок, уходящий вглубь экрана.
 
-   Сцена — куб из точек в координатах x/y/z. Курсор задаёт углы
-   поворота, точки проецируются с перспективой: ближние крупные
-   и яркие, дальние мелкие и бледные. Когда мышь рядом с точкой,
-   точка разгорается.
+   Рамки стоят на разной глубине z и едут на зрителя: ближняя
+   растворяется, на её место с дальнего конца встаёт новая.
+   Проекция перспективная — дальние рамки сходятся в точку.
+   Курсор двигает эту точку схода, поэтому коридор наклоняется
+   вслед за мышью. Никаких библиотек, обычный canvas.
 
    Наружу отдаёт window.BG.toggle() / window.BG.isOn() —
    ими пользуется команда bg в терминале.
@@ -15,9 +16,10 @@
   var canvas = document.getElementById('bg');
   if (!canvas || !canvas.getContext) return;
 
-  var ctx  = canvas.getContext('2d');
-  var root = document.documentElement;
-  var win  = document.getElementById('window');
+  var ctx    = canvas.getContext('2d');
+  var root   = document.documentElement;
+  var win    = document.getElementById('window');
+  var status = document.getElementById('status-bg');
 
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var coarse       = window.matchMedia('(pointer: coarse)').matches;
@@ -29,40 +31,25 @@
   var enabled = true;       // включено пользователем (команда bg)
 
   /* =======================================================
-     СЦЕНА: точки решётки и рёбра вдоль глубины
+     СЦЕНА
      ======================================================= */
-  var GRID = { x: 11, y: 7, z: 6 };
-  var nodes = [];
-  var columns = [];          // индексы точек, стоящих друг за другом по z
+  var FRAMES = 24;          // сколько рамок в коридоре
+  var FAR    = 8;           // длина коридора по глубине
+  var HALF   = 1.15;        // половина стороны рамки
+  var SPEED  = 0.009;       // насколько рамки едут за кадр
 
-  function buildGrid() {
-    nodes = [];
-    columns = [];
+  var rings = [];
 
-    var stepX = 3.4 / (GRID.x - 1);
-    var stepY = 2.2 / (GRID.y - 1);
-    var stepZ = 3.0 / (GRID.z - 1);
-
-    for (var ix = 0; ix < GRID.x; ix++) {
-      for (var iy = 0; iy < GRID.y; iy++) {
-        var column = [];
-
-        for (var iz = 0; iz < GRID.z; iz++) {
-          column.push(nodes.length);
-          nodes.push({
-            x: -1.7 + ix * stepX,
-            y: -1.1 + iy * stepY,
-            z: -1.5 + iz * stepZ,
-            accent: (ix + iy + iz) % 19 === 0,
-            glow: 0                      // насколько точка разогрета курсором
-          });
-        }
-        columns.push(column);
-      }
+  function buildTunnel() {
+    rings = [];
+    for (var i = 0; i < FRAMES; i++) {
+      rings.push({ z: (i / FRAMES) * FAR, accent: i % 5 === 0 });
     }
   }
 
-  buildGrid();
+  buildTunnel();
+
+  var CORNERS = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
 
   /* =======================================================
      ЦВЕТА ИЗ ТЕМЫ
@@ -106,9 +93,9 @@
   /* =======================================================
      МЫШЬ
      ======================================================= */
-  var pointer = { x: 0.5, y: 0.5, active: false };      // 0..1 по экрану
-  var targetRx = 0, targetRy = 0;
-  var rx = 0, ry = 0;
+  var pointer = { x: 0.5, y: 0.5, active: false };
+  var camX = 0, camY = 0;                 // текущая точка схода
+  var targetX = 0, targetY = 0;           // куда она стремится
   var drift = 0;
 
   if (!coarse) {
@@ -117,151 +104,135 @@
       pointer.y = e.clientY / H;
       pointer.active = true;
 
-      // Курсор задаёт углы: уходим от центра — сцена доворачивается
-      targetRy = (pointer.x - 0.5) * 1.15;
-      targetRx = (pointer.y - 0.5) * -0.75;
+      // Курсор уводит точку схода в противоположную сторону —
+      // получается, что заглядываешь в коридор сбоку
+      targetX = (pointer.x - 0.5) * -1.6;
+      targetY = (pointer.y - 0.5) * -1.1;
 
       tiltWindow();
     }, { passive: true });
 
     window.addEventListener('mouseleave', function () {
       pointer.active = false;
-      targetRx = 0;
-      targetRy = 0;
+      targetX = 0;
+      targetY = 0;
       tiltWindow(true);
     });
   }
 
-  /* --- Окно терминала тоже слегка наклоняется --- */
+  /* --- Окно тоже слегка наклоняется --- */
   function tiltWindow(reset) {
-    if (!win || reduceMotion || coarse || !enabled) return;
+    if (!win || reduceMotion || coarse || !running) return;
 
-    if (reset || !pointer.active) {
-      win.style.transform = '';
-      return;
-    }
+    if (reset || !pointer.active) { win.style.transform = ''; return; }
 
-    // Углы намеренно маленькие: на большем повороте текст в окне мылится
-    var ty = (pointer.x - 0.5) * 1.6;      // градусы
-    var tx = (pointer.y - 0.5) * -1.1;
+    // Углы намеренно маленькие: на большем повороте текст мылится
+    var ry = (pointer.x - 0.5) * 1.8;
+    var rx = (pointer.y - 0.5) * -1.2;
 
     win.style.transform =
-      'perspective(1400px) rotateX(' + tx.toFixed(2) + 'deg) rotateY(' + ty.toFixed(2) + 'deg)';
+      'perspective(1400px) rotateX(' + rx.toFixed(2) + 'deg) rotateY(' + ry.toFixed(2) + 'deg)';
   }
 
   /* =======================================================
-     ПРОЕКЦИЯ
+     ОТРИСОВКА
      ======================================================= */
-  var view = { cx: 0, cy: 0, scale: 1, focal: 3.4, sinX: 0, cosX: 1, sinY: 0, cosY: 1 };
+  var FOCAL = 2.6;                        // чем меньше, тем резче перспектива
+  var cx = 0, cy = 0, scale = 1;
 
-  function project(p, out) {
-    var x1 = p.x * view.cosY - p.z * view.sinY;
-    var z1 = p.x * view.sinY + p.z * view.cosY;
+  var bufA = [{}, {}, {}, {}];
+  var bufB = [{}, {}, {}, {}];
 
-    var y2 = p.y * view.cosX - z1 * view.sinX;
-    var z2 = p.y * view.sinX + z1 * view.cosX;
+  function corners(ring, out) {
+    var persp = FOCAL / (FOCAL + ring.z);
 
-    var persp = view.focal / (view.focal + z2);
+    // Точка схода уезжает тем сильнее, чем дальше рамка
+    var shiftX = camX * ring.z * 0.42;
+    var shiftY = camY * ring.z * 0.42;
 
-    out.x = view.cx + x1 * persp * view.scale;
-    out.y = view.cy + y2 * persp * view.scale;
-    out.z = z2;
-    out.p = persp;
-    return out;
+    for (var k = 0; k < 4; k++) {
+      out[k].x = cx + (CORNERS[k][0] * HALF + shiftX) * persp * scale;
+      out[k].y = cy + (CORNERS[k][1] * HALF + shiftY) * persp * scale;
+    }
+    return persp;
   }
-
-  var pa = { x: 0, y: 0, z: 0, p: 1 };
-  var pb = { x: 0, y: 0, z: 0, p: 1 };
-  var screenPos = [];                                   // куда спроецировалась каждая точка
 
   function draw() {
     ctx.clearRect(0, 0, W, H);
 
-    view.cx = W / 2;
-    view.cy = H / 2;
-    view.scale = Math.max(W, H) * 0.42;
-    view.sinY = Math.sin(ry); view.cosY = Math.cos(ry);
-    view.sinX = Math.sin(rx); view.cosX = Math.cos(rx);
+    cx = W / 2;
+    cy = H / 2;
+    scale = Math.max(W, H) * 0.5;
 
     var text = colors.text;
     var accent = colors.accent;
 
-    var mouseX = pointer.x * W;
-    var mouseY = pointer.y * H;
-    var reach = Math.min(W, H) * 0.22;                  // радиус подсветки вокруг курсора
+    // от дальних к ближним, чтобы ближние ложились сверху
+    var order = rings.slice().sort(function (a, b) { return b.z - a.z; });
+    var hasPrev = false;
+    var prev = bufA, curr = bufB, swap;
 
-    var i, j;
+    for (var i = 0; i < order.length; i++) {
+      var ring = order[i];
 
-    /* --- проецируем все точки и считаем подсветку --- */
-    for (i = 0; i < nodes.length; i++) {
-      var node = nodes[i];
-      var pos = screenPos[i] || (screenPos[i] = { x: 0, y: 0, z: 0, p: 1 });
-      project(node, pos);
+      var depth = 1 - ring.z / FAR;                 // 1 — вплотную, 0 — в конце коридора
+      var fade  = Math.min(1, ring.z / 0.9);        // ближняя рамка растворяется
+      var alpha = (0.09 + depth * 0.5) * fade;
+      if (alpha <= 0.01) { hasPrev = false; continue; }
 
-      var target = 0;
-      if (pointer.active) {
-        var dx = pos.x - mouseX;
-        var dy = pos.y - mouseY;
-        var dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < reach) target = 1 - dist / reach;
-      }
+      corners(ring, curr);
+      var col = ring.accent ? accent : text;
 
-      // разгорается быстро, гаснет плавно
-      node.glow += (target - node.glow) * (target > node.glow ? 0.25 : 0.06);
-    }
+      /* --- рамка --- */
+      ctx.lineWidth = ring.accent ? 1.6 : 1;
+      ctx.strokeStyle = 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',' + alpha.toFixed(3) + ')';
+      ctx.beginPath();
+      ctx.moveTo(curr[0].x, curr[0].y);
+      for (var k = 1; k < 4; k++) ctx.lineTo(curr[k].x, curr[k].y);
+      ctx.closePath();
+      ctx.stroke();
 
-    /* --- рёбра вдоль глубины: они и создают ощущение объёма --- */
-    ctx.lineWidth = 1;
-
-    for (i = 0; i < columns.length; i++) {
-      var column = columns[i];
-
-      for (j = 0; j < column.length - 1; j++) {
-        var a = screenPos[column[j]];
-        var b = screenPos[column[j + 1]];
-        var glow = Math.max(nodes[column[j]].glow, nodes[column[j + 1]].glow);
-
-        var depth = 1 - (a.z + 1.6) / 3.4;               // 1 — ближе, 0 — дальше
-        var alpha = (0.05 + depth * 0.13) + glow * 0.4;
-        if (alpha < 0.02) continue;
-
-        var lc = glow > 0.35 ? accent : text;
-        ctx.strokeStyle = 'rgba(' + lc[0] + ',' + lc[1] + ',' + lc[2] + ',' + alpha.toFixed(3) + ')';
+      /* --- рельсы между соседними рамками --- */
+      if (hasPrev) {
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(' + text[0] + ',' + text[1] + ',' + text[2] + ',' +
+                          (alpha * 0.5).toFixed(3) + ')';
         ctx.beginPath();
-        ctx.moveTo(a.x, a.y);
-        ctx.lineTo(b.x, b.y);
+        for (k = 0; k < 4; k++) {
+          ctx.moveTo(prev[k].x, prev[k].y);
+          ctx.lineTo(curr[k].x, curr[k].y);
+        }
         ctx.stroke();
       }
-    }
 
-    /* --- точки поверх рёбер --- */
-    for (i = 0; i < nodes.length; i++) {
-      var n = nodes[i];
-      var p = screenPos[i];
-
-      if (p.x < -60 || p.x > W + 60 || p.y < -60 || p.y > H + 60) continue;
-
-      var d = 1 - (p.z + 1.6) / 3.4;
-      var base = 0.14 + d * 0.42;
-      var size = (0.9 + d * 1.7) * p.p + n.glow * 2.6;
-      var col  = (n.accent || n.glow > 0.45) ? accent : text;
-
+      /* --- точки в углах --- */
+      var size = 1.6 + depth * 3.4;
       ctx.fillStyle = 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',' +
-                      Math.min(1, base + n.glow * 0.65).toFixed(3) + ')';
-      ctx.fillRect(p.x - size / 2, p.y - size / 2, size, size);
+                      Math.min(1, alpha * 1.7).toFixed(3) + ')';
+      for (k = 0; k < 4; k++) {
+        ctx.fillRect(curr[k].x - size / 2, curr[k].y - size / 2, size, size);
+      }
+
+      swap = prev; prev = curr; curr = swap;
+      hasPrev = true;
     }
   }
 
   function loop() {
-    // Без мыши сцена еле заметно дышит сама
-    drift += 0.0016;
-    if (!pointer.active) {
-      targetRy = Math.sin(drift) * 0.16;
-      targetRx = Math.cos(drift * 0.7) * 0.09;
+    for (var i = 0; i < rings.length; i++) {
+      rings[i].z -= SPEED;
+      if (rings[i].z <= 0) rings[i].z += FAR;
     }
 
-    ry += (targetRy - ry) * 0.06;
-    rx += (targetRx - rx) * 0.06;
+    // без мыши коридор еле заметно покачивается сам
+    drift += 0.0022;
+    if (!pointer.active) {
+      targetX = Math.sin(drift) * 0.16;
+      targetY = Math.cos(drift * 0.8) * 0.1;
+    }
+
+    camX += (targetX - camX) * 0.06;
+    camY += (targetY - camY) * 0.06;
 
     draw();
     frame = requestAnimationFrame(loop);
@@ -270,18 +241,24 @@
   /* =======================================================
      УПРАВЛЕНИЕ
      ======================================================= */
-  // На узких экранах окно занимает всё место — фона не видно, не рисуем
-  function wanted() { return enabled && !narrow.matches; }
+  // На узких экранах окно занимает весь экран — фона не видно, не рисуем
+  function allowed() { return enabled && !narrow.matches; }
+
+  function showStatus() {
+    if (!status) return;
+    status.textContent = !enabled ? 'off' : (running ? 'on' : 'auto');
+  }
 
   function start() {
     enabled = true;
-    if (!wanted()) { stopDrawing(); return; }
-    if (running) return;
+    if (!allowed()) { stopDrawing(); return; }
+    if (running) { showStatus(); return; }
 
     running = true;
     canvas.hidden = false;
     readColors();
     resize();
+    showStatus();
 
     if (reduceMotion) { draw(); return; }
     cancelAnimationFrame(frame);
@@ -294,6 +271,7 @@
     if (W && H) ctx.clearRect(0, 0, W, H);
     canvas.hidden = true;
     if (win) win.style.transform = '';
+    showStatus();
   }
 
   function stop() {
@@ -307,8 +285,8 @@
 
   window.addEventListener('resize', function () {
     if (!enabled) return;
-    if (!wanted()) { stopDrawing(); return; }
-    if (!running)  { start(); return; }
+    if (!allowed()) { stopDrawing(); return; }
+    if (!running)   { start(); return; }
 
     resize();
     if (reduceMotion) draw();

@@ -107,8 +107,8 @@ button { font: inherit; cursor: pointer; }
 .window {
   position: relative; z-index: 1;
   transition: transform .35s var(--ease);
-  width: min(920px, 100%);
-  height: min(700px, calc(100vh - 96px));
+  width: min(860px, 100%);
+  height: min(620px, calc(100vh - 150px));
   display: flex; flex-direction: column;
   background: var(--glass);
   backdrop-filter: blur(16px) saturate(140%);
