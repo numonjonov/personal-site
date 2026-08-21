@@ -7,7 +7,12 @@
    ========================================================= */
 window.SITE = {
   name: 'Pahlavon Numonjonov',
-  handle: 'pn@site',
+
+  /* Приглашение терминала в формате «пользователь@машина».
+     Отсюда оно попадает и в заголовок окна, и в первую строку при запуске. */
+  handle: 'pahlavon@numon.uz',
+  version: 'v1.0',
+
   email: 'numonjonovpahlavon1@gmail.com',
 
   socials: [

@@ -44,6 +44,13 @@
     return node;
   }
 
+  // Подставляет {handle} и {version} из site.js
+  function fill(str) {
+    return String(str)
+      .replace('{handle}', esc(SITE.handle))
+      .replace('{version}', esc(SITE.version || ''));
+  }
+
   function print(node) {
     screenEl.appendChild(node);
     screenEl.scrollTop = screenEl.scrollHeight;
@@ -363,6 +370,8 @@
   /* =======================================================
      ЧАСЫ В СТАТУСНОЙ СТРОКЕ
      ======================================================= */
+  document.getElementById('win-title').textContent = SITE.handle + ' — ~';
+
   var clock = document.getElementById('clock');
   (function tick() {
     var d = new Date();
@@ -380,7 +389,7 @@
   applyLang(LANGS.indexOf(savedLang) !== -1 ? savedLang : 'en', false);
   applyTheme(savedTheme === 'light' || savedTheme === 'dark' ? savedTheme : currentTheme(), false);
 
-  printLine('dim', t.ui.boot1);
+  printLine('dim', fill(t.ui.boot1));
   printLine('dim', t.ui.boot2);
   printGap();
 
