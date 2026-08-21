@@ -106,6 +106,7 @@ button { font: inherit; cursor: pointer; }
    ========================================================= */
 .window {
   position: relative; z-index: 1;
+  transition: transform .35s var(--ease);
   width: min(920px, 100%);
   height: min(700px, calc(100vh - 96px));
   display: flex; flex-direction: column;
