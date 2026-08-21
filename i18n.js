@@ -39,7 +39,9 @@ window.I18N = {
       tiltChanged: 'gyroscope →',
       tiltUsage: 'usage: tilt on | off',
       tiltMissing: 'gyroscope works on a phone or tablet — on a desktop the background follows the mouse',
-      tiltDenied: 'motion access denied — allow it in the browser settings and run tilt again'
+      tiltDenied: 'motion access denied — allow it in the browser settings and run tilt again',
+      tiltDebugOn: 'live sensor readout — run tilt debug again to stop',
+      tiltDebugOff: 'sensor readout stopped'
     },
 
     help: {
@@ -137,7 +139,9 @@ window.I18N = {
       tiltChanged: 'гироскоп →',
       tiltUsage: 'как пользоваться: tilt on | off',
       tiltMissing: 'гироскоп работает на телефоне или планшете — на компьютере фон следит за мышью',
-      tiltDenied: 'доступ к датчикам не разрешён — включите его в настройках браузера и повторите tilt'
+      tiltDenied: 'доступ к датчикам не разрешён — включите его в настройках браузера и повторите tilt',
+      tiltDebugOn: 'живые показания датчика — повторите tilt debug, чтобы остановить',
+      tiltDebugOff: 'показания датчика остановлены'
     },
 
     help: {
@@ -235,7 +239,9 @@ window.I18N = {
       tiltChanged: 'giroskop →',
       tiltUsage: 'qoʻllanishi: tilt on | off',
       tiltMissing: 'giroskop telefon yoki planshetda ishlaydi — kompyuterda fon sichqonchani kuzatadi',
-      tiltDenied: 'harakat datchiklariga ruxsat berilmadi — brauzer sozlamalarida ruxsat bering va tilt ni qaytadan yozing'
+      tiltDenied: 'harakat datchiklariga ruxsat berilmadi — brauzer sozlamalarida ruxsat bering va tilt ni qaytadan yozing',
+      tiltDebugOn: 'datchikning jonli koʻrsatkichlari — toʻxtatish uchun yana tilt debug',
+      tiltDebugOff: 'datchik koʻrsatkichlari toʻxtatildi'
     },
 
     help: {

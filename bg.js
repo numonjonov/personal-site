@@ -106,7 +106,16 @@
   var needsPermission = tiltSupported &&
                         typeof window.DeviceOrientationEvent.requestPermission === 'function';
 
+  // Считаем, что приходит от датчика — по этим цифрам видно,
+  // молчит он или дело в пересчёте углов (команда tilt debug)
+  var tiltStats = { count: 0, gamma: null, beta: null, source: null };
+
   function onOrientation(e) {
+    tiltStats.count++;
+    tiltStats.gamma = e.gamma;
+    tiltStats.beta = e.beta;
+    tiltStats.source = e.type;
+
     if (e.gamma === null && e.beta === null) return;
 
     // gamma — наклон вбок (-90..90), beta — вперёд-назад (-180..180).
@@ -126,6 +135,7 @@
 
     if (!on) {
       window.removeEventListener('deviceorientation', onOrientation);
+      window.removeEventListener('deviceorientationabsolute', onOrientation);
       tiltOn = false;
       pointer.active = false;
       targetX = 0; targetY = 0;
@@ -134,6 +144,7 @@
 
     var attach = function () {
       window.addEventListener('deviceorientation', onOrientation);
+      window.addEventListener('deviceorientationabsolute', onOrientation);
       tiltOn = true;
       return 'on';
     };
@@ -351,6 +362,7 @@
     isOn: function () { return enabled; },
     tiltSupported: function () { return tiltSupported && coarse; },
     tiltOn: function () { return tiltOn; },
+    tiltStats: function () { return tiltStats; },
     tilt: tilt,
     toggle: function (on) {
       var next = on === undefined ? !enabled : !!on;
