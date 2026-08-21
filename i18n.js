@@ -32,7 +32,10 @@ window.I18N = {
       sudo: 'nice try. permission denied — but I like the way you think.',
       bgChanged: 'background →',
       bgUsage: 'usage: bg on | off',
-      bgMissing: 'background is not available here'
+      bgMissing: 'background is not available here',
+      cursorChanged: 'cursor →',
+      cursorUsage: 'usage: cursor on | off',
+      cursorMissing: 'custom cursor is not available on touch screens'
     },
 
     help: {
@@ -48,6 +51,7 @@ window.I18N = {
         ['lang <code>','switch language: en, ru, uz'],
         ['theme',      'switch light / dark'],
         ['bg',         'turn the 3D background on or off'],
+        ['cursor',     'terminal-style cursor on or off'],
         ['clear',      'clear the screen']
       ],
       footer: 'Tip: ↑ and ↓ walk through history, Tab completes a command.'
@@ -121,7 +125,10 @@ window.I18N = {
       sudo: 'хорошая попытка. доступ запрещён — но ход мысли мне нравится.',
       bgChanged: 'фон →',
       bgUsage: 'как пользоваться: bg on | off',
-      bgMissing: 'фон здесь недоступен'
+      bgMissing: 'фон здесь недоступен',
+      cursorChanged: 'курсор →',
+      cursorUsage: 'как пользоваться: cursor on | off',
+      cursorMissing: 'свой курсор на сенсорных экранах недоступен'
     },
 
     help: {
@@ -137,6 +144,7 @@ window.I18N = {
         ['lang <code>','сменить язык: en, ru, uz'],
         ['theme',      'светлая / тёмная тема'],
         ['bg',         'включить или выключить 3D-фон'],
+        ['cursor',     'свой курсор — включить или выключить'],
         ['clear',      'очистить экран']
       ],
       footer: 'Подсказка: ↑ и ↓ листают историю, Tab дополняет команду.'
@@ -210,7 +218,10 @@ window.I18N = {
       sudo: 'urinish yaxshi. ruxsat yoʻq — lekin fikringiz menga yoqdi.',
       bgChanged: 'fon →',
       bgUsage: 'qoʻllanishi: bg on | off',
-      bgMissing: 'bu yerda fon mavjud emas'
+      bgMissing: 'bu yerda fon mavjud emas',
+      cursorChanged: 'kursor →',
+      cursorUsage: 'qoʻllanishi: cursor on | off',
+      cursorMissing: 'sensorli ekranlarda oʻz kursori mavjud emas'
     },
 
     help: {
@@ -226,6 +237,7 @@ window.I18N = {
         ['lang <code>','tilni almashtirish: en, ru, uz'],
         ['theme',      'yorugʻ / qorongʻi mavzu'],
         ['bg',         '3D fonni yoqish yoki oʻchirish'],
+        ['cursor',     'oʻz kursorini yoqish yoki oʻchirish'],
         ['clear',      'ekranni tozalash']
       ],
       footer: 'Maslahat: ↑ va ↓ tarixni varaqlaydi, Tab buyruqni toʻldiradi.'

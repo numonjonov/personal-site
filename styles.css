@@ -102,7 +102,47 @@ button { font: inherit; cursor: pointer; }
 .bg[hidden] { display: none; }
 
 /* =========================================================
-   4. ОКНО
+   4. СВОЙ КУРСОР
+   Системную стрелку прячем только когда свой курсор включён,
+   чтобы при выключенном скрипте мышь не пропала совсем.
+   ========================================================= */
+:root[data-cursor="on"],
+:root[data-cursor="on"] * { cursor: none !important; }
+
+.cursor-caret, .cursor-ring {
+  position: fixed; top: 0; left: 0; z-index: 200;
+  pointer-events: none; opacity: 0;
+  transition: opacity .2s ease;
+}
+.cursor-caret.is-visible, .cursor-ring.is-visible { opacity: 1; }
+
+/* Каретка: прямоугольник как в консоли */
+.cursor-caret {
+  width: 9px; height: 16px; margin: -8px 0 0 -4px;
+  background: var(--accent);
+  transition: width .16s var(--ease), height .16s var(--ease),
+              margin .16s var(--ease), opacity .2s ease;
+}
+/* Над текстом — тонкая черта */
+.cursor-caret.is-text { width: 2px; height: 20px; margin: -10px 0 0 -1px; }
+
+/* Рамка едет следом с задержкой */
+.cursor-ring {
+  width: 28px; height: 28px; margin: -14px 0 0 -14px;
+  border: 1px solid var(--line-strong);
+  transition: width .18s var(--ease), height .18s var(--ease),
+              margin .18s var(--ease), border-color .18s ease, opacity .2s ease;
+}
+/* Над ссылкой или кнопкой — раскрывается и краснеет */
+.cursor-ring.is-tap {
+  width: 44px; height: 44px; margin: -22px 0 0 -22px;
+  border-color: var(--accent);
+}
+/* На нажатии — поджимается */
+.cursor-ring.is-down { width: 20px; height: 20px; margin: -10px 0 0 -10px; }
+
+/* =========================================================
+   5. ОКНО
    ========================================================= */
 .window {
   position: relative; z-index: 1;
@@ -177,7 +217,7 @@ button { font: inherit; cursor: pointer; }
 :root[data-theme="light"] .icon-sun  { display: none; }
 
 /* =========================================================
-   5. ЭКРАН ВЫВОДА
+   6. ЭКРАН ВЫВОДА
    ========================================================= */
 .screen {
   flex: 1; min-height: 0; overflow-y: auto;
@@ -220,7 +260,7 @@ button { font: inherit; cursor: pointer; }
 }
 
 /* =========================================================
-   6. ПОДСКАЗКИ И СТРОКА ВВОДА
+   7. ПОДСКАЗКИ И СТРОКА ВВОДА
    ========================================================= */
 .hints {
   display: flex; flex-wrap: wrap; gap: 5px;
@@ -247,7 +287,7 @@ button { font: inherit; cursor: pointer; }
 .prompt-input::placeholder { color: var(--dim); opacity: 1; }
 
 /* =========================================================
-   7. СТАТУСНАЯ СТРОКА
+   8. СТАТУСНАЯ СТРОКА
    ========================================================= */
 .status-bar {
   display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
@@ -259,7 +299,7 @@ button { font: inherit; cursor: pointer; }
 .status-clock { margin-left: auto; font-variant-numeric: tabular-nums; }
 
 /* =========================================================
-   8. ВЕРСИЯ БЕЗ JAVASCRIPT
+   9. ВЕРСИЯ БЕЗ JAVASCRIPT
    ========================================================= */
 .noscript {
   max-width: 640px; padding: 40px 24px; line-height: 1.7;
@@ -270,7 +310,7 @@ button { font: inherit; cursor: pointer; }
 .noscript p  { color: var(--muted); }
 
 /* =========================================================
-   9. МОБИЛЬНАЯ ВЕРСИЯ
+   10. МОБИЛЬНАЯ ВЕРСИЯ
    ========================================================= */
 @media (max-width: 720px) {
   body { padding: 0; display: block; background-image: none; }
@@ -297,7 +337,7 @@ button { font: inherit; cursor: pointer; }
 }
 
 /* =========================================================
-   10. МЕНЬШЕ ДВИЖЕНИЯ
+   11. МЕНЬШЕ ДВИЖЕНИЯ
    ========================================================= */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

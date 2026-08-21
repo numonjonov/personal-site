@@ -192,6 +192,17 @@
       printLine('out', esc(t.ui.bgChanged) + ' ' + (on ? 'on' : 'off'));
     },
 
+    cursor: function (arg) {
+      if (!window.CURSOR || !window.CURSOR.available) {
+        printLine('err', esc(t.ui.cursorMissing));
+        return;
+      }
+      if (arg && arg !== 'on' && arg !== 'off') { printLine('err', esc(t.ui.cursorUsage)); return; }
+
+      var on = window.CURSOR.toggle(arg ? arg === 'on' : undefined);
+      printLine('out', esc(t.ui.cursorChanged) + ' ' + (on ? 'on' : 'off'));
+    },
+
     clear: function () { screenEl.innerHTML = ''; },
 
     sudo: function () { printLine('accent', esc(t.ui.sudo)); }
