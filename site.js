@@ -19,8 +19,8 @@ window.SITE = {
 
   /* label — как ссылка выглядит на экране. Если его нет, показывается сам адрес. */
   socials: [
-    { key: 'github',   url: 'https://github.com/' },
-    { key: 'telegram', url: 'https://t.me/CustomAnnotation', label: '@CustomAnnotation' },
+    { key: 'github',   url: 'https://github.com/numonjonov' },
+    { key: 'telegram', url: 'https://t.me/CustomAnnotation' },
     { key: 'linkedin', url: 'https://linkedin.com/' }
   ],
 
