@@ -29,7 +29,10 @@ window.I18N = {
       openUsage: 'usage: open 001 | 002 | 003',
       openMissing: 'no project with id',
       opening: 'opening',
-      sudo: 'nice try. permission denied — but I like the way you think.'
+      sudo: 'nice try. permission denied — but I like the way you think.',
+      bgChanged: 'background →',
+      bgUsage: 'usage: bg on | off',
+      bgMissing: 'background is not available here'
     },
 
     help: {
@@ -44,6 +47,7 @@ window.I18N = {
         ['open <id>',  'open a project link, e.g. open 001'],
         ['lang <code>','switch language: en, ru, uz'],
         ['theme',      'switch light / dark'],
+        ['bg',         'turn the 3D background on or off'],
         ['clear',      'clear the screen']
       ],
       footer: 'Tip: ↑ and ↓ walk through history, Tab completes a command.'
@@ -114,7 +118,10 @@ window.I18N = {
       openUsage: 'как пользоваться: open 001 | 002 | 003',
       openMissing: 'нет проекта с номером',
       opening: 'открываю',
-      sudo: 'хорошая попытка. доступ запрещён — но ход мысли мне нравится.'
+      sudo: 'хорошая попытка. доступ запрещён — но ход мысли мне нравится.',
+      bgChanged: 'фон →',
+      bgUsage: 'как пользоваться: bg on | off',
+      bgMissing: 'фон здесь недоступен'
     },
 
     help: {
@@ -129,6 +136,7 @@ window.I18N = {
         ['open <id>',  'открыть ссылку проекта, например open 001'],
         ['lang <code>','сменить язык: en, ru, uz'],
         ['theme',      'светлая / тёмная тема'],
+        ['bg',         'включить или выключить 3D-фон'],
         ['clear',      'очистить экран']
       ],
       footer: 'Подсказка: ↑ и ↓ листают историю, Tab дополняет команду.'
@@ -199,7 +207,10 @@ window.I18N = {
       openUsage: 'qoʻllanishi: open 001 | 002 | 003',
       openMissing: 'bunday raqamli loyiha yoʻq:',
       opening: 'ochilmoqda',
-      sudo: 'urinish yaxshi. ruxsat yoʻq — lekin fikringiz menga yoqdi.'
+      sudo: 'urinish yaxshi. ruxsat yoʻq — lekin fikringiz menga yoqdi.',
+      bgChanged: 'fon →',
+      bgUsage: 'qoʻllanishi: bg on | off',
+      bgMissing: 'bu yerda fon mavjud emas'
     },
 
     help: {
@@ -214,6 +225,7 @@ window.I18N = {
         ['open <id>',  'loyiha havolasini ochish, masalan open 001'],
         ['lang <code>','tilni almashtirish: en, ru, uz'],
         ['theme',      'yorugʻ / qorongʻi mavzu'],
+        ['bg',         '3D fonni yoqish yoki oʻchirish'],
         ['clear',      'ekranni tozalash']
       ],
       footer: 'Maslahat: ↑ va ↓ tarixni varaqlaydi, Tab buyruqni toʻldiradi.'

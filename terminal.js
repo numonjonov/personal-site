@@ -184,6 +184,14 @@
       if (url && url !== '#') window.open(url, '_blank', 'noopener');
     },
 
+    bg: function (arg) {
+      if (!window.BG) { printLine('err', esc(t.ui.bgMissing)); return; }
+      if (arg && arg !== 'on' && arg !== 'off') { printLine('err', esc(t.ui.bgUsage)); return; }
+
+      var on = window.BG.toggle(arg ? arg === 'on' : undefined);
+      printLine('out', esc(t.ui.bgChanged) + ' ' + (on ? 'on' : 'off'));
+    },
+
     clear: function () { screenEl.innerHTML = ''; },
 
     sudo: function () { printLine('accent', esc(t.ui.sudo)); }
@@ -193,7 +201,7 @@
   var ALIASES = { exp: 'experience', ls: 'help', '?': 'help', me: 'whoami', cls: 'clear', mail: 'contact' };
 
   // Что показывать в подсказках и в автодополнении
-  var VISIBLE = ['whoami', 'about', 'experience', 'projects', 'skills', 'contact', 'theme', 'clear'];
+  var VISIBLE = ['whoami', 'about', 'experience', 'projects', 'skills', 'contact', 'theme', 'bg', 'clear'];
   var COMPLETABLE = Object.keys(COMMANDS).concat(Object.keys(ALIASES));
 
   /* =======================================================

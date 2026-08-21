@@ -6,6 +6,7 @@
 :root {
   --bg:          #eceae7;
   --panel:       #fbfaf9;
+  --glass:       rgba(251, 250, 249, .82);
   --text:        #14130f;
   --muted:       #6f6b66;
   --dim:         #8d8983;
@@ -26,6 +27,7 @@
   :root:not([data-theme="light"]) {
     --bg:          #000000;
     --panel:       #0a0a0a;
+    --glass:       rgba(10, 10, 10, .74);
     --text:        #eceae7;
     --muted:       #8f8b86;
     --dim:         #6b6762;
@@ -41,6 +43,7 @@
 :root[data-theme="dark"] {
   --bg:          #000000;
   --panel:       #0a0a0a;
+  --glass:       rgba(10, 10, 10, .74);
   --text:        #eceae7;
   --muted:       #8f8b86;
   --dim:         #6b6762;
@@ -64,8 +67,6 @@ body {
   place-items: center;
   padding: 26px;
   background-color: var(--bg);
-  background-image: radial-gradient(var(--dot) 1px, transparent 1px);
-  background-size: 24px 24px;
   color: var(--text);
   font-family: var(--font-mono);
   font-size: 14px;
@@ -91,13 +92,26 @@ button { font: inherit; cursor: pointer; }
 .skip-link:focus { left: 16px; }
 
 /* =========================================================
-   3. ОКНО
+   3. ФОН: ТОЧЕЧНАЯ СФЕРА НА CANVAS
+   ========================================================= */
+.bg {
+  position: fixed; inset: 0; z-index: -1;
+  width: 100%; height: 100%;
+  pointer-events: none;
+}
+.bg[hidden] { display: none; }
+
+/* =========================================================
+   4. ОКНО
    ========================================================= */
 .window {
-  width: min(1000px, 100%);
-  height: min(760px, calc(100vh - 52px));
+  position: relative; z-index: 1;
+  width: min(920px, 100%);
+  height: min(700px, calc(100vh - 96px));
   display: flex; flex-direction: column;
-  background: var(--panel);
+  background: var(--glass);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
   border: 1px solid var(--line-strong);
   box-shadow: var(--shadow);
 }
@@ -162,7 +176,7 @@ button { font: inherit; cursor: pointer; }
 :root[data-theme="light"] .icon-sun  { display: none; }
 
 /* =========================================================
-   4. ЭКРАН ВЫВОДА
+   5. ЭКРАН ВЫВОДА
    ========================================================= */
 .screen {
   flex: 1; min-height: 0; overflow-y: auto;
@@ -205,7 +219,7 @@ button { font: inherit; cursor: pointer; }
 }
 
 /* =========================================================
-   5. ПОДСКАЗКИ И СТРОКА ВВОДА
+   6. ПОДСКАЗКИ И СТРОКА ВВОДА
    ========================================================= */
 .hints {
   display: flex; flex-wrap: wrap; gap: 5px;
@@ -232,7 +246,7 @@ button { font: inherit; cursor: pointer; }
 .prompt-input::placeholder { color: var(--dim); opacity: 1; }
 
 /* =========================================================
-   6. СТАТУСНАЯ СТРОКА
+   7. СТАТУСНАЯ СТРОКА
    ========================================================= */
 .status-bar {
   display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
@@ -244,7 +258,7 @@ button { font: inherit; cursor: pointer; }
 .status-clock { margin-left: auto; font-variant-numeric: tabular-nums; }
 
 /* =========================================================
-   7. ВЕРСИЯ БЕЗ JAVASCRIPT
+   8. ВЕРСИЯ БЕЗ JAVASCRIPT
    ========================================================= */
 .noscript {
   max-width: 640px; padding: 40px 24px; line-height: 1.7;
@@ -255,7 +269,7 @@ button { font: inherit; cursor: pointer; }
 .noscript p  { color: var(--muted); }
 
 /* =========================================================
-   8. МОБИЛЬНАЯ ВЕРСИЯ
+   9. МОБИЛЬНАЯ ВЕРСИЯ
    ========================================================= */
 @media (max-width: 720px) {
   body { padding: 0; display: block; background-image: none; }
@@ -263,6 +277,8 @@ button { font: inherit; cursor: pointer; }
   .window {
     width: 100%; height: 100vh; height: 100dvh;
     border: none; box-shadow: none;
+    background: var(--panel);
+    backdrop-filter: none; -webkit-backdrop-filter: none;
   }
 
   .win-bar { gap: 10px; }
@@ -280,7 +296,7 @@ button { font: inherit; cursor: pointer; }
 }
 
 /* =========================================================
-   9. МЕНЬШЕ ДВИЖЕНИЯ
+   10. МЕНЬШЕ ДВИЖЕНИЯ
    ========================================================= */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
