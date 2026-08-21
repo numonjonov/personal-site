@@ -146,9 +146,15 @@
       printLine('out', esc(t.contact.lead));
       printGap();
 
-      var rows = [[t.contact.labels.email, link('mailto:' + SITE.email, SITE.email, false)]];
+      var mail = SITE.email
+        ? link('mailto:' + SITE.email, SITE.email, false)
+        : '<span class="dim">—</span>';
+
+      var rows = [[t.contact.labels.email, mail]];
+
       SITE.socials.forEach(function (s) {
-        rows.push([t.contact.labels[s.key] || s.key, link(s.url, s.url.replace(/^https?:\/\//, ''), true)]);
+        var shown = s.label || s.url.replace(/^https?:\/\//, '');
+        rows.push([t.contact.labels[s.key] || s.key, link(s.url, shown, true)]);
       });
       printKV(rows);
     },

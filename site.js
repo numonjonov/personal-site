@@ -13,11 +13,14 @@ window.SITE = {
   handle: 'pahlavon@numon.uz',
   version: 'v1.0',
 
-  email: 'numonjonovpahlavon1@gmail.com',
+  /* Пустая строка — в выводе contact останется строка «email» с прочерком.
+     Впишите адрес сюда, и он снова станет ссылкой. */
+  email: '',
 
+  /* label — как ссылка выглядит на экране. Если его нет, показывается сам адрес. */
   socials: [
     { key: 'github',   url: 'https://github.com/' },
-    { key: 'telegram', url: 'https://t.me/' },
+    { key: 'telegram', url: 'https://t.me/CustomAnnotation', label: '@CustomAnnotation' },
     { key: 'linkedin', url: 'https://linkedin.com/' }
   ],
 
