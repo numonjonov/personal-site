@@ -20,6 +20,14 @@
   var history = [];                     // введённые команды
   var histPos = -1;
 
+  // На телефоне фокус в поле ввода поднимает экранную клавиатуру,
+  // поэтому возвращаем курсор в строку только там, где есть мышь
+  var coarse = window.matchMedia('(pointer: coarse)').matches;
+
+  function focusInput() {
+    if (!coarse) input.focus();
+  }
+
   /* ---------- Мелкие помощники ---------- */
   function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
   function read(k)     { try { return localStorage.getItem(k); } catch (e) { return null; } }
@@ -293,7 +301,7 @@
     var btn = e.target.closest('button[data-lang]');
     if (!btn) return;
     run('lang ' + btn.getAttribute('data-lang'));
-    input.focus();
+    focusInput();
   });
 
   window.addEventListener('resize', function () {
@@ -320,7 +328,7 @@
 
   document.getElementById('theme-toggle').addEventListener('click', function () {
     run('theme');
-    input.focus();
+    focusInput();
   });
 
   /* =======================================================
@@ -331,7 +339,7 @@
     btn.type = 'button';
     btn.addEventListener('click', function () {
       run(name);
-      input.focus();
+      focusInput();
     });
     hintsBox.appendChild(btn);
   });
@@ -385,12 +393,15 @@
     }
   });
 
-  // Клик по пустому месту возвращает курсор в строку ввода
-  document.addEventListener('click', function (e) {
-    if (e.target.closest('a, button, input')) return;
-    if (window.getSelection().toString()) return;     // не мешаем выделять текст
-    input.focus();
-  });
+  // Клик по пустому месту возвращает курсор в строку ввода.
+  // На телефоне не трогаем: там это открывало бы клавиатуру при каждом тапе.
+  if (!coarse) {
+    document.addEventListener('click', function (e) {
+      if (e.target.closest('a, button, input')) return;
+      if (window.getSelection().toString()) return;   // не мешаем выделять текст
+      input.focus();
+    });
+  }
 
   /* =======================================================
      ЧАСЫ В СТАТУСНОЙ СТРОКЕ
@@ -424,7 +435,7 @@
 
   if (reduceMotion) {
     run(demo);
-    input.focus();
+    focusInput();
   } else {
     var typedLine = el('p', 'line cmd', '');
     print(typedLine);
@@ -437,7 +448,7 @@
         return;
       }
       run(demo, { echo: false });
-      input.focus();
+      focusInput();
     })();
   }
 })();
