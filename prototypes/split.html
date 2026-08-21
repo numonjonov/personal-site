@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Образец 2 — Сплит с боковой колонкой</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Doto:wght@500;700;900&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="base.css" />
+  <style>
+    /* Каркас: левая колонка закреплена, правая — единственное, что скроллится. */
+    .layout { display: grid; grid-template-columns: 380px 1fr; min-height: 100vh; }
+
+    .side {
+      position: sticky; top: 0; height: 100vh;
+      display: flex; flex-direction: column; justify-content: space-between;
+      padding: 44px 36px; border-right: 1px solid var(--line);
+      background: var(--bg);
+    }
+
+    .side-name { font-size: clamp(34px, 3.2vw, 46px); font-weight: 900; line-height: .95; margin: 16px 0 12px; }
+    .side-role { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+    .side-role b { color: var(--text); font-weight: 500; }
+
+    .status { display: inline-flex; align-items: center; gap: 8px; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: blink 1.8s steps(1) infinite; }
+    @keyframes blink { 0%,60% { opacity: 1; } 61%,100% { opacity: .25; } }
+
+    /* Меню-колонка: активный пункт помечается красной чертой */
+    .side-nav { display: grid; gap: 2px; margin: 34px 0; }
+    .side-nav a {
+      display: grid; grid-template-columns: 30px 1fr; align-items: center;
+      padding: 9px 0; font-family: var(--font-mono); font-size: 11px;
+      text-transform: uppercase; letter-spacing: .12em; color: var(--muted);
+      border-top: 1px solid var(--line);
+      transition: color .2s ease, padding-left .25s var(--ease);
+    }
+    .side-nav a:last-child { border-bottom: 1px solid var(--line); }
+    .side-nav a:hover { color: var(--text); padding-left: 8px; }
+    .side-nav a.active { color: var(--text); }
+    .side-nav a.active span:first-child { color: var(--accent); }
+
+    .side-foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
+    .socials { display: grid; gap: 7px; }
+    .socials a { font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+    .socials a:hover { color: var(--accent); }
+
+    /* Правая колонка */
+    .content { padding: 0 56px; }
+    .block { padding: 84px 0; border-bottom: 1px solid var(--line); max-width: 720px; }
+    .block:last-child { border-bottom: none; }
+
+    .block-head { display: flex; align-items: center; gap: 14px; margin-bottom: 30px; }
+    .block-title { font-size: clamp(26px, 3vw, 38px); }
+    .rule { flex: 1; height: 1px; background: var(--line); }
+
+    .lead { font-size: 18px; margin-bottom: 16px; }
+    .muted { color: var(--muted); }
+
+    .rows { border-top: 1px solid var(--line); }
+    .row {
+      display: grid; grid-template-columns: 130px 1fr; gap: 20px;
+      padding: 22px 0; border-bottom: 1px solid var(--line);
+      transition: background-color .25s ease, padding-left .25s var(--ease);
+    }
+    .row:hover { background: var(--accent-soft); padding-left: 10px; }
+    .row-title { font-family: var(--font-display); font-size: 21px; margin-bottom: 4px; }
+
+    .proj { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); }
+    .proj a { display: block; padding: 24px; background: var(--bg); transition: background-color .25s ease, color .25s ease; }
+    .proj a:hover { background: var(--text); color: var(--bg); }
+    .proj a:hover .muted { color: inherit; opacity: .75; }
+    .proj a:hover .tags li { border-color: currentColor; color: inherit; }
+    .proj-head { display: flex; justify-content: space-between; margin-bottom: 12px; }
+    .proj-title { font-family: var(--font-display); font-size: 23px; margin-bottom: 8px; }
+    .proj .tags { margin-top: 14px; }
+
+    .skill-block { margin-bottom: 26px; }
+    .skill-block .label { display: block; margin-bottom: 10px; }
+
+    .mail-big {
+      display: inline-block; font-family: var(--font-display); font-weight: 700;
+      font-size: clamp(20px, 2.6vw, 30px); border-bottom: 2px solid var(--accent); padding-bottom: 4px;
+    }
+
+    /* Плашка образца в этом каркасе уезжает вправо, чтобы не закрывать ссылки */
+    .proto-tag { left: auto; right: 0; }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .side { position: static; height: auto; padding: 28px 20px; border-right: none; border-bottom: 1px solid var(--line); }
+      .side-nav { margin: 24px 0; }
+      .content { padding: 0 20px; }
+      .block { padding: 54px 0; }
+      .row { grid-template-columns: 1fr; gap: 6px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <!-- ЛЕВАЯ КОЛОНКА: не скроллится -->
+    <aside class="side">
+      <div>
+        <span class="label status"><span class="dot"></span> Available for work</span>
+        <h1 class="side-name">Pahlavon<br />Numonjonov</h1>
+        <p class="side-role">I'm a <b id="role">developer</b></p>
+
+        <nav class="side-nav" id="nav">
+          <a href="#about"><span>01</span><span>About</span></a>
+          <a href="#experience"><span>02</span><span>Experience</span></a>
+          <a href="#projects"><span>03</span><span>Projects</span></a>
+          <a href="#skills"><span>04</span><span>Skills</span></a>
+          <a href="#contact"><span>05</span><span>Contact</span></a>
+        </nav>
+      </div>
+
+      <div class="side-foot">
+        <div class="socials">
+          <a href="#">GitHub ↗</a>
+          <a href="#">Telegram ↗</a>
+          <a href="#">LinkedIn ↗</a>
+        </div>
+        <button class="theme-btn" id="theme-toggle" type="button" aria-label="Toggle theme">
+          <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ПРАВАЯ КОЛОНКА: скроллится -->
+    <main class="content">
+      <section class="block" id="about">
+        <div class="block-head"><span class="label label-accent">01</span><h2 class="block-title">About</h2><span class="rule"></span></div>
+        <p class="lead">
+          Replace this paragraph with a few words about yourself: who you are,
+          what you do and what you find interesting.
+        </p>
+        <p class="muted">
+          The second paragraph works best with specifics: where you study or
+          work, what you are building right now, and what you can help with.
+        </p>
+      </section>
+
+      <section class="block" id="experience">
+        <div class="block-head"><span class="label label-accent">02</span><h2 class="block-title">Experience</h2><span class="rule"></span></div>
+        <div class="rows">
+          <div class="row">
+            <span class="label">2024 — now</span>
+            <div><h3 class="row-title">Your role</h3><p class="muted">Company or university — what you do and what you are responsible for.</p></div>
+          </div>
+          <div class="row">
+            <span class="label">2023 — 2024</span>
+            <div><h3 class="row-title">Your role</h3><p class="muted">Company or university — what you did and what you achieved.</p></div>
+          </div>
+          <div class="row">
+            <span class="label">2022 — 2023</span>
+            <div><h3 class="row-title">Where it started</h3><p class="muted">Course, school or first job — how you got into this field.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="block" id="projects">
+        <div class="block-head"><span class="label label-accent">03</span><h2 class="block-title">Projects</h2><span class="rule"></span></div>
+        <div class="proj">
+          <a href="#">
+            <div class="proj-head"><span class="label">001</span><span class="label label-accent">Featured</span></div>
+            <h3 class="proj-title">Project name</h3>
+            <p class="muted">What problem the project solves and what you personally built.</p>
+            <ul class="tags"><li>HTML</li><li>CSS</li><li>JavaScript</li></ul>
+          </a>
+          <a href="#">
+            <div class="proj-head"><span class="label">002</span></div>
+            <h3 class="proj-title">Project name</h3>
+            <p class="muted">What problem the project solves and what you personally built.</p>
+            <ul class="tags"><li>Python</li><li>API</li></ul>
+          </a>
+          <a href="#">
+            <div class="proj-head"><span class="label">003</span></div>
+            <h3 class="proj-title">Project name</h3>
+            <p class="muted">What problem the project solves and what you personally built.</p>
+            <ul class="tags"><li>Design</li><li>Figma</li></ul>
+          </a>
+        </div>
+      </section>
+
+      <section class="block" id="skills">
+        <div class="block-head"><span class="label label-accent">04</span><h2 class="block-title">Skills</h2><span class="rule"></span></div>
+        <div class="skill-block">
+          <span class="label">Development</span>
+          <ul class="tags"><li>HTML</li><li>CSS</li><li>JavaScript</li><li>Python</li><li>Git</li></ul>
+        </div>
+        <div class="skill-block">
+          <span class="label">Tools</span>
+          <ul class="tags"><li>VS Code</li><li>Figma</li><li>GitHub</li></ul>
+        </div>
+      </section>
+
+      <section class="block" id="contact">
+        <div class="block-head"><span class="label label-accent">05</span><h2 class="block-title">Contact</h2><span class="rule"></span></div>
+        <p class="muted" style="margin-bottom:20px">Drop me a line — I read every email and message.</p>
+        <a class="mail-big" href="mailto:numonjonovpahlavon1@gmail.com">numonjonovpahlavon1@gmail.com</a>
+      </section>
+    </main>
+  </div>
+
+  <div class="proto-tag">Образец 2 — Сплит с боковой колонкой <a href="index.html">все образцы</a></div>
+
+  <script>
+    var root = document.documentElement;
+    document.getElementById('theme-toggle').addEventListener('click', function () {
+      var dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var now = root.getAttribute('data-theme') || (dark ? 'dark' : 'light');
+      root.setAttribute('data-theme', now === 'dark' ? 'light' : 'dark');
+    });
+
+    var roles = ['developer', 'designer', 'problem solver'], i = 0;
+    setInterval(function () {
+      i = (i + 1) % roles.length;
+      document.getElementById('role').textContent = roles[i];
+    }, 2400);
+
+    // Активный пункт меню — по секции, которая сейчас на экране
+    var links = {};
+    document.querySelectorAll('.side-nav a').forEach(function (a) {
+      links[a.getAttribute('href').slice(1)] = a;
+    });
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        Object.keys(links).forEach(function (k) { links[k].classList.remove('active'); });
+        links[e.target.id].classList.add('active');
+      });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    document.querySelectorAll('.block').forEach(function (b) { obs.observe(b); });
+  </script>
+</body>
+</html>

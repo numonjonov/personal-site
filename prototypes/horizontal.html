@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Образец 3 — Горизонтальная лента</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Doto:wght@500;700;900&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="base.css" />
+  <style>
+    /* Каркас: панели стоят в ряд, лента едет вбок.
+       Колесо мыши переводится в горизонтальный скролл скриптом. */
+    body { overflow: hidden; }
+
+    .track {
+      display: flex; height: 100vh; overflow: hidden;
+      scrollbar-width: none;
+    }
+    .track::-webkit-scrollbar { display: none; }
+
+    .panel {
+      flex: 0 0 100vw; height: 100vh;
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 0 clamp(24px, 7vw, 110px);
+      border-right: 1px solid var(--line);
+      position: relative;
+    }
+    .panel-index {
+      position: absolute; top: 68px; left: clamp(24px, 7vw, 110px);
+      font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .panel-index b { color: var(--accent); font-weight: 500; }
+
+    .p-title { font-size: clamp(30px, 5vw, 62px); margin-bottom: 26px; }
+    .p-lead { max-width: 46ch; font-size: 17px; color: var(--muted); margin-bottom: 14px; }
+
+    /* Первая панель — имя */
+    .hero-name { font-size: clamp(40px, 8.5vw, 118px); font-weight: 900; line-height: .93; margin-bottom: 20px; }
+    .hero-role { font-family: var(--font-mono); font-size: clamp(12px, 1.6vw, 16px); color: var(--muted); margin-bottom: 32px; }
+    .hero-role b { color: var(--text); font-weight: 500; }
+    .status { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 22px; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: blink 1.8s steps(1) infinite; }
+    @keyframes blink { 0%,60% { opacity: 1; } 61%,100% { opacity: .25; } }
+
+    .rows { border-top: 1px solid var(--line); max-width: 780px; }
+    .row { display: grid; grid-template-columns: 140px 1fr; gap: 20px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+    .row-title { font-family: var(--font-display); font-size: 20px; }
+
+    .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); max-width: 980px; }
+    .cards a { padding: 22px; background: var(--bg); transition: background-color .25s ease, color .25s ease; }
+    .cards a:hover { background: var(--text); color: var(--bg); }
+    .cards a:hover .muted { color: inherit; opacity: .75; }
+    .cards a:hover .tags li { border-color: currentColor; color: inherit; }
+    .card-title { font-family: var(--font-display); font-size: 21px; margin: 10px 0 8px; }
+    .muted { color: var(--muted); font-size: 14px; }
+    .cards .tags { margin-top: 14px; }
+
+    .skill-block { margin-bottom: 22px; }
+    .skill-block .label { display: block; margin-bottom: 9px; }
+
+    .mail-big {
+      display: inline-block; font-family: var(--font-display); font-weight: 700;
+      font-size: clamp(20px, 3vw, 34px); border-bottom: 2px solid var(--accent); padding-bottom: 4px;
+    }
+    .socials { display: flex; gap: 22px; margin-top: 28px; }
+    .socials a { font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+    .socials a:hover { color: var(--accent); }
+
+    /* Навигация ленты: точки + счётчик + стрелки */
+    .hud {
+      position: fixed; right: 26px; bottom: 26px; z-index: 80;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .hud-count { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; color: var(--muted); }
+    .hud-dots { display: flex; gap: 7px; }
+    .hud-dots button {
+      width: 8px; height: 8px; padding: 0; border: 1px solid var(--line-strong);
+      background: transparent; border-radius: 50%;
+    }
+    .hud-dots button.active { background: var(--accent); border-color: var(--accent); }
+    .hud-arrows { display: flex; gap: 6px; }
+    .hud-arrows button {
+      width: 30px; height: 30px; border: 1px solid var(--line-strong);
+      background: var(--panel); color: var(--text);
+    }
+    .hud-arrows button:hover { background: var(--text); color: var(--bg); }
+
+    .top-bar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 80;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px clamp(24px, 7vw, 110px);
+      pointer-events: none;
+    }
+    .top-bar > * { pointer-events: auto; }
+    .brand { font-family: var(--font-display); font-weight: 900; font-size: 20px; }
+
+    .progress { position: fixed; left: 0; top: 0; height: 2px; background: var(--accent); width: 0; z-index: 85; }
+
+    @media (max-width: 900px) {
+      body { overflow: auto; }
+      .track { display: block; height: auto; overflow: visible; }
+      .panel { flex: none; width: auto; height: auto; min-height: 100vh; border-right: none; border-bottom: 1px solid var(--line); padding: 88px 20px 64px; }
+      .cards { grid-template-columns: 1fr; }
+      .row { grid-template-columns: 1fr; gap: 4px; }
+      .hud { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress" id="progress"></div>
+
+  <div class="top-bar">
+    <span class="brand">PN</span>
+    <button class="theme-btn" id="theme-toggle" type="button" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+    </button>
+  </div>
+
+  <main class="track" id="track">
+    <section class="panel">
+      <span class="panel-index"><b>01</b> — Intro</span>
+      <span class="label status"><span class="dot"></span> Available for work</span>
+      <h1 class="hero-name">Pahlavon<br />Numonjonov</h1>
+      <p class="hero-role">I'm a <b id="role">developer</b></p>
+      <p class="p-lead">
+        One short line about what you do — scroll sideways to move through the
+        site.
+      </p>
+    </section>
+
+    <section class="panel">
+      <span class="panel-index"><b>02</b> — About</span>
+      <h2 class="p-title">About</h2>
+      <p class="p-lead">
+        Replace this paragraph with a few words about yourself: who you are,
+        what you do and what you find interesting.
+      </p>
+      <p class="p-lead">
+        The second paragraph works best with specifics: where you study or work
+        and what you are building right now.
+      </p>
+    </section>
+
+    <section class="panel">
+      <span class="panel-index"><b>03</b> — Experience</span>
+      <h2 class="p-title">Experience</h2>
+      <div class="rows">
+        <div class="row"><span class="label">2024 — now</span><div><h3 class="row-title">Your role</h3><p class="muted">Company or university — what you are responsible for.</p></div></div>
+        <div class="row"><span class="label">2023 — 2024</span><div><h3 class="row-title">Your role</h3><p class="muted">Company or university — what you achieved.</p></div></div>
+        <div class="row"><span class="label">2022 — 2023</span><div><h3 class="row-title">Where it started</h3><p class="muted">Course, school or first job.</p></div></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <span class="panel-index"><b>04</b> — Projects</span>
+      <h2 class="p-title">Projects</h2>
+      <div class="cards">
+        <a href="#">
+          <span class="label label-accent">001 — Featured</span>
+          <h3 class="card-title">Project name</h3>
+          <p class="muted">What problem it solves and what you built.</p>
+          <ul class="tags"><li>HTML</li><li>CSS</li><li>JS</li></ul>
+        </a>
+        <a href="#">
+          <span class="label">002</span>
+          <h3 class="card-title">Project name</h3>
+          <p class="muted">What problem it solves and what you built.</p>
+          <ul class="tags"><li>Python</li><li>API</li></ul>
+        </a>
+        <a href="#">
+          <span class="label">003</span>
+          <h3 class="card-title">Project name</h3>
+          <p class="muted">What problem it solves and what you built.</p>
+          <ul class="tags"><li>Design</li><li>Figma</li></ul>
+        </a>
+      </div>
+    </section>
+
+    <section class="panel">
+      <span class="panel-index"><b>05</b> — Contact</span>
+      <h2 class="p-title">Contact</h2>
+      <div class="skill-block">
+        <span class="label">Development</span>
+        <ul class="tags"><li>HTML</li><li>CSS</li><li>JavaScript</li><li>Python</li><li>Git</li></ul>
+      </div>
+      <p class="p-lead">Drop me a line — I read every email and message.</p>
+      <a class="mail-big" href="mailto:numonjonovpahlavon1@gmail.com">numonjonovpahlavon1@gmail.com</a>
+      <div class="socials"><a href="#">GitHub ↗</a><a href="#">Telegram ↗</a><a href="#">LinkedIn ↗</a></div>
+    </section>
+  </main>
+
+  <div class="hud">
+    <span class="hud-count" id="count">01 / 05</span>
+    <div class="hud-dots" id="dots"></div>
+    <div class="hud-arrows">
+      <button type="button" id="prev" aria-label="Previous">←</button>
+      <button type="button" id="next" aria-label="Next">→</button>
+    </div>
+  </div>
+
+  <div class="proto-tag">Образец 3 — Горизонтальная лента <a href="index.html">все образцы</a></div>
+
+  <script>
+    var root = document.documentElement;
+    document.getElementById('theme-toggle').addEventListener('click', function () {
+      var dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var now = root.getAttribute('data-theme') || (dark ? 'dark' : 'light');
+      root.setAttribute('data-theme', now === 'dark' ? 'light' : 'dark');
+    });
+
+    var roles = ['developer', 'designer', 'problem solver'], ri = 0;
+    setInterval(function () {
+      ri = (ri + 1) % roles.length;
+      document.getElementById('role').textContent = roles[ri];
+    }, 2400);
+
+    var track  = document.getElementById('track');
+    var panels = track.querySelectorAll('.panel');
+    var count  = document.getElementById('count');
+    var dotBox = document.getElementById('dots');
+    var progress = document.getElementById('progress');
+    var wide = window.matchMedia('(min-width: 901px)');
+
+    // Точки навигации
+    panels.forEach(function (_, i) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('aria-label', 'Panel ' + (i + 1));
+      b.addEventListener('click', function () { goTo(i); });
+      dotBox.appendChild(b);
+    });
+    var dots = dotBox.querySelectorAll('button');
+
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var anim = null;
+
+    function panelWidth() { return panels[0].getBoundingClientRect().width || window.innerWidth; }
+
+    function goTo(i) {
+      i = Math.max(0, Math.min(panels.length - 1, i));
+      var from = track.scrollLeft;
+      var to = i * panelWidth();
+      if (from === to) return;
+
+      if (reduceMotion) { track.scrollLeft = to; sync(); return; }
+
+      cancelAnimationFrame(anim);
+      var start = null;
+      var duration = 480;
+
+      anim = requestAnimationFrame(function step(now) {
+        if (start === null) start = now;
+        var p = Math.min((now - start) / duration, 1);
+        var eased = 1 - Math.pow(1 - p, 3);
+        track.scrollLeft = from + (to - from) * eased;
+        sync();
+        if (p < 1) anim = requestAnimationFrame(step);
+      });
+    }
+
+    function current() { return Math.round(track.scrollLeft / panelWidth()); }
+
+    function sync() {
+      var i = current();
+      var max = track.scrollWidth - track.clientWidth;
+      count.textContent = ('0' + (i + 1)).slice(-2) + ' / ' + ('0' + panels.length).slice(-2);
+      dots.forEach(function (d, k) { d.classList.toggle('active', k === i); });
+      progress.style.width = (max > 0 ? (track.scrollLeft / max) * 100 : 0) + '%';
+    }
+
+    track.addEventListener('scroll', sync, { passive: true });
+    sync();
+
+    document.getElementById('prev').addEventListener('click', function () { goTo(current() - 1); });
+    document.getElementById('next').addEventListener('click', function () { goTo(current() + 1); });
+
+    // Колесо мыши листает панель за панелью
+    var wheelLock = false;
+
+    track.addEventListener('wheel', function (e) {
+      if (!wide.matches) return;
+
+      var delta = Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+      e.preventDefault();
+
+      if (wheelLock || Math.abs(delta) < 12) return;
+
+      wheelLock = true;
+      goTo(current() + (delta > 0 ? 1 : -1));
+      setTimeout(function () { wheelLock = false; }, 560);
+    }, { passive: false });
+
+    // Если вкладку свернули посреди анимации или изменили размер окна —
+    // доводим ленту до ближайшей панели, чтобы она не застревала между экранами.
+    function settle() {
+      cancelAnimationFrame(anim);
+      track.scrollLeft = current() * panelWidth();
+      sync();
+    }
+
+    window.addEventListener('resize', settle);
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) settle();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (!wide.matches) return;
+      if (e.key === 'ArrowRight') goTo(current() + 1);
+      if (e.key === 'ArrowLeft')  goTo(current() - 1);
+    });
+  </script>
+</body>
+</html>

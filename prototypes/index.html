@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Четыре образца каркаса</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Doto:wght@500;700;900&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="base.css" />
+  <style>
+    .wrap { max-width: 900px; margin: 0 auto; padding: 64px 24px 80px; }
+    h1 { font-size: clamp(30px, 6vw, 54px); font-weight: 900; margin-bottom: 14px; }
+    .intro { color: var(--muted); max-width: 56ch; margin-bottom: 44px; }
+
+    .list { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); }
+    .item {
+      display: grid; grid-template-columns: 54px 1fr auto; gap: 20px; align-items: center;
+      padding: 24px; background: var(--bg);
+      transition: background-color .25s ease, color .25s ease;
+    }
+    .item:hover { background: var(--text); color: var(--bg); }
+    .item:hover .muted { color: inherit; opacity: .75; }
+    .item-num { font-family: var(--font-display); font-weight: 700; font-size: 26px; }
+    .item-title { display: block; font-family: var(--font-display); font-weight: 700; font-size: 23px; margin-bottom: 4px; }
+    .muted { display: block; color: var(--muted); font-size: 14px; }
+    .go { font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+
+    .note { margin-top: 34px; color: var(--muted); font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Четыре каркаса</h1>
+    <p class="intro">
+      Один и тот же контент, четыре разные конструкции. Оформление везде общее —
+      чтобы сравнивать именно устройство страницы. Выбранный вариант доведу до
+      полного сайта: с переключателем EN / RU / UZ, темами и вашим текстом.
+    </p>
+
+    <div class="list">
+      <a class="item" href="bento.html">
+        <span class="item-num">01</span>
+        <span>
+          <span class="item-title">Bento-сетка</span>
+          <span class="muted">Плитки разного размера на один экран. Всё видно сразу, скролла почти нет.</span>
+        </span>
+        <span class="go">Открыть ↗</span>
+      </a>
+
+      <a class="item" href="split.html">
+        <span class="item-num">02</span>
+        <span>
+          <span class="item-title">Сплит с боковой колонкой</span>
+          <span class="muted">Слева закреплённое имя, меню и контакты. Справа скроллится содержимое.</span>
+        </span>
+        <span class="go">Открыть ↗</span>
+      </a>
+
+      <a class="item" href="horizontal.html">
+        <span class="item-num">03</span>
+        <span>
+          <span class="item-title">Горизонтальная лента</span>
+          <span class="muted">Колесо мыши листает панели вбок. На телефоне разворачивается в обычную вертикаль.</span>
+        </span>
+        <span class="go">Открыть ↗</span>
+      </a>
+
+      <a class="item" href="terminal.html">
+        <span class="item-num">04</span>
+        <span>
+          <span class="item-title">Терминал</span>
+          <span class="muted">Сайт как программа: разделы открываются командами. Есть подсказки-кнопки.</span>
+        </span>
+        <span class="go">Открыть ↗</span>
+      </a>
+    </div>
+
+    <p class="note">
+      В каждом образце работает переключение светлой и тёмной темы — кнопка в углу.
+      Текст везде заглушки, только чтобы оценить каркас.
+    </p>
+  </div>
+</body>
+</html>

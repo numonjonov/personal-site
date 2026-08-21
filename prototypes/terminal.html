@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Образец 4 — Терминал</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Doto:wght@500;700;900&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="base.css" />
+  <style>
+    /* Каркас: одно окно-терминал. Разделы не прокручиваются,
+       а выводятся командами — сайт ведёт себя как программа. */
+    body {
+      min-height: 100vh; display: grid; place-items: center;
+      padding: 26px;
+      background-image: radial-gradient(var(--dot) 1px, transparent 1px);
+      background-size: 26px 26px;
+    }
+
+    .window {
+      width: min(920px, 100%); height: min(720px, calc(100vh - 52px));
+      display: flex; flex-direction: column;
+      background: var(--panel); border: 1px solid var(--line-strong);
+      box-shadow: 0 24px 60px -30px rgba(0,0,0,.5);
+    }
+
+    .win-bar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 14px; border-bottom: 1px solid var(--line);
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+    }
+    .win-dots { display: flex; gap: 6px; }
+    .win-dots span { width: 9px; height: 9px; border: 1px solid var(--line-strong); border-radius: 50%; }
+    .win-dots span:first-child { background: var(--accent); border-color: var(--accent); }
+    .win-title { flex: 1; text-align: center; }
+
+    .screen {
+      flex: 1; overflow-y: auto; padding: 20px 22px;
+      font-family: var(--font-mono); font-size: 13px; line-height: 1.75;
+    }
+    .screen::-webkit-scrollbar { width: 8px; }
+    .screen::-webkit-scrollbar-thumb { background: var(--line-strong); }
+
+    .line { white-space: pre-wrap; word-break: break-word; }
+    .cmd { color: var(--text); }
+    .cmd::before { content: "$ "; color: var(--accent); }
+    .out { color: var(--muted); }
+    .out-strong { color: var(--text); }
+    .out-title {
+      font-family: var(--font-display); font-weight: 700; font-size: 26px;
+      color: var(--text); margin: 6px 0 2px;
+    }
+    .err { color: var(--accent); }
+    .gap { height: 12px; }
+
+    .kv { display: grid; grid-template-columns: 120px 1fr; gap: 4px 12px; }
+    .kv dt { color: var(--muted); }
+    .kv dd { margin: 0; color: var(--text); }
+
+    /* Строка ввода */
+    .prompt-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 22px; border-top: 1px solid var(--line);
+      font-family: var(--font-mono); font-size: 13px;
+    }
+    .prompt-sign { color: var(--accent); }
+    .prompt-input {
+      flex: 1; border: none; outline: none; background: transparent;
+      color: var(--text); font: inherit; caret-color: var(--accent);
+    }
+
+    /* Подсказки — кликабельные команды */
+    .hints { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 22px 16px; }
+    .hints button {
+      padding: 5px 10px; border: 1px solid var(--line-strong); background: transparent;
+      color: var(--muted); font-family: var(--font-mono); font-size: 9.5px;
+      text-transform: uppercase; letter-spacing: .1em;
+      transition: background-color .2s ease, color .2s ease;
+    }
+    .hints button:hover { background: var(--text); color: var(--bg); }
+
+    .win-actions { display: flex; align-items: center; gap: 8px; }
+
+    @media (max-width: 900px) {
+      body { padding: 0; }
+      .window { height: 100vh; border: none; }
+      .kv { grid-template-columns: 1fr; }
+      .kv dd { margin-bottom: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="window">
+    <div class="win-bar">
+      <span class="win-dots"><span></span><span></span><span></span></span>
+      <span class="win-title">pn@site — ~</span>
+      <span class="win-actions">
+        <button class="theme-btn" id="theme-toggle" type="button" aria-label="Toggle theme">
+          <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+        </button>
+      </span>
+    </div>
+
+    <div class="screen" id="screen"></div>
+
+    <div class="hints" id="hints"></div>
+
+    <form class="prompt-row" id="form">
+      <span class="prompt-sign">$</span>
+      <input class="prompt-input" id="input" autocomplete="off" spellcheck="false"
+             aria-label="Command" placeholder="type help and press enter" />
+    </form>
+  </div>
+
+  <div class="proto-tag">Образец 4 — Терминал <a href="index.html">все образцы</a></div>
+
+  <script>
+    var root = document.documentElement;
+    var screenEl = document.getElementById('screen');
+    var input = document.getElementById('input');
+
+    document.getElementById('theme-toggle').addEventListener('click', function () {
+      var dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var now = root.getAttribute('data-theme') || (dark ? 'dark' : 'light');
+      root.setAttribute('data-theme', now === 'dark' ? 'light' : 'dark');
+    });
+
+    /* --- Содержимое разделов: каждая команда возвращает HTML --- */
+    var COMMANDS = {
+      help: function () {
+        return '<p class="line out">Available commands:</p>' +
+               '<dl class="kv">' +
+               '<dt>whoami</dt><dd>who I am in one line</dd>' +
+               '<dt>about</dt><dd>longer intro</dd>' +
+               '<dt>experience</dt><dd>where I worked and studied</dd>' +
+               '<dt>projects</dt><dd>selected work</dd>' +
+               '<dt>skills</dt><dd>what I use</dd>' +
+               '<dt>contact</dt><dd>email and links</dd>' +
+               '<dt>theme</dt><dd>switch light / dark</dd>' +
+               '<dt>clear</dt><dd>clear the screen</dd>' +
+               '</dl>';
+      },
+      whoami: function () {
+        return '<p class="out-title">Pahlavon Numonjonov</p>' +
+               '<p class="line out">developer — one short line about what you do.</p>';
+      },
+      about: function () {
+        return '<p class="line out-strong">Replace this with a few words about yourself:</p>' +
+               '<p class="line out">who you are, what you do and what you find interesting.</p>' +
+               '<p class="line out">Second line with specifics: where you study or work</p>' +
+               '<p class="line out">and what you are building right now.</p>' +
+               '<div class="gap"></div>' +
+               '<dl class="kv"><dt>location</dt><dd>City, Country</dd>' +
+               '<dt>status</dt><dd>Open to opportunities</dd>' +
+               '<dt>languages</dt><dd>English / Русский / Oʻzbekcha</dd></dl>';
+      },
+      experience: function () {
+        return '<dl class="kv">' +
+               '<dt>2024 — now</dt><dd>Your role — company or university</dd>' +
+               '<dt>2023 — 2024</dt><dd>Your role — company or university</dd>' +
+               '<dt>2022 — 2023</dt><dd>Where it started — course or first job</dd>' +
+               '</dl>';
+      },
+      projects: function () {
+        return '<dl class="kv">' +
+               '<dt>001 *</dt><dd>Project name — what it solves  <span class="out">[html, css, js]</span></dd>' +
+               '<dt>002</dt><dd>Project name — what it solves  <span class="out">[python, api]</span></dd>' +
+               '<dt>003</dt><dd>Project name — what it solves  <span class="out">[design, figma]</span></dd>' +
+               '</dl><p class="line out">* featured</p>';
+      },
+      skills: function () {
+        return '<dl class="kv">' +
+               '<dt>development</dt><dd>html, css, javascript, python, git</dd>' +
+               '<dt>tools</dt><dd>vs code, figma, github</dd>' +
+               '<dt>other</dt><dd>communication, english</dd>' +
+               '</dl>';
+      },
+      contact: function () {
+        return '<dl class="kv">' +
+               '<dt>email</dt><dd><a href="mailto:numonjonovpahlavon1@gmail.com" style="border-bottom:1px solid var(--accent)">numonjonovpahlavon1@gmail.com</a></dd>' +
+               '<dt>github</dt><dd><a href="#" style="border-bottom:1px solid var(--line-strong)">github.com/…</a></dd>' +
+               '<dt>telegram</dt><dd><a href="#" style="border-bottom:1px solid var(--line-strong)">t.me/…</a></dd>' +
+               '</dl>';
+      },
+      theme: function () {
+        var dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var now = root.getAttribute('data-theme') || (dark ? 'dark' : 'light');
+        var next = now === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-theme', next);
+        return '<p class="line out">theme → ' + next + '</p>';
+      }
+    };
+
+    /* --- Подсказки под экраном --- */
+    var hints = document.getElementById('hints');
+    ['whoami', 'about', 'experience', 'projects', 'skills', 'contact', 'theme', 'clear'].forEach(function (name) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = name;
+      b.addEventListener('click', function () { run(name); });
+      hints.appendChild(b);
+    });
+
+    function print(html) {
+      var wrap = document.createElement('div');
+      wrap.innerHTML = html;
+      screenEl.appendChild(wrap);
+      screenEl.scrollTop = screenEl.scrollHeight;
+    }
+
+    function run(raw) {
+      var cmd = String(raw || '').trim().toLowerCase();
+      if (!cmd) return;
+
+      print('<p class="line cmd">' + cmd.replace(/</g, '&lt;') + '</p>');
+
+      if (cmd === 'clear') { screenEl.innerHTML = ''; return; }
+
+      if (COMMANDS[cmd]) {
+        print(COMMANDS[cmd]());
+      } else {
+        print('<p class="line err">command not found: ' + cmd.replace(/</g, '&lt;') +
+              ' — type <span class="out-strong">help</span></p>');
+      }
+      print('<div class="gap"></div>');
+    }
+
+    document.getElementById('form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      run(input.value);
+      input.value = '';
+    });
+
+    document.addEventListener('click', function (e) {
+      if (e.target.closest('a') || e.target.closest('button')) return;
+      input.focus();
+    });
+
+    /* --- Приветствие: команды печатаются сами --- */
+    var intro = [
+      '<p class="line out">pn@site v1.0 — personal terminal</p>',
+      '<p class="line out">type <span class="out-strong">help</span> for the list of commands</p>',
+      '<div class="gap"></div>'
+    ].join('');
+    print(intro);
+
+    var demo = 'whoami';
+    var i = 0;
+    var typed = document.createElement('p');
+    typed.className = 'line cmd';
+    screenEl.appendChild(typed);
+
+    (function type() {
+      if (i <= demo.length) {
+        typed.textContent = demo.slice(0, i++);
+        setTimeout(type, 95);
+      } else {
+        print(COMMANDS.whoami());
+        print('<div class="gap"></div>');
+        input.focus();
+      }
+    })();
+  </script>
+</body>
+</html>
