@@ -7,7 +7,6 @@
   --bg:          #eceae7;
   --panel:       #fbfaf9;
   --glass:       rgba(251, 250, 249, .82);
-  --glass-mobile: rgba(251, 250, 249, .86);
   --text:        #14130f;
   --muted:       #6f6b66;
   --dim:         #8d8983;
@@ -29,7 +28,6 @@
     --bg:          #000000;
     --panel:       #0a0a0a;
     --glass:       rgba(10, 10, 10, .74);
-    --glass-mobile: rgba(10, 10, 10, .82);
     --text:        #eceae7;
     --muted:       #8f8b86;
     --dim:         #6b6762;
@@ -46,7 +44,6 @@
   --bg:          #000000;
   --panel:       #0a0a0a;
   --glass:       rgba(10, 10, 10, .74);
-  --glass-mobile: rgba(10, 10, 10, .82);
   --text:        #eceae7;
   --muted:       #8f8b86;
   --dim:         #6b6762;
@@ -316,20 +313,17 @@ button { font: inherit; cursor: pointer; }
    10. МОБИЛЬНАЯ ВЕРСИЯ
    ========================================================= */
 @media (max-width: 720px) {
-  body { padding: 0; display: block; }
+  body { padding: 0; display: block; background-image: none; }
 
-  /* Окно с небольшим отступом — в просветах виден коридор.
-     Подложка плотнее, чем на десктопе, чтобы текст не спорил с линиями. */
+  /* На телефоне никаких эффектов: окно во весь экран, подложка плотная */
   .window {
-    width: calc(100% - 28px);
-    height: calc(100vh - 28px); height: calc(100dvh - 28px);
-    margin: 14px;
-    box-shadow: none;
-    /* Без размытия: оно съедает тонкие линии коридора,
-       а на телефоне их и так видно только сквозь подложку */
-    background: var(--glass-mobile);
+    width: 100%; height: 100vh; height: 100dvh;
+    margin: 0;
+    border: none; box-shadow: none;
+    background: var(--panel);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
+    transform: none !important;
   }
 
   /* Подсказка «наберите help» и так есть в плашке ввода — в статусной

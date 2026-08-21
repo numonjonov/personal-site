@@ -203,65 +203,16 @@
       printLine('out', esc(t.ui.cursorChanged) + ' ' + (on ? 'on' : 'off'));
     },
 
-    tilt: function (arg) {
-      if (!window.BG || !window.BG.tiltSupported()) { printLine('err', esc(t.ui.tiltMissing)); return; }
-
-      // tilt debug — живая строка с сырыми показаниями датчика
-      if (arg === 'debug') { tiltDebug(); return; }
-
-      if (arg && arg !== 'on' && arg !== 'off') { printLine('err', esc(t.ui.tiltUsage)); return; }
-
-      var want = arg ? arg === 'on' : !window.BG.tiltOn();
-
-      window.BG.tilt(want).then(function (state) {
-        if (state === 'denied')      printLine('err', esc(t.ui.tiltDenied));
-        else if (state === 'unsupported') printLine('err', esc(t.ui.tiltMissing));
-        else printLine('out', esc(t.ui.tiltChanged) + ' ' + state);
-        screenEl.scrollTop = screenEl.scrollHeight;
-      });
-    },
-
     clear: function () { screenEl.innerHTML = ''; },
 
     sudo: function () { printLine('accent', esc(t.ui.sudo)); }
   };
-
-  /* Живая строка с показаниями гироскопа: видно, шлёт ли телефон события */
-  var debugTimer = null;
-
-  function tiltDebug() {
-    if (debugTimer) {
-      clearInterval(debugTimer);
-      debugTimer = null;
-      printLine('dim', esc(t.ui.tiltDebugOff));
-      return;
-    }
-
-    var line = el('p', 'line out', '');
-    print(line);
-
-    debugTimer = setInterval(function () {
-      var st = window.BG.tiltStats();
-      var num = function (v) { return v === null || v === undefined ? '—' : v.toFixed(1); };
-
-      line.textContent = 'events: ' + st.count +
-                         '   gamma: ' + num(st.gamma) +
-                         '   beta: ' + num(st.beta) +
-                         '   src: ' + (st.source || '—');
-    }, 250);
-
-    printLine('dim', esc(t.ui.tiltDebugOn));
-  }
 
   // Псевдонимы: короткие и привычные варианты
   var ALIASES = { exp: 'experience', ls: 'help', '?': 'help', me: 'whoami', cls: 'clear', mail: 'contact' };
 
   // Что показывать в подсказках и в автодополнении
   var VISIBLE = ['whoami', 'about', 'experience', 'projects', 'skills', 'contact', 'theme', 'bg', 'clear'];
-
-  // На телефоне добавляем кнопку гироскопа: на iOS разрешение
-  // запрашивается только по действию пользователя, нажатие подходит
-  if (window.matchMedia('(pointer: coarse)').matches) VISIBLE.splice(8, 0, 'tilt');
   var COMPLETABLE = Object.keys(COMMANDS).concat(Object.keys(ALIASES));
 
   /* =======================================================

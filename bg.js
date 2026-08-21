@@ -7,6 +7,9 @@
    Курсор двигает эту точку схода, поэтому коридор наклоняется
    вслед за мышью. Никаких библиотек, обычный canvas.
 
+   На экранах уже 720px фон не рисуется: там окно терминала занимает
+   всё место и коридора всё равно не видно.
+
    Наружу отдаёт window.BG.toggle() / window.BG.isOn() —
    ими пользуется команда bg в терминале.
    ========================================================= */
@@ -23,6 +26,7 @@
 
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var coarse       = window.matchMedia('(pointer: coarse)').matches;
+  var narrow       = window.matchMedia('(max-width: 720px)');
 
   var W = 0, H = 0, dpr = 1;
   var frame = null;
@@ -34,7 +38,7 @@
      ======================================================= */
   var FRAMES = 24;          // сколько рамок в коридоре
   var FAR    = 8;           // длина коридора по глубине
-  var HALF   = 0.95;        // половина стороны рамки (на узком экране меньше)
+  var HALF   = 0.95;        // половина стороны рамки
   var SPEED  = 0.009;       // насколько рамки едут за кадр
 
   var rings = [];
@@ -87,9 +91,6 @@
     canvas.style.height = H + 'px';
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    // На телефоне рамки короче, иначе в кадр влезает всего одна
-    HALF = W < 720 ? 0.72 : 0.95;
   }
 
   /* =======================================================
@@ -99,65 +100,6 @@
   var camX = 0, camY = 0;                 // текущая точка схода
   var targetX = 0, targetY = 0;           // куда она стремится
   var drift = 0;
-
-  /* --- Гироскоп: наклон телефона двигает точку схода --- */
-  var tiltOn = false;
-  var tiltSupported = 'DeviceOrientationEvent' in window;
-  var needsPermission = tiltSupported &&
-                        typeof window.DeviceOrientationEvent.requestPermission === 'function';
-
-  // Считаем, что приходит от датчика — по этим цифрам видно,
-  // молчит он или дело в пересчёте углов (команда tilt debug)
-  var tiltStats = { count: 0, gamma: null, beta: null, source: null };
-
-  function onOrientation(e) {
-    tiltStats.count++;
-    tiltStats.gamma = e.gamma;
-    tiltStats.beta = e.beta;
-    tiltStats.source = e.type;
-
-    if (e.gamma === null && e.beta === null) return;
-
-    // gamma — наклон вбок (-90..90), beta — вперёд-назад (-180..180).
-    // Телефон в руке обычно наклонён примерно на 45°, это и считаем нулём.
-    var gamma = Math.max(-35, Math.min(35, e.gamma || 0));
-    var beta  = Math.max(-35, Math.min(35, (e.beta || 45) - 45));
-
-    // Множители небольшие: на телефоне даже лёгкий наклон заметен,
-    // а на большом коридор улетает за край экрана
-    pointer.active = true;
-    targetX = (gamma / 35) * -0.85;
-    targetY = (beta / 35) * -0.6;
-  }
-
-  function tilt(on) {
-    if (!tiltSupported) return Promise.resolve('unsupported');
-
-    if (!on) {
-      window.removeEventListener('deviceorientation', onOrientation);
-      window.removeEventListener('deviceorientationabsolute', onOrientation);
-      tiltOn = false;
-      pointer.active = false;
-      targetX = 0; targetY = 0;
-      return Promise.resolve('off');
-    }
-
-    var attach = function () {
-      window.addEventListener('deviceorientation', onOrientation);
-      window.addEventListener('deviceorientationabsolute', onOrientation);
-      tiltOn = true;
-      return 'on';
-    };
-
-    // iOS спрашивает разрешение и только по действию пользователя
-    if (needsPermission) {
-      return window.DeviceOrientationEvent.requestPermission()
-        .then(function (state) { return state === 'granted' ? attach() : 'denied'; })
-        .catch(function () { return 'denied'; });
-    }
-
-    return Promise.resolve(attach());
-  }
 
   if (!coarse) {
     window.addEventListener('mousemove', function (e) {
@@ -302,11 +244,13 @@
   /* =======================================================
      УПРАВЛЕНИЕ
      ======================================================= */
-  function allowed() { return enabled; }
+  // На телефоне фон не рисуется вовсе: окно там во весь экран,
+  // видно его всё равно не было, а батарею тратило
+  function allowed() { return enabled && !narrow.matches; }
 
   function showStatus() {
     if (!status) return;
-    status.textContent = enabled ? 'on' : 'off';
+    status.textContent = !enabled ? 'off' : (running ? 'on' : 'auto');
   }
 
   function start() {
@@ -339,6 +283,10 @@
     stopDrawing();
   }
 
+  var onNarrowChange = function () { if (enabled) start(); };
+  if (narrow.addEventListener) narrow.addEventListener('change', onNarrowChange);
+  else if (narrow.addListener) narrow.addListener(onNarrowChange);
+
   window.addEventListener('resize', function () {
     if (!enabled) return;
     if (!allowed()) { stopDrawing(); return; }
@@ -360,10 +308,6 @@
 
   window.BG = {
     isOn: function () { return enabled; },
-    tiltSupported: function () { return tiltSupported && coarse; },
-    tiltOn: function () { return tiltOn; },
-    tiltStats: function () { return tiltStats; },
-    tilt: tilt,
     toggle: function (on) {
       var next = on === undefined ? !enabled : !!on;
       if (next) start(); else stop();
