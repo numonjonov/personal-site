@@ -482,6 +482,31 @@
   })();
 
   /* =======================================================
+     ПАСХАЛКА: KONAMI-КОД
+     Работает в любом месте страницы, не только в поле ввода —
+     классика жанра. При совпадении печатает одну строку, как sudo.
+     ======================================================= */
+  var KONAMI = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
+                'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+  var konamiPos = 0;
+
+  document.addEventListener('keydown', function (e) {
+    var key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+
+    if (key === KONAMI[konamiPos]) {
+      konamiPos++;
+      if (konamiPos === KONAMI.length) {
+        konamiPos = 0;
+        printLine('accent', esc(t.ui.konami));
+        printGap();
+      }
+    } else {
+      // если этот же символ мог бы начать код заново — не сбрасываем совсем
+      konamiPos = (key === KONAMI[0]) ? 1 : 0;
+    }
+  });
+
+  /* =======================================================
      СТАРТ
      ======================================================= */
   var savedLang  = read('lang');
