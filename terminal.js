@@ -260,14 +260,11 @@
   // Псевдонимы: короткие и привычные варианты
   var ALIASES = { exp: 'experience', ls: 'help', '?': 'help', me: 'whoami', cls: 'clear', mail: 'contact' };
 
-  // Что показывать в подсказках и в автодополнении
-  var VISIBLE = ['whoami', 'about', 'experience', 'projects', 'skills', 'contact', 'theme', 'bg', 'clear'];
-
-  // На узких экранах 3D-фон не рисуется вовсе (см. bg.js) — кнопка и команда
-  // не нужны, они бы ничего не делали и только путали
-  if (window.matchMedia('(max-width: 720px)').matches) {
-    VISIBLE = VISIBLE.filter(function (name) { return name !== 'bg'; });
-  }
+  // Что показывать в подсказках. bg сюда не входит специально — команда
+  // рабочая (bg on/off), просто без отдельной кнопки в этом ряду.
+  // На автодополнение (COMPLETABLE) это не влияет — оно берёт ключи
+  // прямо из COMMANDS, а bg там как был, так и остался.
+  var VISIBLE = ['whoami', 'about', 'experience', 'projects', 'skills', 'contact', 'theme', 'clear'];
   var COMPLETABLE = Object.keys(COMMANDS).concat(Object.keys(ALIASES));
 
   /* =======================================================
