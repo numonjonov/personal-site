@@ -368,7 +368,10 @@
   langSwitch.addEventListener('click', function (e) {
     var btn = e.target.closest('button[data-lang]');
     if (!btn) return;
-    runTyped('lang ' + btn.getAttribute('data-lang'), focusInput);
+    // Мгновенно — это переключатель в шапке, а не команда из подсказок,
+    // ждать анимацию печати тут не нужно
+    run('lang ' + btn.getAttribute('data-lang'));
+    focusInput();
   });
 
   window.addEventListener('resize', function () {
@@ -394,7 +397,9 @@
   }
 
   document.getElementById('theme-toggle').addEventListener('click', function () {
-    runTyped('theme', focusInput);
+    // То же самое — иконка темы должна отзываться сразу
+    run('theme');
+    focusInput();
   });
 
   /* =======================================================
