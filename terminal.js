@@ -23,6 +23,7 @@
   // На телефоне фокус в поле ввода поднимает экранную клавиатуру,
   // поэтому возвращаем курсор в строку только там, где есть мышь
   var coarse = window.matchMedia('(pointer: coarse)').matches;
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function focusInput() {
     if (!coarse) input.focus();
@@ -59,9 +60,43 @@
       .replace('{version}', esc(SITE.version || ''));
   }
 
-  function print(node) {
+  // Добавляет узел на экран сразу, без очереди — для строки, которая
+  // печатается вручную посимвольно (runTyped), ей нельзя ждать своей очереди.
+  function appendNow(node) {
     screenEl.appendChild(node);
     screenEl.scrollTop = screenEl.scrollHeight;
+  }
+
+  // Очередь вывода: результат команды всплывает строка за строкой,
+  // а не выводится разом. Свой ввод пользователя (первая строка в
+  // пустой очереди) появляется практически без задержки.
+  var outQueue = [];
+  var outTimer = null;
+  var idleCallbacks = [];      // ждут, пока очередь опустеет (например, фокус в поле ввода)
+
+  function pumpQueue() {
+    if (outTimer) return;
+
+    if (!outQueue.length) {
+      var callbacks = idleCallbacks;
+      idleCallbacks = [];
+      callbacks.forEach(function (cb) { cb(); });
+      return;
+    }
+
+    appendNow(outQueue.shift());
+    outTimer = setTimeout(function () { outTimer = null; pumpQueue(); }, reduceMotion ? 0 : 45);
+  }
+
+  function print(node) {
+    outQueue.push(node);
+    pumpQueue();
+  }
+
+  // Выполняет cb сразу, если вывод уже закончился, иначе — когда закончится
+  function whenIdle(cb) {
+    if (!outQueue.length && !outTimer) cb();
+    else idleCallbacks.push(cb);
   }
 
   function printLine(cls, html) { print(el('p', 'line ' + cls, html)); }
@@ -211,7 +246,13 @@
       printLine('out', esc(t.ui.cursorChanged) + ' ' + (on ? 'on' : 'off'));
     },
 
-    clear: function () { screenEl.innerHTML = ''; },
+    clear: function () {
+      outQueue = [];
+      if (outTimer) { clearTimeout(outTimer); outTimer = null; }
+      var callbacks = idleCallbacks; idleCallbacks = [];
+      screenEl.innerHTML = '';
+      callbacks.forEach(function (cb) { cb(); });
+    },
 
     sudo: function () { printLine('accent', esc(t.ui.sudo)); }
   };
@@ -221,6 +262,12 @@
 
   // Что показывать в подсказках и в автодополнении
   var VISIBLE = ['whoami', 'about', 'experience', 'projects', 'skills', 'contact', 'theme', 'bg', 'clear'];
+
+  // На узких экранах 3D-фон не рисуется вовсе (см. bg.js) — кнопка и команда
+  // не нужны, они бы ничего не делали и только путали
+  if (window.matchMedia('(max-width: 720px)').matches) {
+    VISIBLE = VISIBLE.filter(function (name) { return name !== 'bg'; });
+  }
   var COMPLETABLE = Object.keys(COMMANDS).concat(Object.keys(ALIASES));
 
   /* =======================================================
@@ -248,7 +295,31 @@
     }
 
     if (name !== 'clear') printGap();
-    screenEl.scrollTop = screenEl.scrollHeight;
+  }
+
+  // Печатает команду посимвольно, как будто её набирают на клавиатуре,
+  // и только потом выполняет. Используется везде, где команда запускается
+  // не самим пользователем с клавиатуры, а кликом — кнопки, язык, тема.
+  function runTyped(command, done) {
+    if (reduceMotion) {
+      run(command);
+      whenIdle(done || function () {});
+      return;
+    }
+
+    var line = el('p', 'line cmd', '');
+    appendNow(line);
+
+    var i = 0;
+    (function type() {
+      if (i <= command.length) {
+        line.textContent = command.slice(0, i++);
+        setTimeout(type, 55);
+        return;
+      }
+      run(command, { echo: false });
+      whenIdle(done || function () {});
+    })();
   }
 
   /* =======================================================
@@ -300,8 +371,7 @@
   langSwitch.addEventListener('click', function (e) {
     var btn = e.target.closest('button[data-lang]');
     if (!btn) return;
-    run('lang ' + btn.getAttribute('data-lang'));
-    focusInput();
+    runTyped('lang ' + btn.getAttribute('data-lang'), focusInput);
   });
 
   window.addEventListener('resize', function () {
@@ -327,8 +397,7 @@
   }
 
   document.getElementById('theme-toggle').addEventListener('click', function () {
-    run('theme');
-    focusInput();
+    runTyped('theme', focusInput);
   });
 
   /* =======================================================
@@ -338,8 +407,7 @@
     var btn = el('button', '', esc(name));
     btn.type = 'button';
     btn.addEventListener('click', function () {
-      run(name);
-      focusInput();
+      runTyped(name, focusInput);
     });
     hintsBox.appendChild(btn);
   });
@@ -430,25 +498,5 @@
   printGap();
 
   // Первая команда печатается сама — показывает, как всё работает
-  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var demo = 'whoami';
-
-  if (reduceMotion) {
-    run(demo);
-    focusInput();
-  } else {
-    var typedLine = el('p', 'line cmd', '');
-    print(typedLine);
-
-    var i = 0;
-    (function type() {
-      if (i <= demo.length) {
-        typedLine.textContent = demo.slice(0, i++);
-        setTimeout(type, 90);
-        return;
-      }
-      run(demo, { echo: false });
-      focusInput();
-    })();
-  }
+  runTyped('whoami');
 })();

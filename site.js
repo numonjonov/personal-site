@@ -10,11 +10,11 @@ window.SITE = {
 
   /* Приглашение терминала в формате «пользователь@машина».
      Отсюда оно попадает и в заголовок окна, и в первую строку при запуске. */
-  handle: 'pahlavon@numon.uz',
+  handle: 'pahlavon@numonjonov.com',
   version: 'v1.0',
 
   /* Если оставить пустым, в выводе contact вместо адреса будет прочерк. */
-  email: 'pahlavon@numon.uz',
+  email: 'pahlavon@numonjonov.com',
 
   /* label — как ссылка выглядит на экране. Если его нет, показывается сам адрес. */
   socials: [
