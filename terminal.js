@@ -368,15 +368,7 @@
   langSwitch.addEventListener('click', function (e) {
     var btn = e.target.closest('button[data-lang]');
     if (!btn) return;
-
-    // Сама кнопка/язык переключаются сразу, без задержки — это элемент
-    // управления, а не ожидание набора текста. Печать команды в экране
-    // вывода при этом всё равно проигрывается следом, как у остальных
-    // кнопок — applyLang идемпотентна, повторный вызов с тем же языком
-    // внутри run() ничего не ломает, просто ещё раз выведет подтверждение.
-    var target = btn.getAttribute('data-lang');
-    applyLang(target, false);
-    runTyped('lang ' + target, focusInput);
+    runTyped('lang ' + btn.getAttribute('data-lang'), focusInput);
   });
 
   window.addEventListener('resize', function () {
@@ -402,16 +394,7 @@
   }
 
   document.getElementById('theme-toggle').addEventListener('click', function () {
-    // Иконка переключается сразу. Целевое значение считаем здесь же и
-    // передаём команде явным аргументом (theme light/dark) — иначе если
-    // просто напечатать "theme" без аргумента, она сама вычислит
-    // переключение ещё раз от уже нового состояния и вернёт тему обратно.
-    var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    var current = root.getAttribute('data-theme') || (systemDark ? 'dark' : 'light');
-    var next = current === 'dark' ? 'light' : 'dark';
-
-    applyTheme(next, false);
-    runTyped('theme ' + next, focusInput);
+    runTyped('theme', focusInput);
   });
 
   /* =======================================================
