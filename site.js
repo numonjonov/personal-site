@@ -24,41 +24,26 @@ window.SITE = {
   ],
 
   experience: [
-    { date: '2024 — now' },
-    { date: '2023 — 2024' },
-    { date: '2022 — 2023' }
+    { date: '' }
   ],
 
   projects: [
     {
       id: '001',
       featured: true,
-      tags: ['html', 'css', 'javascript'],
-      links: [
-        { key: 'demo', url: '#' },
-        { key: 'code', url: '#' }
-      ]
+      tags: ['java', 'spring boot'],
+      links: []
     },
     {
       id: '002',
-      tags: ['python', 'api'],
-      links: [
-        { key: 'demo', url: '#' },
-        { key: 'code', url: '#' }
-      ]
-    },
-    {
-      id: '003',
-      tags: ['design', 'figma'],
-      links: [
-        { key: 'more', url: '#' }
-      ]
+      tags: ['jsp', 'weblogic'],
+      links: []
     }
   ],
 
   skills: [
-    ['html', 'css', 'javascript', 'python', 'git'],
-    ['vs code', 'figma', 'github'],
-    []                                   /* третья группа — из переводов */
+    ['----------------------'],
+    ['----------------------'],
+    ['----------------------']
   ]
 };

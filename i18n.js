@@ -26,7 +26,7 @@ window.I18N = {
       themeChanged: 'theme →',
       langUsage: 'usage: lang en | ru | uz',
       themeUsage: 'usage: theme light | dark',
-      openUsage: 'usage: open 001 | 002 | 003',
+      openUsage: 'usage: open 001 | 002',
       openMissing: 'no project with id',
       opening: 'opening',
       sudo: 'nice try. permission denied — but I like the way you think.',
@@ -59,38 +59,34 @@ window.I18N = {
     },
 
     whoami: {
-      role: 'developer',
-      line: 'One short line about what you do — replace it with your own.'
+      role: 'dev',
+      line: 'backend'
     },
 
     about: {
       paragraphs: [
-        'Replace this paragraph with a few words about yourself: who you are, what you do and what you find interesting.',
-        'The second paragraph works best with specifics: where you study or work, what you are building right now, and what you can help with.'
+        '---------------------'
       ],
       facts: [
-        ['location',  'City, Country'],
-        ['status',    'open to opportunities'],
-        ['languages', 'English / Русский / Oʻzbekcha']
+        ['location',  'Tashkent'],
+        ['status',    'employed'],
+        ['languages', 'Oʻzbekcha / Русский / English']
       ]
     },
 
     experience: {
       items: [
-        { role: 'Your role',        org: 'Company or university',      text: 'What you do there and what you are responsible for.' },
-        { role: 'Your role',        org: 'Company or university',      text: 'What you did there and what you achieved. Numbers work well here.' },
-        { role: 'Where it started', org: 'Course, school or first job', text: 'How you got into this field and what you learned.' }
+        { role: 'sqb', org: '', text: '' }
       ]
     },
 
     projects: {
       items: [
-        { title: 'Project name', text: 'What problem the project solves and what you personally built.' },
-        { title: 'Project name', text: 'What problem the project solves and what you personally built.' },
-        { title: 'Project name', text: 'What problem the project solves and what you personally built.' }
+        { title: 'MyID', text: 'Closed-source project.' },
+        { title: 'eKey', text: 'Closed-source project.' }
       ],
       linkLabels: { demo: 'live demo', code: 'source', more: 'read more' },
-      note: 'Run <b>open 001</b> to follow the first link of a project.'
+      note: 'Closed-source — no public links to open.'
     },
 
     skills: {
@@ -120,7 +116,7 @@ window.I18N = {
       themeChanged: 'тема →',
       langUsage: 'как пользоваться: lang en | ru | uz',
       themeUsage: 'как пользоваться: theme light | dark',
-      openUsage: 'как пользоваться: open 001 | 002 | 003',
+      openUsage: 'как пользоваться: open 001 | 002',
       openMissing: 'нет проекта с номером',
       opening: 'открываю',
       sudo: 'хорошая попытка. доступ запрещён — но ход мысли мне нравится.',
@@ -153,38 +149,34 @@ window.I18N = {
     },
 
     whoami: {
-      role: 'разработчик',
-      line: 'Короткая строка о том, чем вы занимаетесь — замените своей.'
+      role: 'dev',
+      line: 'backend'
     },
 
     about: {
       paragraphs: [
-        'Замените этот абзац рассказом о себе: кто вы, чем занимаетесь и что вам интересно.',
-        'Во втором абзаце хорошо работает конкретика: где учитесь или работаете, над чем работаете сейчас и чем можете помочь.'
+        '---------------------'
       ],
       facts: [
-        ['локация', 'Город, страна'],
-        ['статус',  'открыт к предложениям'],
-        ['языки',   'English / Русский / Oʻzbekcha']
+        ['локация', 'Ташкент'],
+        ['статус',  'работает'],
+        ['языки',   'Oʻzbekcha / Русский / English']
       ]
     },
 
     experience: {
       items: [
-        { role: 'Ваша роль',           org: 'Компания или университет',       text: 'Чем занимаетесь и за что отвечаете.' },
-        { role: 'Ваша роль',           org: 'Компания или университет',       text: 'Что делали и чего добились. Здесь хорошо работают цифры.' },
-        { role: 'С чего всё началось', org: 'Курс, школа или первая работа',  text: 'Как пришли в эту сферу и чему научились.' }
+        { role: 'sqb', org: '', text: '' }
       ]
     },
 
     projects: {
       items: [
-        { title: 'Название проекта', text: 'Какую задачу решает проект и что в нём сделали лично вы.' },
-        { title: 'Название проекта', text: 'Какую задачу решает проект и что в нём сделали лично вы.' },
-        { title: 'Название проекта', text: 'Какую задачу решает проект и что в нём сделали лично вы.' }
+        { title: 'MyID', text: 'Закрытый проект.' },
+        { title: 'eKey', text: 'Закрытый проект.' }
       ],
       linkLabels: { demo: 'демо', code: 'код', more: 'подробнее' },
-      note: 'Наберите <b>open 001</b>, чтобы открыть первую ссылку проекта.'
+      note: 'Закрытый исходный код — публичных ссылок нет.'
     },
 
     skills: {
@@ -214,7 +206,7 @@ window.I18N = {
       themeChanged: 'mavzu →',
       langUsage: 'qoʻllanishi: lang en | ru | uz',
       themeUsage: 'qoʻllanishi: theme light | dark',
-      openUsage: 'qoʻllanishi: open 001 | 002 | 003',
+      openUsage: 'qoʻllanishi: open 001 | 002',
       openMissing: 'bunday raqamli loyiha yoʻq:',
       opening: 'ochilmoqda',
       sudo: 'urinish yaxshi. ruxsat yoʻq — lekin fikringiz menga yoqdi.',
@@ -247,38 +239,34 @@ window.I18N = {
     },
 
     whoami: {
-      role: 'dasturchi',
-      line: 'Nima bilan shugʻullanishingiz haqida qisqa satr — oʻzingiznikiga almashtiring.'
+      role: 'dev',
+      line: 'backend'
     },
 
     about: {
       paragraphs: [
-        'Bu xatboshini oʻzingiz haqingizdagi matn bilan almashtiring: kimsiz, nima bilan shugʻullanasiz va sizga nima qiziq.',
-        'Ikkinchi xatboshida aniqlik yaxshi ishlaydi: qayerda oʻqiysiz yoki ishlaysiz, hozir nima ustida ishlayapsiz va nimada yordam bera olasiz.'
+        '---------------------'
       ],
       facts: [
-        ['manzil', 'Shahar, davlat'],
-        ['holat',  'takliflarga ochiqman'],
-        ['tillar', 'English / Русский / Oʻzbekcha']
+        ['manzil', 'Toshkent'],
+        ['holat',  'ishlaydi'],
+        ['tillar', 'Oʻzbekcha / Русский / English']
       ]
     },
 
     experience: {
       items: [
-        { role: 'Sizning lavozimingiz',      org: 'Kompaniya yoki universitet',    text: 'U yerda nima qilasiz va nimaga javobgarsiz.' },
-        { role: 'Sizning lavozimingiz',      org: 'Kompaniya yoki universitet',    text: 'Nima qilgansiz va nimaga erishgansiz. Bu yerda raqamlar yaxshi ishlaydi.' },
-        { role: 'Hammasi qayerdan boshlangan', org: 'Kurs, maktab yoki birinchi ish', text: 'Bu sohaga qanday kelgansiz va nimalarni oʻrgangansiz.' }
+        { role: 'sqb', org: '', text: '' }
       ]
     },
 
     projects: {
       items: [
-        { title: 'Loyiha nomi', text: 'Loyiha qanday muammoni hal qiladi va unda shaxsan siz nima qildingiz.' },
-        { title: 'Loyiha nomi', text: 'Loyiha qanday muammoni hal qiladi va unda shaxsan siz nima qildingiz.' },
-        { title: 'Loyiha nomi', text: 'Loyiha qanday muammoni hal qiladi va unda shaxsan siz nima qildingiz.' }
+        { title: 'MyID', text: 'Yopiq loyiha.' },
+        { title: 'eKey', text: 'Yopiq loyiha.' }
       ],
       linkLabels: { demo: 'demo', code: 'kod', more: 'batafsil' },
-      note: 'Loyihaning birinchi havolasini ochish uchun <b>open 001</b> deb yozing.'
+      note: 'Yopiq manba — ochiq havolalar yoʻq.'
     },
 
     skills: {

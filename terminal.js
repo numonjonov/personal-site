@@ -132,7 +132,7 @@
 
     whoami: function () {
       print(el('p', 'banner', esc(SITE.name)));
-      printLine('out', '<b>' + esc(t.whoami.role) + '</b> — ' + esc(t.whoami.line));
+      printLine('out', '<b>' + esc(t.whoami.role) + '</b>' + (t.whoami.line ? ' — ' + esc(t.whoami.line) : ''));
     },
 
     about: function () {
@@ -146,9 +146,9 @@
     experience: function () {
       t.experience.items.forEach(function (item, i) {
         var date = (SITE.experience[i] || {}).date || '';
-        printLine('accent', esc(date));
-        printLine('out strong', esc(item.role) + ' <span class="dim">— ' + esc(item.org) + '</span>');
-        printLine('out', esc(item.text));
+        if (date) printLine('accent', esc(date));
+        printLine('out strong', esc(item.role) + (item.org ? ' <span class="dim">— ' + esc(item.org) + '</span>' : ''));
+        if (item.text) printLine('out', esc(item.text));
         if (i < t.experience.items.length - 1) printGap();
       });
     },

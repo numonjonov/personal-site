@@ -51,8 +51,8 @@
 
   function loop() {
     // Рамка догоняет каретку — отсюда ощущение веса
-    rx += (x - rx) * 0.18;
-    ry += (y - ry) * 0.18;
+    rx += (x - rx) * 0.3;
+    ry += (y - ry) * 0.3;
     place();
     frame = requestAnimationFrame(loop);
   }
