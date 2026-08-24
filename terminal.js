@@ -112,9 +112,17 @@
     print(dl);
   }
 
-  function link(href, text, external) {
+  function link(href, text, external, innerHtml) {
     var attrs = external ? ' target="_blank" rel="noopener"' : '';
-    return '<a href="' + esc(href) + '"' + attrs + '>' + esc(text) + (external ? ' ↗' : '') + '</a>';
+    var inner = innerHtml || esc(text);
+    return '<a href="' + esc(href) + '"' + attrs + '>' + inner + (external ? ' ↗' : '') + '</a>';
+  }
+
+  /* Блок «шума» шириной в chars символов — выглядит как спойлер в Телеграме.
+     Раскрывать нечего: под ним нет текста, это заглушка на месте будущего.
+     Сами точки рисует spoiler.js. */
+  function noise(chars) {
+    return '<span class="spoiler" aria-hidden="true" style="width:' + chars + 'ch"></span>';
   }
 
   /* =======================================================
@@ -136,8 +144,9 @@
     },
 
     about: function () {
+      var hide = SITE.about && SITE.about.spoiler;
       t.about.paragraphs.forEach(function (p, i) {
-        printLine(i === 0 ? 'out strong' : 'out', esc(p));
+        printLine(i === 0 ? 'out strong' : 'out', hide ? noise(p.length) : esc(p));
       });
       printGap();
       printKV(t.about.facts.map(function (f) { return [f[0], esc(f[1])]; }));
@@ -179,15 +188,18 @@
 
     skills: function () {
       var rows = t.skills.groups.map(function (label, i) {
-        var items = (SITE.skills[i] && SITE.skills[i].length) ? SITE.skills[i] : t.skills.extra;
-        return [label, esc(items.join(', '))];
+        var group = SITE.skills[i] || [];
+        var items = group.items || group;               // допускаем и простой массив
+        if (!items.length) items = t.skills.extra;
+
+        var text = items.join(', ');
+        return [label, group.spoiler ? noise(text.length) : esc(text)];
       });
       printKV(rows);
     },
 
     contact: function () {
-      printLine('out', esc(t.contact.lead));
-      printGap();
+      if (t.contact.lead) { printLine('out', esc(t.contact.lead)); printGap(); }
 
       var mail = SITE.email
         ? link('mailto:' + SITE.email, SITE.email, false)
@@ -196,8 +208,13 @@
       var rows = [[t.contact.labels.email, mail]];
 
       SITE.socials.forEach(function (s) {
-        var shown = s.label || s.url.replace(/^https?:\/\//, '');
-        rows.push([t.contact.labels[s.key] || s.key, link(s.url, shown, true)]);
+        var html;
+        if (s.spoilerChars) {
+          html = link(s.url, null, true, esc(s.label) + noise(s.spoilerChars));
+        } else {
+          html = link(s.url, s.label || s.url.replace(/^https?:\/\//, ''), true);
+        }
+        rows.push([t.contact.labels[s.key] || s.key, html]);
       });
       printKV(rows);
     },

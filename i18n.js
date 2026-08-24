@@ -95,7 +95,7 @@ window.I18N = {
     },
 
     contact: {
-      lead: 'Drop me a line — I read every email and message.',
+      lead: '',
       labels: { email: 'email', github: 'github', telegram: 'telegram', linkedin: 'linkedin' }
     }
   },
@@ -185,7 +185,7 @@ window.I18N = {
     },
 
     contact: {
-      lead: 'Пишите — читаю все письма и сообщения.',
+      lead: '',
       labels: { email: 'почта', github: 'github', telegram: 'telegram', linkedin: 'linkedin' }
     }
   },
@@ -275,7 +275,7 @@ window.I18N = {
     },
 
     contact: {
-      lead: 'Yozing — barcha xat va xabarlarni oʻqiyman.',
+      lead: '',
       labels: { email: 'pochta', github: 'github', telegram: 'telegram', linkedin: 'linkedin' }
     }
   }

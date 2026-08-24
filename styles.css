@@ -259,6 +259,20 @@ button { font: inherit; cursor: pointer; }
   font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
 }
 
+/* Заглушка «здесь пока пусто» — россыпь мерцающих точек в духе Телеграма.
+   Сами точки рисует spoiler.js на canvas — случайный шум сеткой не сделать. */
+.spoiler {
+  position: relative;
+  display: inline-block;
+  height: 1em;
+  vertical-align: -2px;
+}
+.spoiler-noise {
+  position: absolute;
+  top: 0; left: 0;
+  pointer-events: none;
+}
+
 /* =========================================================
    7. ПОДСКАЗКИ И СТРОКА ВВОДА
    ========================================================= */

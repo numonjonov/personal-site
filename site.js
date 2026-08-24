@@ -16,12 +16,19 @@ window.SITE = {
   /* Если оставить пустым, в выводе contact вместо адреса будет прочерк. */
   email: 'pahlavon@numonjonov.com',
 
-  /* label — как ссылка выглядит на экране. Если его нет, показывается сам адрес. */
+  /* label — как ссылка выглядит на экране. Если его нет, показывается сам адрес.
+     spoilerChars — сколько символов после label спрятать под «шум». Реальный
+     хэндл нигде не хранится: href ведёт на корень домена, не на профиль —
+     иначе он всё равно был бы виден в HTML и в статус-баре при наведении. */
   socials: [
-    { key: 'github',   url: 'https://github.com/numonjonov' },
-    { key: 'telegram', url: 'https://t.me/CustomAnnotation' },
-    { key: 'linkedin', url: 'https://linkedin.com/' }
+    { key: 'github',   url: 'https://github.com', label: 'github.com/', spoilerChars: 10 },
+    { key: 'telegram', url: 'https://t.me',        label: 't.me/',       spoilerChars: 16 },
+    { key: 'linkedin', url: 'https://linkedin.com', label: 'linkedin.com/', spoilerChars: 10 }
   ],
+
+  /* spoiler: true — абзацы about печатаются «шумом», как спойлер в Телеграме.
+     Впишете настоящий текст — уберите флаг. */
+  about: { spoiler: true },
 
   experience: [
     { date: '' }
@@ -41,9 +48,12 @@ window.SITE = {
     }
   ],
 
+  /* Группа — либо простой массив, либо { items, spoiler }.
+     spoiler: true прячет значение под «шум», как спойлер в Телеграме.
+     Впишете настоящие навыки — уберите флаг. */
   skills: [
-    ['----------------------'],
-    ['----------------------'],
-    ['----------------------']
+    { spoiler: true, items: ['----------------------'] },
+    { spoiler: true, items: ['----------------------'] },
+    { spoiler: true, items: ['----------------------'] }
   ]
 };
