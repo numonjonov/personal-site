@@ -1,16 +1,17 @@
 /* =========================================================
-   Фон: несколько вариантов на выбор, один активен за раз.
+   Фон: несколько вариантов на выбор, один активен за раз
+   (tunnel, stars, matrix, meteor, horizon, web). Голая команда bg
+   и кнопка BG листают их по кругу, bg <имя> прыгает на нужный,
+   bg on/off включает/выключает фон целиком. meteor — дефолт,
+   между перезагрузками выбор не запоминается.
 
-   Это временный переключалка для сравнения — набери в терминале
-   bg tunnel | stars | matrix | horizon | web, чтобы переключиться
-   вживую. bg on/off по-прежнему включает/выключает фон целиком.
-   Когда выберете вариант, лишнее вычищаем и оставляем один.
-
-   На экранах уже 720px фон не рисуется: там окно терминала занимает
-   всё место и фона всё равно не видно.
+   На телефоне фон тоже рисуется: окно там непрозрачное, но не во
+   весь экран — фон виден в отступе по краям (см. styles.css,
+   раздел «мобильная версия»).
 
    Наружу отдаёт window.BG.toggle() / window.BG.isOn() /
-   window.BG.setVariant() — ими пользуется команда bg в терминале.
+   window.BG.setVariant() / window.BG.cycle() — ими пользуется
+   команда bg в терминале.
    ========================================================= */
 (function () {
   'use strict';
@@ -25,7 +26,6 @@
 
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var coarse       = window.matchMedia('(pointer: coarse)').matches;
-  var narrow       = window.matchMedia('(max-width: 720px)');
 
   var W = 0, H = 0, dpr = 1;
   var frame = null;
@@ -427,7 +427,7 @@
   /* =======================================================
      УПРАВЛЕНИЕ
      ======================================================= */
-  function allowed() { return enabled && !narrow.matches; }
+  function allowed() { return enabled; }
 
   function showStatus() {
     if (!status) return;
@@ -484,10 +484,6 @@
     if (!running) start();          // например, звали cycle() после bg off
     return next;
   }
-
-  var onNarrowChange = function () { if (enabled) start(); };
-  if (narrow.addEventListener) narrow.addEventListener('change', onNarrowChange);
-  else if (narrow.addListener) narrow.addListener(onNarrowChange);
 
   window.addEventListener('resize', function () {
     if (!enabled) return;

@@ -6,6 +6,7 @@
 :root {
   --bg:          #eceae7;
   --panel:       #fbfaf9;
+  --panel-soft:  rgba(251, 250, 249, .88);   /* та же подложка, но чуть просвечивает */
   --glass:       rgba(251, 250, 249, .82);
   --text:        #14130f;
   --muted:       #6f6b66;
@@ -27,6 +28,7 @@
   :root:not([data-theme="light"]) {
     --bg:          #000000;
     --panel:       #0a0a0a;
+    --panel-soft:  rgba(10, 10, 10, .84);
     --glass:       rgba(10, 10, 10, .74);
     --text:        #eceae7;
     --muted:       #8f8b86;
@@ -43,6 +45,7 @@
 :root[data-theme="dark"] {
   --bg:          #000000;
   --panel:       #0a0a0a;
+  --panel-soft:  rgba(10, 10, 10, .84);
   --glass:       rgba(10, 10, 10, .74);
   --text:        #eceae7;
   --muted:       #8f8b86;
@@ -327,23 +330,24 @@ button { font: inherit; cursor: pointer; }
    10. МОБИЛЬНАЯ ВЕРСИЯ
    ========================================================= */
 @media (max-width: 720px) {
-  body { padding: 0; display: block; background-image: none; }
+  /* Отступ по краям — в нём фон виден целиком. Само окно чуть
+     просвечивает, но без размытия: просто полупрозрачная подложка. */
+  body { padding: 12px; display: block; }
 
-  /* На телефоне никаких эффектов: окно во весь экран, подложка плотная */
   .window {
-    width: 100%; height: 100vh; height: 100dvh;
+    width: 100%; height: calc(100vh - 24px); height: calc(100dvh - 24px);
     margin: 0;
-    border: none; box-shadow: none;
-    background: var(--panel);
+    border: 1px solid var(--line-strong);
+    box-shadow: none;
+    background: var(--panel-soft);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     transform: none !important;
   }
 
   /* Подсказка «наберите help» и так есть в плашке ввода — в статусной
-     строке она только заставляет её переноситься на две строки.
-     Индикатор фона тоже ни к чему — на этой ширине фон никогда не рисуется. */
-  .status-tip, .status-bg { display: none; }
+     строке она только заставляет её переноситься на две строки. */
+  .status-tip { display: none; }
 
   .win-bar { gap: 10px; }
   .win-title { display: none; }
