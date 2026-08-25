@@ -51,7 +51,7 @@ window.I18N = {
         ['open <id>',  'open a project link, e.g. open 001'],
         ['lang <code>','switch language: en, ru, uz'],
         ['theme',      'switch light / dark'],
-        ['bg',         'turn the 3D background on or off'],
+        ['bg',         'cycle background style, or jump to one: tunnel, stars, matrix, meteor, horizon, web'],
         ['cursor',     'terminal-style cursor on or off'],
         ['clear',      'clear the screen']
       ],
@@ -141,7 +141,7 @@ window.I18N = {
         ['open <id>',  'открыть ссылку проекта, например open 001'],
         ['lang <code>','сменить язык: en, ru, uz'],
         ['theme',      'светлая / тёмная тема'],
-        ['bg',         'включить или выключить 3D-фон'],
+        ['bg',         'перебор стилей фона, или сразу нужный: tunnel, stars, matrix, meteor, horizon, web'],
         ['cursor',     'свой курсор — включить или выключить'],
         ['clear',      'очистить экран']
       ],
@@ -231,7 +231,7 @@ window.I18N = {
         ['open <id>',  'loyiha havolasini ochish, masalan open 001'],
         ['lang <code>','tilni almashtirish: en, ru, uz'],
         ['theme',      'yorugʻ / qorongʻi mavzu'],
-        ['bg',         '3D fonni yoqish yoki oʻchirish'],
+        ['bg',         'fon uslubini almashtirish, yoki toʻgʻridan-toʻgʻri: tunnel, stars, matrix, meteor, horizon, web'],
         ['cursor',     'oʻz kursorini yoqish yoki oʻchirish'],
         ['clear',      'ekranni tozalash']
       ],

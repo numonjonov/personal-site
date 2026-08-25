@@ -246,10 +246,24 @@
 
     bg: function (arg) {
       if (!window.BG) { printLine('err', esc(t.ui.bgMissing)); return; }
-      if (arg && arg !== 'on' && arg !== 'off') { printLine('err', esc(t.ui.bgUsage)); return; }
 
-      var on = window.BG.toggle(arg ? arg === 'on' : undefined);
-      printLine('out', esc(t.ui.bgChanged) + ' ' + (on ? 'on' : 'off'));
+      if (arg && window.BG.variants.indexOf(arg) !== -1) {
+        window.BG.setVariant(arg);
+        printLine('out', 'bg → ' + arg);
+        return;
+      }
+      if (arg === 'on' || arg === 'off') {
+        var on = window.BG.toggle(arg === 'on');
+        printLine('out', esc(t.ui.bgChanged) + ' ' + (on ? 'on' : 'off'));
+        return;
+      }
+      if (arg) {
+        printLine('err', esc(t.ui.bgUsage) + ' | ' + window.BG.variants.join(' | '));
+        return;
+      }
+
+      // без аргумента — кнопка в подсказках и голая команда листают стили по кругу
+      printLine('out', 'bg → ' + window.BG.cycle());
     },
 
     cursor: function (arg) {
@@ -277,11 +291,7 @@
   // Псевдонимы: короткие и привычные варианты
   var ALIASES = { exp: 'experience', ls: 'help', '?': 'help', me: 'whoami', cls: 'clear', mail: 'contact' };
 
-  // Что показывать в подсказках. bg сюда не входит специально — команда
-  // рабочая (bg on/off), просто без отдельной кнопки в этом ряду.
-  // На автодополнение (COMPLETABLE) это не влияет — оно берёт ключи
-  // прямо из COMMANDS, а bg там как был, так и остался.
-  var VISIBLE = ['whoami', 'about', 'experience', 'projects', 'skills', 'contact', 'theme', 'clear'];
+  var VISIBLE = ['whoami', 'about', 'experience', 'projects', 'skills', 'contact', 'theme', 'bg', 'clear'];
   var COMPLETABLE = Object.keys(COMMANDS).concat(Object.keys(ALIASES));
 
   /* =======================================================
