@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>A — Editorial / Swiss · Pahlavon Numonjonov</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   Вариант A — Editorial / Swiss
+   Типографика вместо украшений: крупное имя, строгая сетка,
+   красный акцент как в швейцарском плакате, много воздуха.
+   ============================================================ */
+
+:root {
+  --paper:      #FAFAF8;
+  --ink:        #0A0A0A;
+  --ink-muted:  #6B6B66;
+  --rule:       #DCDCD6;
+  --accent:     #E5341E;   /* швейцарский красный, единственное цветное пятно */
+  --card:       #FFFFFF;
+
+  --sans: 'Inter Tight', system-ui, sans-serif;
+  --text: 'Inter', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Плотность «spacious»: шкала 24→96 */
+  --s1: 8px;  --s2: 16px; --s3: 24px; --s4: 40px; --s5: 64px; --s6: 96px;
+
+  --gutter: clamp(20px, 5vw, 64px);
+}
+
+[data-theme="dark"] {
+  --paper: #0C0C0B; --ink: #F4F4F0; --ink-muted: #8A8A84;
+  --rule: #26261F; --card: #141413; --accent: #FF5B45;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font-family: var(--text); font-size: 16px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color .3s ease, color .3s ease;
+}
+a { color: inherit; }
+::selection { background: var(--accent); color: #fff; }
+
+.wrap { max-width: 1320px; margin: 0 auto; padding: 0 var(--gutter); }
+
+/* ---------- Шапка: тонкая строка с метаданными ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 20;
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--rule);
+}
+.topbar-in {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s2);
+  height: 52px; font-family: var(--mono); font-size: 11px;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--ink-muted);
+}
+.topbar b { color: var(--ink); font-weight: 500; }
+.topbar-mid { display: none; }
+@media (min-width: 860px) { .topbar-mid { display: block; } }
+
+.toggle {
+  font: inherit; letter-spacing: inherit; text-transform: inherit;
+  background: none; border: 1px solid var(--rule); color: var(--ink-muted);
+  padding: 5px 10px; cursor: pointer; border-radius: 2px;
+  transition: border-color .2s, color .2s;
+}
+.toggle:hover { border-color: var(--ink); color: var(--ink); }
+.toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- Первый экран ---------- */
+.hero { padding: clamp(48px, 11vh, 120px) 0 var(--s5); }
+
+.eyebrow {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: var(--s3);
+}
+.eyebrow .dot {
+  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); margin-right: 8px; vertical-align: 1px;
+}
+
+/* Имя — главный элемент страницы. Тесный трекинг и плотный интерлиньяж,
+   чтобы две строки читались одним блоком. */
+h1.name {
+  font-family: var(--sans); font-weight: 600;
+  font-size: clamp(52px, 12.5vw, 168px);
+  line-height: .88; letter-spacing: -.035em;
+  margin: 0 0 var(--s4); text-wrap: balance;
+}
+h1.name .ln { display: block; overflow: hidden; }
+h1.name .ln > span { display: block; }
+
+.lede-grid {
+  display: grid; gap: var(--s3) var(--s4);
+  grid-template-columns: 1fr;
+  padding-top: var(--s3); border-top: 1px solid var(--rule);
+}
+@media (min-width: 860px) { .lede-grid { grid-template-columns: 1fr 1fr 1fr; } }
+
+.lede { font-size: clamp(17px, 1.5vw, 21px); line-height: 1.45; margin: 0; }
+.lede.second { color: var(--ink-muted); }
+.meta-col { font-family: var(--mono); font-size: 12px; color: var(--ink-muted); }
+.meta-col dt { letter-spacing: .1em; text-transform: uppercase; font-size: 10px; margin-top: var(--s2); }
+.meta-col dt:first-child { margin-top: 0; }
+.meta-col dd { margin: 3px 0 0; color: var(--ink); }
+
+/* ---------- Секции ---------- */
+section { padding: var(--s6) 0 0; }
+.sec-head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: var(--s2);
+  padding-bottom: var(--s2); border-bottom: 1px solid var(--ink);
+  font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+}
+.sec-head .count { color: var(--ink-muted); }
+
+/* ---------- Работы: список-таблица ---------- */
+.work { list-style: none; margin: 0; padding: 0; }
+.work li { border-bottom: 1px solid var(--rule); }
+
+.row {
+  display: grid; gap: 4px var(--s3); align-items: baseline;
+  grid-template-columns: 1fr auto;
+  padding: var(--s3) 0; text-decoration: none;
+  position: relative; transition: padding-left .35s cubic-bezier(.2,.7,.3,1);
+}
+/* Последняя колонка — фиксированный диапазон, не auto: со словом вроде
+   «gallery-dl» auto-трек распирает строку и уезжает за край страницы. */
+@media (min-width: 900px) {
+  .row { grid-template-columns: 56px minmax(200px, 1fr) minmax(0, 1.7fr) minmax(150px, 210px); }
+}
+.row:hover, .row:focus-visible { padding-left: 14px; outline: none; }
+
+/* Красная полоса, выезжающая слева при наведении */
+.row::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: var(--accent); transform: scaleY(0); transform-origin: 50% 100%;
+  transition: transform .35s cubic-bezier(.2,.7,.3,1);
+}
+.row:hover::before, .row:focus-visible::before { transform: scaleY(1); }
+
+.row-idx  { font-family: var(--mono); font-size: 11px; color: var(--ink-muted); grid-column: 1; }
+.row-name {
+  font-family: var(--sans); font-weight: 600; letter-spacing: -.02em;
+  font-size: clamp(24px, 3.2vw, 38px); line-height: 1.05;
+}
+.row-desc { color: var(--ink-muted); font-size: 15px; max-width: 46ch; }
+.row-tags { font-family: var(--mono); font-size: 11px; color: var(--ink-muted); line-height: 1.7; }
+@media (min-width: 900px) { .row-tags { text-align: right; } }
+.row-tags i { font-style: normal; color: var(--rule); margin: 0 5px; }
+.row:hover .row-name { color: var(--accent); }
+
+@media (max-width: 899px) {
+  .row-idx { grid-row: 1; }
+  .row-name { grid-column: 1 / -1; grid-row: 2; }
+  .row-desc { grid-column: 1 / -1; grid-row: 3; }
+  .row-tags { grid-column: 1 / -1; grid-row: 4; margin-top: 6px; }
+}
+
+/* ---------- Опыт ---------- */
+.xp { display: grid; gap: 0; }
+.xp-item {
+  display: grid; gap: 6px var(--s4); padding: var(--s3) 0;
+  border-bottom: 1px solid var(--rule); grid-template-columns: 1fr;
+}
+@media (min-width: 900px) { .xp-item { grid-template-columns: 160px 1fr; } }
+.xp-when { font-family: var(--mono); font-size: 12px; color: var(--ink-muted); }
+.xp-what { font-family: var(--sans); font-size: 20px; font-weight: 600; letter-spacing: -.015em; margin: 0 0 6px; }
+.xp-note { margin: 0; color: var(--ink-muted); max-width: 62ch; }
+
+/* ---------- Стек ---------- */
+.chips { display: flex; flex-wrap: wrap; gap: var(--s1); padding-top: var(--s3); list-style: none; margin: 0; }
+.chips li {
+  font-family: var(--mono); font-size: 12px; padding: 7px 12px;
+  border: 1px solid var(--rule); border-radius: 2px;
+  transition: border-color .2s, color .2s;
+}
+.chips li:hover { border-color: var(--ink); }
+
+/* ---------- Контакты ---------- */
+.contact { padding: var(--s6) 0; }
+.mail {
+  display: inline-block; font-family: var(--sans); font-weight: 600;
+  font-size: clamp(30px, 6.2vw, 76px); letter-spacing: -.035em; line-height: 1;
+  text-decoration: none; margin: var(--s3) 0 var(--s4);
+  background-image: linear-gradient(var(--accent), var(--accent));
+  background-size: 0% 2px; background-position: 0 100%; background-repeat: no-repeat;
+  transition: background-size .4s cubic-bezier(.2,.7,.3,1), color .3s;
+}
+.mail:hover { background-size: 100% 2px; color: var(--accent); }
+
+.links { display: flex; flex-wrap: wrap; gap: var(--s3); font-family: var(--mono); font-size: 13px; }
+.links a { text-decoration: none; color: var(--ink-muted); transition: color .2s; }
+.links a:hover { color: var(--accent); }
+.links a::after { content: ' ↗'; font-size: 11px; }
+
+footer {
+  border-top: 1px solid var(--rule); padding: var(--s3) 0 var(--s4);
+  font-family: var(--mono); font-size: 11px; color: var(--ink-muted);
+  display: flex; flex-wrap: wrap; gap: var(--s2); justify-content: space-between;
+  letter-spacing: .08em; text-transform: uppercase;
+}
+
+/* ---------- Появление по скроллу ----------
+   Прятать блок в CSS нельзя: не отработает JS — и полстраницы пропадёт.
+   Класс js на <html> ставит сам скрипт, до этого всё видно как есть. */
+.js .rise { opacity: 0; transform: translateY(18px); }
+.js .rise.in { opacity: 1; transform: none; transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.3,1); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { animation: none !important; transition-duration: .01ms !important; }
+  .js .rise { opacity: 1; transform: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <span><b>Pahlavon Numonjonov</b></span>
+    <span class="topbar-mid">Backend engineer</span>
+    <span style="display:flex;align-items:center;gap:14px">
+      <span>Tashkent, UZ</span>
+      <button class="toggle" id="theme" type="button">Dark</button>
+    </span>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <!-- ========== Первый экран ========== -->
+  <header class="hero">
+    <p class="eyebrow"><span class="dot"></span>Available for backend work</p>
+
+    <h1 class="name" id="name">
+      <span class="ln"><span>Pahlavon</span></span>
+      <span class="ln"><span>Numonjonov</span></span>
+    </h1>
+
+    <div class="lede-grid">
+      <p class="lede">
+        I build backend services in Java and Spring Boot — banking integrations by day,
+        Telegram bots and small tools at night.
+      </p>
+      <p class="lede second">
+        Most of what I write talks to something older or stricter than itself: a bank core
+        on Oracle, a state identification service, a legacy JavaEE app. I like the part where
+        it finally answers.
+      </p>
+      <dl class="meta-col">
+        <dt>Focus</dt><dd>Java · Spring Boot · Oracle</dd>
+        <dt>Also</dt><dd>Python · PostgreSQL · Docker</dd>
+        <dt>Since</dt><dd>2022</dd>
+      </dl>
+    </div>
+  </header>
+
+  <!-- ========== Работы ========== -->
+  <section id="work">
+    <div class="sec-head rise"><span>Selected work</span><span class="count">Six projects</span></div>
+
+    <ul class="work">
+      <li class="rise"><a class="row" href="#">
+        <span class="row-idx">01</span>
+        <span class="row-name">uz-status</span>
+        <span class="row-desc">Public uptime monitor for Uzbek services — Payme, Click, Uzum, soliq.uz, banks. Incident history and an open API.</span>
+        <span class="row-tags">Java 21<i>/</i>Spring Boot<i>/</i>PostgreSQL<i>/</i>Docker</span>
+      </a></li>
+
+      <li class="rise"><a class="row" href="#">
+        <span class="row-idx">02</span>
+        <span class="row-name">exchange</span>
+        <span class="row-desc">Currency rates from the central bank and exchange offices. Zero dependencies — own HTTP client, own Telegram client, charts drawn by hand.</span>
+        <span class="row-tags">Python<i>/</i>stdlib only<i>/</i>SQLite</span>
+      </a></li>
+
+      <li class="rise"><a class="row" href="#">
+        <span class="row-idx">03</span>
+        <span class="row-name">tgagent</span>
+        <span class="row-desc">A Telegram Business assistant written on bare Java — no Spring, no bot library. Gemini as the model, Groq as the fallback.</span>
+        <span class="row-tags">Java<i>/</i>SQLite<i>/</i>Gemini<i>/</i>Groq</span>
+      </a></li>
+
+      <li class="rise"><a class="row" href="#">
+        <span class="row-idx">04</span>
+        <span class="row-name">tekstlybot</span>
+        <span class="row-desc">Media bot: compress video, extract audio, transcribe speech. A job queue with workers, and it fits in 256 MB of heap.</span>
+        <span class="row-tags">Java<i>/</i>ffmpeg<i>/</i>whisper.cpp</span>
+      </a></li>
+
+      <li class="rise"><a class="row" href="#">
+        <span class="row-idx">05</span>
+        <span class="row-name">PLUSLINE / KEYLINE</span>
+        <span class="row-desc">Two Telegram storefronts — phones and keyboards — running on one codebase with an admin panel and photo albums.</span>
+        <span class="row-tags">Python<i>/</i>aiogram 3</span>
+      </a></li>
+
+      <li class="rise"><a class="row" href="#">
+        <span class="row-idx">06</span>
+        <span class="row-name">downloader</span>
+        <span class="row-desc">Send a link, get the video. Instagram, YouTube, Pinterest and roughly a thousand other sites.</span>
+        <span class="row-tags">Python<i>/</i>yt-dlp<i>/</i>gallery-dl</span>
+      </a></li>
+    </ul>
+  </section>
+
+  <!-- ========== Опыт ========== -->
+  <section id="experience">
+    <div class="sec-head rise"><span>Experience</span><span class="count">Banking</span></div>
+
+    <div class="xp">
+      <div class="xp-item rise">
+        <div class="xp-when">2024 — now</div>
+        <div>
+          <h3 class="xp-what">Backend engineer, banking</h3>
+          <p class="xp-note">REST services over a bank core running on Oracle: currency rates and reference
+            data behind JWT, a wrapper around the state biometric identification service, and digital-signature
+            support inside a legacy JavaEE application. Plus PL/SQL where the logic belongs in the database.</p>
+        </div>
+      </div>
+
+      <div class="xp-item rise">
+        <div class="xp-when">2022 — 2024</div>
+        <div>
+          <h3 class="xp-what">Where it started</h3>
+          <p class="xp-note">Placeholder — replace with your real first role, university or course.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== Стек ========== -->
+  <section id="stack">
+    <div class="sec-head rise"><span>Day to day</span><span class="count">Stack</span></div>
+    <ul class="chips rise">
+      <li>Java 21</li><li>Spring Boot</li><li>Oracle</li><li>PL/SQL</li><li>PostgreSQL</li>
+      <li>Python</li><li>Maven</li><li>Docker</li><li>Flyway</li><li>JUnit</li><li>Git</li>
+    </ul>
+  </section>
+
+  <!-- ========== Контакты ========== -->
+  <section class="contact" id="contact">
+    <div class="sec-head rise"><span>Contact</span><span class="count">Open to work</span></div>
+    <a class="mail rise" href="mailto:pahlavon@numonjonov.com">pahlavon@numonjonov.com</a>
+    <div class="links rise">
+      <a href="https://github.com/numonjonov" rel="noopener">GitHub</a>
+      <a href="https://t.me/CustomAnnotation" rel="noopener">Telegram</a>
+      <a href="#" rel="noopener">LinkedIn</a>
+    </div>
+  </section>
+
+  <footer>
+    <span>© 2026 Pahlavon Numonjonov</span>
+    <span>Prototype A — Editorial / Swiss</span>
+  </footer>
+</main>
+
+<script>
+/* Тема: переключатель и сохранение выбора. */
+(function () {
+  var btn = document.getElementById('theme');
+  var saved = localStorage.getItem('proto-a-theme');
+  if (saved) document.documentElement.setAttribute('data-theme', saved);
+  else if (matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.setAttribute('data-theme', 'dark');
+  sync();
+
+  btn.addEventListener('click', function () {
+    var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.documentElement.setAttribute('data-theme', dark ? 'light' : 'dark');
+    localStorage.setItem('proto-a-theme', dark ? 'light' : 'dark');
+    sync();
+  });
+
+  function sync() {
+    btn.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? 'Light' : 'Dark';
+  }
+})();
+
+/* Появление блоков по скроллу. Один наблюдатель на всё, элемент
+   отписывается сразу после показа — иначе блоки будут дёргаться при
+   обратной прокрутке. */
+(function () {
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var items = document.querySelectorAll('.rise');
+  if (reduce || !('IntersectionObserver' in window)) return;   // всё уже видно
+
+  document.documentElement.classList.add('js');
+
+  /* Страховка: если наблюдатель по какой-то причине не сработал
+     (вкладка открыта в фоне и не отрисовывается), через 2 секунды
+     показываем всё принудительно. Пустая страница хуже, чем страница
+     без анимации. */
+  var safety = setTimeout(function () {
+    items.forEach(function (el) { el.classList.add('in'); });
+  }, 2000);
+
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (!e.isIntersecting) return;
+      e.target.classList.add('in');
+      io.unobserve(e.target);
+    });
+  }, { rootMargin: '0px 0px -12% 0px' });
+  items.forEach(function (el) { io.observe(el); });
+  addEventListener('pagehide', function () { clearTimeout(safety); });
+})();
+
+/* Имя выезжает строками из-под обрезки. Делается на старте, без скролла:
+   это первый экран, он уже виден. */
+(function () {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var lines = document.querySelectorAll('#name .ln > span');
+  lines.forEach(function (el, i) {
+    el.animate(
+      [{ transform: 'translateY(105%)' }, { transform: 'translateY(0)' }],
+      { duration: 900, delay: 90 + i * 110, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'backwards' }
+    );
+  });
+})();
+</script>
+</body>
+</html>

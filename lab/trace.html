@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TRACE — пробник · Pahlavon Numonjonov</title>
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   TRACE — пробник визуального языка
+   Монохром, чертёжный HUD, гигантский гротеск, частицы.
+   Отдельная страница: рабочий сайт она не трогает.
+
+   Всё написано руками — ни GSAP, ни Lenis здесь нет.
+   Плавный скролл, зерно и частицы занимают меньше места,
+   чем две библиотеки, и делают ровно то, что нужно.
+   ============================================================ */
+
+:root {
+  /* Эти два значения JS пересчитывает на лету при инверсии */
+  --paper: 232, 232, 230;
+  --ink:     10,  10,  10;
+
+  --display: 'Archivo Black', Impact, sans-serif;
+  --ui: 'Space Grotesk', system-ui, sans-serif;
+
+  --edge: 22px;          /* отступ чертёжной рамки от края */
+}
+
+* { box-sizing: border-box; }
+
+html { background: rgb(var(--paper)); }
+
+body {
+  margin: 0;
+  background: rgb(var(--paper));
+  color: rgb(var(--ink));
+  font-family: var(--ui);
+  overflow-x: hidden;
+  cursor: none;                       /* курсор рисуем сами */
+}
+@media (hover: none) { body { cursor: auto; } }
+
+a { color: inherit; text-decoration: none; }
+::selection { background: rgb(var(--ink)); color: rgb(var(--paper)); }
+
+:focus-visible { outline: 2px solid rgb(var(--ink)); outline-offset: 4px; }
+
+/* ---------- Плёночное зерно поверх всего ---------- */
+#grain {
+  position: fixed; inset: 0; z-index: 60;
+  pointer-events: none; opacity: .5; mix-blend-mode: multiply;
+}
+
+/* ---------- Курсор ---------- */
+#cursor {
+  position: fixed; top: 0; left: 0; z-index: 80;
+  width: 13px; height: 13px; margin: -6.5px 0 0 -6.5px;
+  border: 1px solid rgb(var(--ink)); border-radius: 50%;
+  pointer-events: none;
+  transition: width .25s, height .25s, margin .25s, background-color .25s;
+  display: flex; align-items: center; justify-content: center;
+}
+#cursor.wide {
+  width: 74px; height: 74px; margin: -37px 0 0 -37px;
+  background: rgb(var(--ink));
+}
+#cursor .lbl {
+  font-size: 9px; letter-spacing: .14em; font-weight: 500;
+  color: rgb(var(--paper)); opacity: 0; transition: opacity .2s;
+  white-space: nowrap;
+}
+#cursor.wide .lbl { opacity: 1; }
+@media (hover: none) { #cursor { display: none; } }
+
+/* ---------- Чертёжная рамка (HUD) ---------- */
+/* HUD лежит поверх любого фона — и светлого листа, и чёрного, и
+   гигантских букв. Режим difference инвертирует его относительно
+   того, что под ним, поэтому он читается везде и не требует плашки. */
+.hud {
+  position: fixed; inset: 0; z-index: 50;
+  pointer-events: none;
+  font-size: 10px; letter-spacing: .16em; font-weight: 500;
+  text-transform: uppercase;
+  color: #fff; mix-blend-mode: difference;
+}
+.hud a, .hud button { pointer-events: auto; }
+
+.hud-row {
+  position: absolute; left: var(--edge); right: var(--edge);
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
+}
+.hud-top { top: var(--edge); }
+.hud-bot { bottom: var(--edge); align-items: flex-end; }
+
+.hud-mid { display: none; gap: 20px; }
+@media (min-width: 780px) { .hud-mid { display: flex; } }
+.hud-mid a { opacity: .5; transition: opacity .2s; }
+.hud-mid a:hover, .hud-mid a.on { opacity: 1; }
+.hud-mid a.on { text-decoration: underline; text-underline-offset: 4px; }
+
+.hud-right { text-align: right; line-height: 1.9; }
+.dim { opacity: .42; }
+
+/* Линейка с делениями по левому краю — чертёжная деталь */
+.ruler {
+  position: absolute; top: 0; bottom: 0; left: 0; width: 1px;
+  background: rgba(255, 255, 255, .22);
+}
+.ruler i {
+  position: absolute; left: 0; width: 6px; height: 1px;
+  background: rgba(255, 255, 255, .35);
+}
+.ruler i.big { width: 13px; background: rgba(255, 255, 255, .55); }
+.ruler b {
+  position: absolute; left: 18px; font-size: 9px; font-weight: 400;
+  letter-spacing: .1em; opacity: .35; transform: translateY(-50%);
+}
+@media (max-width: 860px) { .ruler { display: none; } }
+
+/* Уголки рамки */
+.corner {
+  position: absolute; width: 11px; height: 11px;
+  border: 1px solid rgba(255, 255, 255, .5);
+}
+.corner.tl { top: var(--edge); left: var(--edge); border-right: 0; border-bottom: 0; }
+.corner.tr { top: var(--edge); right: var(--edge); border-left: 0; border-bottom: 0; }
+.corner.bl { bottom: var(--edge); left: var(--edge); border-right: 0; border-top: 0; }
+.corner.br { bottom: var(--edge); right: var(--edge); border-left: 0; border-top: 0; }
+
+/* Полоса прогресса скролла — тонкая линия по низу */
+#progress {
+  position: fixed; left: 0; bottom: 0; height: 2px; width: 0;
+  background: rgb(var(--ink)); z-index: 70; pointer-events: none;
+}
+
+/* ---------- Контейнер плавного скролла ----------
+   Содержимое зафиксировано и двигается трансформом, а высоту
+   странице задаёт распорка. Так скролл догоняет курсор с
+   запаздыванием — тот самый «тяжёлый» ход. */
+#view {
+  position: fixed; top: 0; left: 0; width: 100%;
+  will-change: transform;
+}
+#spacer { pointer-events: none; }
+
+/* Без JS ничего не должно быть сломано: снимаем фиксацию. */
+html:not(.js) #view { position: static; }
+html:not(.js) #spacer { display: none; }
+html:not(.js) body { cursor: auto; }
+html:not(.js) #cursor { display: none; }
+
+/* ---------- Секции ---------- */
+.sc {
+  min-height: 100vh; position: relative;
+  padding: 120px var(--edge) 100px;
+  display: flex; flex-direction: column; justify-content: center;
+}
+
+/* --- Первый экран --- */
+#hero { align-items: flex-start; }
+.giant {
+  font-family: var(--display);
+  font-size: clamp(48px, 13.5vw, 200px);
+  line-height: .84; letter-spacing: -.03em; text-transform: uppercase;
+  margin: 0; will-change: transform, opacity;
+}
+.giant span { display: block; }
+.hero-foot {
+  position: absolute; left: var(--edge); right: var(--edge); bottom: 64px;
+  display: flex; justify-content: space-between; align-items: baseline; gap: 20px;
+  font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+}
+
+/* --- Тезис --- */
+#claim { align-items: center; text-align: center; }
+.claim-line {
+  font-family: var(--display); text-transform: uppercase;
+  font-size: clamp(26px, 5.4vw, 76px); line-height: 1.04; letter-spacing: -.02em;
+  margin: 0; max-width: 15ch;
+}
+.claim-note {
+  margin-top: 36px; font-size: 12px; letter-spacing: .1em;
+  opacity: .5; max-width: 46ch; line-height: 2;
+}
+
+/* --- Индекс работ --- */
+#index { justify-content: flex-start; padding-top: 140px; }
+
+.index-head {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+  padding-bottom: 14px; border-bottom: 1px solid rgba(var(--ink), .25);
+}
+
+.work { list-style: none; margin: 0; padding: 0; }
+.work li { border-bottom: 1px solid rgba(var(--ink), .16); }
+
+.work a {
+  display: grid; align-items: center; gap: 6px 24px;
+  grid-template-columns: 1fr; padding: 22px 0;
+  position: relative; transition: padding-left .45s cubic-bezier(.16,1,.3,1);
+}
+@media (min-width: 820px) {
+  .work a { grid-template-columns: 46px 1fr 200px 92px; padding: 26px 0; }
+}
+.work a:hover { padding-left: 20px; }
+
+.work .n  { font-size: 10px; letter-spacing: .14em; opacity: .4; }
+.work .t  {
+  font-family: var(--display); text-transform: uppercase;
+  font-size: clamp(22px, 3.6vw, 42px); line-height: 1; letter-spacing: -.02em;
+}
+.work .k  { font-size: 10px; letter-spacing: .13em; opacity: .5; text-transform: uppercase; }
+.work .y  { font-size: 10px; letter-spacing: .13em; opacity: .4; text-align: right; }
+
+/* Заливка строки при наведении — растёт снизу */
+.work a::before {
+  content: ''; position: absolute; inset: 0 -20px;
+  background: rgba(var(--ink), .06);
+  transform: scaleY(0); transform-origin: 50% 100%;
+  transition: transform .45s cubic-bezier(.16,1,.3,1);
+}
+.work a:hover::before { transform: scaleY(1); }
+.work a > * { position: relative; }
+
+/* --- Сцена с частицами --- */
+#trace { padding-top: 90px; }
+.trace-wrap {
+  position: relative; width: 100%;
+  aspect-ratio: 16 / 8; max-height: 62vh;
+  border: 1px solid rgba(var(--ink), .25);
+}
+#particles { display: block; width: 100%; height: 100%; }
+
+.trace-hint {
+  position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%);
+  font-size: 10px; letter-spacing: .2em; text-transform: uppercase;
+  opacity: .55; pointer-events: none; text-align: center; line-height: 2;
+}
+.trace-hint b { font-weight: 500; opacity: 1; }
+
+.trace-tabs {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px;
+}
+.trace-tabs button {
+  font: inherit; font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+  background: none; color: inherit; cursor: none;
+  border: 1px solid rgba(var(--ink), .3); border-radius: 0;
+  padding: 9px 14px; transition: background-color .2s, color .2s, border-color .2s;
+}
+.trace-tabs button:hover { border-color: rgb(var(--ink)); }
+.trace-tabs button[aria-pressed="true"] { background: rgb(var(--ink)); color: rgb(var(--paper)); }
+
+/* --- Финал --- */
+#end { align-items: center; text-align: center; }
+.end-mail {
+  font-family: var(--display); text-transform: none;
+  font-size: clamp(20px, 4.6vw, 56px); letter-spacing: -.03em;
+  word-break: break-word;
+  border-bottom: 3px solid transparent; transition: border-color .3s;
+}
+.end-mail:hover { border-color: rgb(var(--ink)); }
+
+/* ---------- Уважение к настройке «меньше движения» ----------
+   Отключаем всё: плавный скролл, частицы, зерно, курсор. */
+@media (prefers-reduced-motion: reduce) {
+  #view { position: static !important; transform: none !important; }
+  #spacer, #grain, #cursor, #progress { display: none !important; }
+  body { cursor: auto; }
+  * { transition-duration: .01ms !important; animation: none !important; }
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="grain" aria-hidden="true"></canvas>
+<div id="cursor" aria-hidden="true"><span class="lbl">HOLD</span></div>
+<div id="progress" aria-hidden="true"></div>
+
+<!-- ========================= Чертёжная рамка ========================= -->
+<div class="hud" aria-hidden="true">
+  <div class="ruler" id="ruler"></div>
+  <span class="corner tl"></span><span class="corner tr"></span>
+  <span class="corner bl"></span><span class="corner br"></span>
+
+  <div class="hud-row hud-top">
+    <span>Pahlavon Numonjonov</span>
+    <nav class="hud-mid">
+      <a href="#index" class="on">Index</a>
+      <a href="#trace">Trace</a>
+      <a href="#end">Contact</a>
+    </nav>
+    <span class="hud-right">
+      Tashkent — UTC+5<br />
+      <span class="dim" id="hud-count">00 — 06 index</span>
+    </span>
+  </div>
+
+  <div class="hud-row hud-bot">
+    <span class="dim" id="hud-sect">01 / Intro</span>
+    <span class="dim" id="hud-coord">X 0000 Y 0000</span>
+  </div>
+</div>
+
+<!-- ========================= Содержимое ========================= -->
+<div id="view">
+
+  <!-- ---------- Первый экран ---------- -->
+  <section class="sc" id="hero">
+    <h1 class="giant" id="giant">
+      <span>Things</span>
+      <span>that keep</span>
+      <span>answering.</span>
+    </h1>
+
+    <div class="hero-foot">
+      <span>Backend Engineer — Java, Oracle</span>
+      <span class="dim">Scroll ↓</span>
+    </div>
+  </section>
+
+  <!-- ---------- Тезис ---------- -->
+  <section class="sc" id="claim">
+    <p class="claim-line">Most of it talks to something older than itself.</p>
+    <p class="claim-note">
+      A bank core on Oracle. A state identification service. A JavaEE application
+      from another decade. The interesting part is never the framework — it is the
+      moment the old thing finally answers, and keeps answering under load.
+    </p>
+  </section>
+
+  <!-- ---------- Индекс работ ---------- -->
+  <section class="sc" id="index">
+    <div class="index-head">
+      <span>Selected index</span>
+      <span class="dim">06 entries — 2024/2026</span>
+    </div>
+
+    <ul class="work" id="work">
+      <li><a href="#trace" data-i="1" data-word="UZ-STATUS">
+        <span class="n">001</span><span class="t">uz-status</span>
+        <span class="k">Java 21 · Spring Boot · Postgres</span><span class="y">2025</span>
+      </a></li>
+      <li><a href="#trace" data-i="2" data-word="EXCHANGE">
+        <span class="n">002</span><span class="t">exchange</span>
+        <span class="k">Python · zero dependencies</span><span class="y">2024</span>
+      </a></li>
+      <li><a href="#trace" data-i="3" data-word="TGAGENT">
+        <span class="n">003</span><span class="t">tgagent</span>
+        <span class="k">Java · Gemini → Groq</span><span class="y">2025</span>
+      </a></li>
+      <li><a href="#trace" data-i="4" data-word="TEKSTLY">
+        <span class="n">004</span><span class="t">tekstlybot</span>
+        <span class="k">Java · ffmpeg · whisper.cpp</span><span class="y">2024</span>
+      </a></li>
+      <li><a href="#trace" data-i="5" data-word="PLUSLINE">
+        <span class="n">005</span><span class="t">plusline</span>
+        <span class="k">Python · aiogram 3</span><span class="y">2024</span>
+      </a></li>
+      <li><a href="#trace" data-i="6" data-word="IABS">
+        <span class="n">006</span><span class="t">iabs-client</span>
+        <span class="k">Java 17 · Oracle · JWT</span><span class="y">2024</span>
+      </a></li>
+    </ul>
+  </section>
+
+  <!-- ---------- Сцена с частицами ---------- -->
+  <section class="sc" id="trace">
+    <div class="index-head" style="margin-bottom:22px">
+      <span>Trace pen</span>
+      <span class="dim" id="trace-name">UZ-STATUS</span>
+    </div>
+
+    <div class="trace-wrap">
+      <canvas id="particles"></canvas>
+      <p class="trace-hint">
+        <b>Hold and move</b> to pull the name together<br />
+        <span>Release — it scatters back</span>
+      </p>
+    </div>
+
+    <div class="trace-tabs" id="tabs">
+      <button type="button" data-word="UZ-STATUS" aria-pressed="true">uz-status</button>
+      <button type="button" data-word="EXCHANGE" aria-pressed="false">exchange</button>
+      <button type="button" data-word="TGAGENT" aria-pressed="false">tgagent</button>
+      <button type="button" data-word="TEKSTLY" aria-pressed="false">tekstlybot</button>
+    </div>
+  </section>
+
+  <!-- ---------- Финал ---------- -->
+  <section class="sc" id="end">
+    <p class="claim-note" style="margin:0 0 26px">Open to backend work</p>
+    <a class="end-mail" href="mailto:pahlavon@numonjonov.com">pahlavon@numonjonov.com</a>
+    <p class="claim-note" style="margin-top:40px">
+      Пробник визуального языка. Рабочая версия сайта — <a href="../index.html" style="text-decoration:underline">здесь</a>.
+    </p>
+  </section>
+
+</div>
+
+<div id="spacer"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var touch  = matchMedia('(hover: none)').matches;
+
+  var view   = document.getElementById('view');
+  var spacer = document.getElementById('spacer');
+  var smooth = false;
+
+  if (reduce) { boot(); return; }        // статичная версия, без сцены
+
+  /* Подмену скролла трансформом включаем только на мыши. На тачскрине
+     она всегда даёт рывки: браузер прячет адресную строку, меняет высоту
+     вьюпорта и борется с инерцией пальца. Там оставляем родной скролл —
+     сцены, инверсия и HUD работают от window.scrollY как есть. */
+  smooth = !touch;
+  if (smooth) document.documentElement.classList.add('js');
+
+  /* =========================================================
+     Плавный скролл
+     Страница не скроллится сама: высоту держит распорка, а
+     содержимое подтягивается к позиции с коэффициентом. Отсюда
+     ощущение веса — картинка догоняет колесо, а не прыгает.
+     ========================================================= */
+  var target = 0, current = 0, maxScroll = 0;
+
+  function measure() {
+    var h = view.getBoundingClientRect().height;
+    if (smooth) spacer.style.height = h + 'px';
+    maxScroll = Math.max(0, (smooth ? h : document.body.scrollHeight) - innerHeight);
+  }
+  addEventListener('resize', measure);
+  measure();
+  // Шрифты приходят позже и меняют высоту — пересчитываем.
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
+
+  /* =========================================================
+     Зерно
+     Рисуем шум в маленький буфер и растягиваем. Перерисовываем
+     не каждый кадр, а раз в ~80 мс: глаз разницы не видит,
+     а нагрузка падает примерно вчетверо.
+     ========================================================= */
+  var gc = document.getElementById('grain');
+  var g  = gc.getContext('2d', { alpha: true });
+  var gw = 190, gh = 130, grainAt = 0;
+
+  function drawGrain(now) {
+    if (now - grainAt < 80) return;
+    grainAt = now;
+
+    gc.width = gw; gc.height = gh;
+    var img = g.createImageData(gw, gh), d = img.data;
+    for (var i = 0; i < d.length; i += 4) {
+      var v = 200 + Math.random() * 55;
+      d[i] = d[i + 1] = d[i + 2] = v;
+      d[i + 3] = 26;
+    }
+    g.putImageData(img, 0, 0);
+  }
+  gc.style.width = '100%'; gc.style.height = '100%';
+
+  /* =========================================================
+     Частицы
+     Имя проекта рисуется в скрытый буфер, пиксели с заливкой
+     становятся частицами. Каждая помнит своё место в букве и
+     свою точку разлёта. Зажатая кнопка стягивает к буквам тех,
+     кто близко к курсору; отпускание — разлёт обратно.
+     ========================================================= */
+  var pc = document.getElementById('particles');
+  var p  = pc.getContext('2d');
+  var parts = [], word = 'UZ-STATUS';
+  var holding = false, px = -9999, py = -9999;
+  var RADIUS = 130;
+
+  function buildParticles() {
+    var rect = pc.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+
+    var dpr = Math.min(devicePixelRatio || 1, 2);
+    pc.width  = Math.floor(rect.width  * dpr);
+    pc.height = Math.floor(rect.height * dpr);
+    p.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    var w = rect.width, h = rect.height;
+
+    var off = document.createElement('canvas');
+    off.width = Math.floor(w); off.height = Math.floor(h);
+    var o = off.getContext('2d');
+
+    // Кегль подбираем так, чтобы слово заняло ~82% ширины
+    var size = 120;
+    o.font = '900 ' + size + 'px "Archivo Black", Impact, sans-serif';
+    var measured = o.measureText(word).width || 1;
+    size = Math.min(size * (w * 0.82) / measured, h * 0.5);
+
+    o.font = '900 ' + size + 'px "Archivo Black", Impact, sans-serif';
+    o.textAlign = 'center'; o.textBaseline = 'middle';
+    o.fillStyle = '#000';
+    o.fillText(word, w / 2, h / 2);
+
+    var data = o.getImageData(0, 0, off.width, off.height).data;
+    var step = w > 720 ? 4 : 5;
+
+    parts = [];
+    for (var y = 0; y < off.height; y += step) {
+      for (var x = 0; x < off.width; x += step) {
+        if (data[(y * off.width + x) * 4 + 3] < 128) continue;
+        parts.push({
+          hx: x, hy: y,                                  // дом — точка в букве
+          sx: Math.random() * w, sy: Math.random() * h,  // точка разлёта
+          x: Math.random() * w,  y: Math.random() * h,
+          on: false                                      // уже протёрта?
+        });
+      }
+    }
+  }
+
+  function drawParticles() {
+    var rect = pc.getBoundingClientRect();
+    var w = rect.width, h = rect.height;
+    p.clearRect(0, 0, w, h);
+
+    var css = getComputedStyle(document.documentElement).getPropertyValue('--ink').trim();
+    p.fillStyle = 'rgb(' + css + ')';
+
+    for (var i = 0; i < parts.length; i++) {
+      var q = parts[i], tx, ty, k;
+
+      // Протёртая частица остаётся дома, пока кнопка зажата: иначе
+      // слово не собрать — хвост разлетается быстрее, чем доводишь
+      // курсор до конца строки.
+      if (holding && !q.on && Math.hypot(q.hx - px, q.hy - py) < RADIUS) q.on = true;
+
+      if (q.on) {
+        tx = q.hx; ty = q.hy; k = 0.2;           // стягиваем к букве
+      } else {
+        tx = q.sx; ty = q.sy; k = 0.035;         // разлёт
+      }
+
+      q.x += (tx - q.x) * k;
+      q.y += (ty - q.y) * k;
+      p.fillRect(q.x, q.y, 1.6, 1.6);
+    }
+  }
+
+  function pointerTo(e) {
+    var r = pc.getBoundingClientRect();
+    px = e.clientX - r.left;
+    py = e.clientY - r.top;
+  }
+
+  pc.addEventListener('pointerdown', function (e) {
+    holding = true; pointerTo(e); pc.setPointerCapture(e.pointerId);
+  });
+  pc.addEventListener('pointermove', pointerTo);
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) {
+    pc.addEventListener(ev, function () {
+      holding = false;
+      for (var i = 0; i < parts.length; i++) parts[i].on = false;   // всё в разлёт
+    });
+  });
+
+  function setWord(w) {
+    word = w;
+    document.getElementById('trace-name').textContent = w;
+    buildParticles();
+  }
+
+  document.getElementById('tabs').addEventListener('click', function (e) {
+    var btn = e.target.closest('button');
+    if (!btn) return;
+    [].forEach.call(this.querySelectorAll('button'), function (b) {
+      b.setAttribute('aria-pressed', String(b === btn));
+    });
+    setWord(btn.dataset.word);
+  });
+
+  // Наведение на строку индекса меняет слово на сцене
+  document.getElementById('work').addEventListener('pointerover', function (e) {
+    var a = e.target.closest('a[data-word]');
+    if (a && a.dataset.word !== word) setWord(a.dataset.word);
+  });
+
+  addEventListener('resize', buildParticles);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(buildParticles);
+
+  /* =========================================================
+     Курсор
+     ========================================================= */
+  var cur = document.getElementById('cursor');
+  var cx = innerWidth / 2, cy = innerHeight / 2, mx = cx, my = cy;
+
+  if (!touch) {
+    addEventListener('pointermove', function (e) {
+      mx = e.clientX; my = e.clientY;
+      document.getElementById('hud-coord').textContent =
+        'X ' + String(Math.round(mx)).padStart(4, '0') +
+        ' Y ' + String(Math.round(my)).padStart(4, '0');
+    }, { passive: true });
+
+    // Крупное состояние — над сценой и над строками индекса
+    document.addEventListener('pointerover', function (e) {
+      var wide = e.target.closest('#particles, .work a, .end-mail, .trace-tabs button');
+      cur.classList.toggle('wide', !!wide);
+      cur.querySelector('.lbl').textContent =
+        e.target.closest('#particles') ? 'HOLD' :
+        e.target.closest('.end-mail')  ? 'WRITE' : 'OPEN';
+    });
+  }
+
+  /* =========================================================
+     Линейка слева: деления и отметки координат
+     ========================================================= */
+  (function ruler() {
+    var box = document.getElementById('ruler'), html = '';
+    for (var y = 0; y < 2200; y += 20) {
+      var big = y % 100 === 0;
+      html += '<i class="' + (big ? 'big' : '') + '" style="top:' + y + 'px"></i>';
+      if (big && y) html += '<b style="top:' + y + 'px">' + y + '</b>';
+    }
+    box.innerHTML = html;
+  })();
+
+  /* =========================================================
+     Один кадр на всё
+     Отдельные rAF-циклы на скролл, зерно, частицы и курсор
+     конкурировали бы между собой — держим один.
+     ========================================================= */
+  var PAPER_A = [232, 232, 230], INK_A = [10, 10, 10];   // светлая
+  var PAPER_B = [8, 8, 8],       INK_B = [233, 233, 231]; // инвертированная
+
+  var sections = [
+    { id: 'hero',  name: '01 / Intro' },
+    { id: 'claim', name: '02 / Statement' },
+    { id: 'index', name: '03 / Index' },
+    { id: 'trace', name: '04 / Trace' },
+    { id: 'end',   name: '05 / Contact' }
+  ];
+  var hudSect = document.getElementById('hud-sect');
+  var hudCount = document.getElementById('hud-count');
+  var bar = document.getElementById('progress');
+  var giant = document.getElementById('giant');
+  var lastSect = '';
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+
+  function frame(now) {
+    // — скролл
+    if (smooth) {
+      target = scrollY;
+      current += (target - current) * 0.085;
+      if (Math.abs(target - current) < 0.05) current = target;
+      view.style.transform = 'translate3d(0,' + (-current) + 'px,0)';
+    } else {
+      current = scrollY;
+    }
+
+    // — первый экран уезжает вглубь
+    var hp = clamp01(current / innerHeight);
+    giant.style.transform = 'scale(' + (1 + hp * 0.5) + ')';
+    giant.style.opacity = String(1 - hp * 1.15);
+
+    // — инверсия: между вторым и третьим экраном лист становится чёрным
+    var inv = clamp01((current - innerHeight * 1.25) / (innerHeight * 0.6));
+    var root = document.documentElement.style;
+    root.setProperty('--paper',
+      Math.round(lerp(PAPER_A[0], PAPER_B[0], inv)) + ',' +
+      Math.round(lerp(PAPER_A[1], PAPER_B[1], inv)) + ',' +
+      Math.round(lerp(PAPER_A[2], PAPER_B[2], inv)));
+    root.setProperty('--ink',
+      Math.round(lerp(INK_A[0], INK_B[0], inv)) + ',' +
+      Math.round(lerp(INK_A[1], INK_B[1], inv)) + ',' +
+      Math.round(lerp(INK_A[2], INK_B[2], inv)));
+    // На чёрном зерно должно светлеть, а не затемнять
+    gc.style.mixBlendMode = inv > 0.5 ? 'screen' : 'multiply';
+
+    // — HUD
+    bar.style.width = (maxScroll ? (current / maxScroll) * 100 : 0) + '%';
+
+    var seen = sections[0].name;
+    for (var i = 0; i < sections.length; i++) {
+      var el = document.getElementById(sections[i].id);
+      if (el && el.offsetTop <= current + innerHeight * 0.45) seen = sections[i].name;
+    }
+    if (seen !== lastSect) { lastSect = seen; hudSect.textContent = seen; }
+    hudCount.textContent = String(Math.min(6, Math.ceil(clamp01(
+      (current - document.getElementById('index').offsetTop) / innerHeight) * 6)))
+      .padStart(2, '0') + ' — 06 index';
+
+    // — курсор
+    cx = lerp(cx, mx, 0.2); cy = lerp(cy, my, 0.2);
+    cur.style.transform = 'translate3d(' + cx + 'px,' + cy + 'px,0)';
+
+    drawGrain(now);
+    drawParticles();
+
+    requestAnimationFrame(frame);
+  }
+
+  function boot() {
+    if (reduce) return;
+    buildParticles();
+    requestAnimationFrame(frame);
+  }
+  boot();
+
+  /* Плавный переход по якорям HUD — обычный скролл, сглаживание
+     сделает основной цикл. */
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('a[href^="#"]');
+    if (!a) return;
+    var el = document.querySelector(a.getAttribute('href'));
+    if (!el) return;
+    e.preventDefault();
+    scrollTo({ top: el.offsetTop, behavior: 'smooth' });
+  });
+})();
+</script>
+</body>
+</html>

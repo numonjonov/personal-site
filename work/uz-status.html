@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<title>uz-status — case study · Pahlavon Numonjonov</title>
+<meta name="description" content="Case study: building a public uptime monitor in Java 21 and Spring Boot — probe design, retention rollups, PostgreSQL schema and what I traded away." />
+<link rel="canonical" href="https://numonjonov.com/work/uz-status.html" />
+<meta name="theme-color" content="#E8E8E6" />
+
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://numonjonov.com/work/uz-status.html" />
+<meta property="og:title" content="uz-status — case study" />
+<meta property="og:description" content="Case study: building a public uptime monitor in Java 21 and Spring Boot — probe design, retention rollups, PostgreSQL schema and what I traded away." />
+<meta property="og:image" content="https://numonjonov.com/og.png?v=4" />
+<meta name="twitter:card" content="summary_large_image" />
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23E8E8E6'/><text x='50' y='76' font-family='Arial Black,sans-serif' font-size='78' font-weight='900' fill='%230A0A0A' text-anchor='middle'>N</text></svg>" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css?v=39" />
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "uz-status — case study",
+  "description": "Case study: building a public uptime monitor in Java 21 and Spring Boot — probe design, retention rollups, PostgreSQL schema and what I traded away.",
+  "author": { "@type": "Person", "name": "Pahlavon Numonjonov", "url": "https://numonjonov.com/" },
+  "url": "https://numonjonov.com/work/uz-status.html"
+}
+</script>
+</head>
+
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<canvas id="grain" aria-hidden="true"></canvas>
+<div id="cursor" aria-hidden="true"><span class="lbl">GO</span></div>
+<div id="progress" aria-hidden="true"></div>
+
+<div id="hud-scrim-top" aria-hidden="true"></div>
+<div id="hud-scrim-bot" aria-hidden="true"></div>
+<div class="hud">
+  <div class="ruler" id="ruler" aria-hidden="true"></div>
+  <span class="corner tl" aria-hidden="true"></span><span class="corner tr" aria-hidden="true"></span>
+  <span class="corner bl" aria-hidden="true"></span><span class="corner br" aria-hidden="true"></span>
+
+  <div class="hud-row hud-top">
+    <a class="mono" href="../index.html">Pahlavon Numonjonov</a>
+    <nav class="hud-nav mono" id="hud-nav" aria-label="Sections">
+      <a href="../index.html#index">Work</a>
+      <a href="../index.html#stack">Stack</a>
+      <a href="../index.html#contact">Contact</a>
+    </nav>
+    <span class="hud-right mono">
+      <span>Case study</span><br /><span class="dim">uz-status</span>
+    </span>
+  </div>
+
+  <div class="hud-row hud-bot mono" aria-hidden="true">
+    <span class="faint">2026 — present</span>
+    <span class="faint" id="hud-coord">X 0000 Y 0000</span>
+  </div>
+</div>
+
+<div id="view">
+<main id="main">
+
+  <header class="case-head">
+    <a class="back mono" href="../index.html#index">&larr; All work</a>
+    <h1>uz-status</h1>
+    <p class="case-sub">A public uptime monitor for the services Uzbekistan runs on — payments, the tax portal, marketplaces and banks. Probes every minute, incident history, open API.</p>
+
+    <dl class="case-meta mono">
+      <div><dt class="dim">Role</dt><dd>Solo — design, build, deploy</dd></div>
+      <div><dt class="dim">Timeline</dt><dd>2026 — present</dd></div>
+      <div><dt class="dim">Stack</dt><dd>Java 21 · Spring Boot · PostgreSQL · Docker</dd></div>
+      <div><dt class="dim">Status</dt><dd>Live</dd></div>
+    </dl>
+  </header>
+
+  <article class="case-body">
+
+    <h2>The problem</h2>
+    <p>
+      When Payme stops taking payments in Uzbekistan, the first thing everyone does is ask a
+      group chat: <b>&ldquo;is it down, or is it just me?&rdquo;</b> Nobody knows. The services
+      themselves rarely say anything, and when they do it lands on a social account most people
+      do not follow. The result is thousands of people independently retrying a dead endpoint
+      and blaming their own phone.
+    </p>
+    <p>
+      There is no shared status page for the services this country actually runs on — payments,
+      the tax portal, the marketplaces, the banks. I built one.
+    </p>
+
+    <h2>Users and context</h2>
+    <ul>
+      <li><b>A person at a till</b> whose payment failed, on a phone, in a hurry. They need one
+        word: up or down. Nothing else on the screen matters.</li>
+      <li><b>Support and ops staff</b> who need to know whether to open an incident or wait it out,
+        and want yesterday's history to argue with.</li>
+      <li><b>Developers</b> integrating with these services, who want the data as JSON so their own
+        dashboards can consume it.</li>
+    </ul>
+
+    <h2>Constraints and tradeoffs</h2>
+    <h3>Probing from outside, honestly</h3>
+    <p>
+      I have no access to anyone's infrastructure. Everything is measured the way a user
+      experiences it: an HTTP request from outside, with a timeout. That means the monitor can
+      report a network path problem as a service problem — and I decided that is <b>correct</b>
+      for this audience. If the user cannot reach it, it is down for the user.
+    </p>
+
+    <h3>One dead target must not kill the cycle</h3>
+    <p>
+      The naive version runs probes in a loop and dies on the first hung connection. Every target
+      gets its own timeout, and a failure is a result, not an exception that escapes:
+    </p>
+    <div class="pull">
+      <p>
+        A probe that throws returns <code>Result.down(target, cause)</code>. The evaluator never
+        propagates — the cycle always completes, and &ldquo;we could not check&rdquo; is recorded
+        as its own state, distinct from &ldquo;we checked and it was down&rdquo;.
+      </p>
+    </div>
+
+    <h3>History that does not grow forever</h3>
+    <p>
+      Checking a few dozen targets every minute produces millions of rows a year. Raw points are
+      kept only for the recent window; a rollup job folds older data into hourly and daily
+      aggregates and deletes the originals. The heatmap and the reliability table read the
+      aggregates, never the raw table.
+    </p>
+
+    <h3>What I traded away</h3>
+    <ul>
+      <li><b>No alerting.</b> Notifications need identity, preferences and a delivery channel.
+        That is a second product; the first one has to be useful without it.</li>
+      <li><b>No JavaScript app.</b> Pages are rendered server-side with Thymeleaf. On a bad mobile
+        connection — exactly when people check a status page — a server-rendered page wins.</li>
+      <li><b>Minute resolution, not seconds.</b> Higher frequency means more load on services that
+        never agreed to be probed. Being a polite guest was worth the lost precision.</li>
+    </ul>
+
+    <h2>Architecture</h2>
+    <figure class="figure">
+      <div class="figure-frame">
+        <svg viewBox="0 0 880 300" role="img" aria-label="Data flow: scheduler to probes to database to page and API">
+          <defs>
+            <marker id="ar" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+              <path d="M0 0 L9 4.5 L0 9 z" fill="rgb(var(--ink))"/>
+            </marker>
+          </defs>
+          <g font-family="monospace" font-size="12" fill="rgb(var(--ink))">
+
+            <rect x="12"  y="110" width="132" height="62" rx="10" fill="rgba(var(--ink), .06)" stroke="rgb(var(--ink))"/>
+            <text x="78" y="136" text-anchor="middle">Scheduler</text>
+            <text x="78" y="154" text-anchor="middle" fill="rgba(var(--ink), .6)" font-size="10">every minute</text>
+
+            <rect x="196" y="36"  width="150" height="54" rx="10" fill="rgba(var(--ink), .06)" stroke="rgb(var(--ink))"/>
+            <text x="271" y="60" text-anchor="middle">ProbeEvaluator</text>
+            <text x="271" y="77" text-anchor="middle" fill="rgba(var(--ink), .6)" font-size="10">HTTP + timeout</text>
+
+            <rect x="196" y="118" width="150" height="54" rx="10" fill="rgba(var(--ink), .06)" stroke="rgb(var(--ink))"/>
+            <text x="271" y="142" text-anchor="middle">StatusMatcher</text>
+            <text x="271" y="159" text-anchor="middle" fill="rgba(var(--ink), .6)" font-size="10">up / down / unknown</text>
+
+            <rect x="196" y="200" width="150" height="54" rx="10" fill="rgba(var(--ink), .06)" stroke="rgb(var(--ink))"/>
+            <text x="271" y="224" text-anchor="middle">RetentionJob</text>
+            <text x="271" y="241" text-anchor="middle" fill="rgba(var(--ink), .6)" font-size="10">rollup + delete</text>
+
+            <rect x="404" y="110" width="150" height="70" rx="10" fill="rgba(var(--ink), .12)" stroke="rgb(var(--ink))"/>
+            <text x="479" y="136" text-anchor="middle">PostgreSQL</text>
+            <text x="479" y="154" text-anchor="middle" fill="rgba(var(--ink), .6)" font-size="10">raw + hourly + daily</text>
+            <text x="479" y="170" text-anchor="middle" fill="rgba(var(--ink), .6)" font-size="10">Flyway migrations</text>
+
+            <rect x="612" y="36"  width="160" height="54" rx="10" fill="rgba(var(--ink), .06)" stroke="rgb(var(--ink))"/>
+            <text x="692" y="60" text-anchor="middle">StatusCalculator</text>
+            <text x="692" y="77" text-anchor="middle" fill="rgba(var(--ink), .6)" font-size="10">heatmap, day bars</text>
+
+            <rect x="612" y="118" width="160" height="54" rx="10" fill="rgba(var(--ink), .06)" stroke="rgb(var(--ink))"/>
+            <text x="692" y="142" text-anchor="middle">Thymeleaf page</text>
+            <text x="692" y="159" text-anchor="middle" fill="rgba(var(--ink), .6)" font-size="10">server rendered</text>
+
+            <rect x="612" y="200" width="160" height="54" rx="10" fill="rgba(var(--ink), .06)" stroke="rgb(var(--ink))"/>
+            <text x="692" y="224" text-anchor="middle">Open JSON API</text>
+            <text x="692" y="241" text-anchor="middle" fill="rgba(var(--ink), .6)" font-size="10">+ Prometheus</text>
+
+            <g stroke="rgb(var(--ink))" stroke-width="1.4" fill="none" marker-end="url(#ar)">
+              <path d="M144 132 L190 70"/>
+              <path d="M144 141 L190 145"/>
+              <path d="M144 152 L190 222"/>
+              <path d="M346 66  L400 126"/>
+              <path d="M346 145 L400 145"/>
+              <path d="M346 226 L400 166"/>
+              <path d="M554 136 L606 70"/>
+              <path d="M554 145 L606 145"/>
+              <path d="M554 156 L606 222"/>
+            </g>
+          </g>
+        </svg>
+      </div>
+      <figcaption>One minute of the system: probe, classify, store, serve.</figcaption>
+    </figure>
+
+    <h2>Screens and states</h2>
+    <div class="states">
+      <div class="state">
+        <div class="shot">Payme      ●  operational   99.98%
+Click      ●  operational   99.91%
+Uzum       ●  operational   99.97%
+soliq.uz   ●  degraded      97.40%</div>
+        <p class="cap"><b>Normal.</b> The answer is the first thing on the page — no chrome, no login, no cookie banner.</p>
+      </div>
+      <div class="state">
+        <div class="shot">Payme      ●  DOWN
+           started 14:12 &middot; 23 min ago
+           last ok 14:11
+           checks  23 failed in a row</div>
+        <p class="cap"><b>Incident.</b> Not just a red dot — when it started, how long, and how confident the monitor is.</p>
+      </div>
+      <div class="state">
+        <div class="shot">90 days    ▓▓▓▓▓▓░▓▓▓▓▓▓▓▓▓▓▒▓▓▓▓▓▓
+           ░ outage   ▒ degraded   ▓ ok</div>
+        <p class="cap"><b>History.</b> A heatmap reads faster than a number: the eye finds the bad day before it reads the percentage.</p>
+      </div>
+      <div class="state">
+        <div class="shot">GET /api/v1/status
+{{ "service": "payme",
+  "state": "up",
+  "checked_at": "…",
+  "uptime_90d": 0.9998 }}</div>
+        <p class="cap"><b>API.</b> Open, no key. The data is only useful if other people can build on it.</p>
+      </div>
+    </div>
+
+    <h2>Results and lessons</h2>
+    <div class="results">
+      <div class="result"><div class="n">&lt;1 min</div><div class="t">from a service going down to it showing on the page</div></div>
+      <div class="result"><div class="n">90 d</div><div class="t">of history kept, at constant storage cost</div></div>
+      <div class="result"><div class="n">0</div><div class="t">probe failures that took the cycle down with them</div></div>
+    </div>
+
+    <h3>What I would tell myself at the start</h3>
+    <ul>
+      <li><b>Model &ldquo;unknown&rdquo; from day one.</b> The first version had up and down. The
+        state that actually matters during an incident is &ldquo;we could not reach it to find
+        out&rdquo;, and retrofitting a third state touched every layer.</li>
+      <li><b>Retention is a feature, not cleanup.</b> Deciding what the page shows at 90 days
+        decides the schema. I designed the schema first and paid for it.</li>
+      <li><b>Integration tests with a real database earn their runtime.</b> Testcontainers makes
+        <code>mvn verify</code> slow and honest. Every bug it caught was a bug about SQL, which is
+        exactly the class of bug unit tests with mocks never see.</li>
+      <li><b>Pin the JDK.</b> The build breaks on a newer JDK than the one it targets, so
+        <code>JAVA_HOME</code> is fixed in <code>run.sh</code> on purpose — a comment explains why,
+        because otherwise someone helpfully deletes it.</li>
+    </ul>
+
+    <div class="case-links">
+      <a class="btn" href="https://github.com/numonjonov" rel="noopener">Source on GitHub</a>
+      <a class="btn" href="https://status.numonjonov.com" rel="noopener">Live demo</a>
+      <a class="btn btn-solid" href="../index.html#contact">Talk about this project</a>
+    </div>
+  </article>
+
+  <nav class="case-next" aria-label="Next case study">
+    <span class="mono dim">Next case study</span>
+    <a href="exchange.html">exchange &rarr;</a>
+  </nav>
+
+</main>
+
+<footer class="foot mono dim">
+  <span>&copy; 2026 Pahlavon Numonjonov</span>
+  <a href="../index.html">Back to the index</a>
+</footer>
+</div>
+
+<div id="spacer"></div>
+
+<script src="../main.js?v=39"></script>
+</body>
+</html>

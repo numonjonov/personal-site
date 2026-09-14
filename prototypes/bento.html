@@ -1,210 +1,480 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Образец 1 — Bento-сетка</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Doto:wght@500;700;900&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="base.css" />
-  <style>
-    /* Каркас: одна сетка на весь экран, плитки разного размера.
-       Линии между плитками — это фон сетки, просвечивающий в зазорах. */
-    body { height: 100vh; overflow: hidden; }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>B — Dark bento · Pahlavon Numonjonov</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   Вариант B — тёмный bento-грид
+   Плитки разного размера поверх живого WebGL-фона.
+   Палитра из навыка: "Terminal dark + success green".
+   ============================================================ */
 
-    .bento {
-      display: grid; height: 100vh; gap: 1px; background: var(--line);
-      grid-template-columns: repeat(4, 1fr);
-      grid-template-rows: 1.15fr 1fr 1.1fr .85fr;
-      grid-template-areas:
-        "name name clock theme"
-        "name name about about"
-        "p1   p2   about about"
-        "skills skills exp mail";
-    }
+:root {
+  --bg:        #050609;
+  --card:      rgba(14, 17, 26, .72);
+  --card-solid:#0E111A;
+  --fg:        #F2F5F8;
+  --muted:     #8A94A6;
+  --border:    #1E2433;
+  --border-hi: #37415A;
+  --accent:    #22C55E;   /* зелёный «сервис отвечает» — родом из uz-status */
 
-    .tile {
-      position: relative; background: var(--bg);
-      padding: 22px; overflow: hidden;
-      display: flex; flex-direction: column;
-      transition: background-color .25s ease, color .25s ease;
-    }
-    .tile-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  --display: 'Space Grotesk', system-ui, sans-serif;
+  --text:    'Inter', system-ui, sans-serif;
+  --mono:    'JetBrains Mono', ui-monospace, monospace;
 
-    /* Плитка-ссылка подсвечивается целиком */
-    .tile-link:hover { background: var(--text); color: var(--bg); }
-    .tile-link:hover .label, .tile-link:hover .tile-text { color: inherit; opacity: .75; }
-    .tile-link:hover .tags li { border-color: currentColor; color: inherit; }
+  --gap: 10px;
+  --radius: 14px;
+}
 
-    .t-name  { grid-area: name; justify-content: space-between; padding: 28px; }
-    .t-clock { grid-area: clock; }
-    .t-theme { grid-area: theme; align-items: flex-end; }
-    .t-about { grid-area: about; padding: 28px; }
-    .t-p1    { grid-area: p1; }
-    .t-p2    { grid-area: p2; }
-    .t-skills{ grid-area: skills; }
-    .t-exp   { grid-area: exp; }
-    .t-mail  { grid-area: mail; }
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font-family: var(--text); font-size: 16px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+a { color: inherit; text-decoration: none; }
+::selection { background: var(--accent); color: #06210F; }
 
-    .name-title {
-      font-size: clamp(30px, 3.6vw, 60px); line-height: .95; letter-spacing: .01em;
-      font-weight: 900;
-    }
-    .name-role { font-family: var(--font-mono); font-size: 12px; color: var(--muted); margin-top: 10px; }
-    .name-role b { color: var(--text); font-weight: 500; }
+/* Фон: WebGL-канвас на всю страницу, под контентом.
+   Если WebGL не поднимется, останется CSS-градиент на body — не пусто. */
+#gl {
+  position: fixed; inset: 0; width: 100%; height: 100%;
+  z-index: 0; display: block;
+}
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(1100px 700px at 18% 0%, #0C2318 0%, transparent 62%),
+    radial-gradient(900px 600px at 88% 12%, #101A2E 0%, transparent 60%);
+}
 
-    .status { display: inline-flex; align-items: center; gap: 8px; }
-    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: blink 1.8s steps(1) infinite; }
-    @keyframes blink { 0%,60% { opacity: 1; } 61%,100% { opacity: .25; } }
+.page { position: relative; z-index: 1; max-width: 1280px; margin: 0 auto; padding: clamp(12px, 2.4vw, 26px); }
 
-    .clock-value {
-      font-family: var(--font-display); font-weight: 700; font-size: clamp(24px, 2.6vw, 40px);
-      font-variant-numeric: tabular-nums; margin-top: auto;
-    }
+/* ---------- Сетка ---------- */
+.bento {
+  display: grid; gap: var(--gap);
+  grid-template-columns: repeat(2, 1fr);
+  grid-auto-rows: minmax(112px, auto);
+}
+@media (min-width: 760px)  { .bento { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 1080px) { .bento { grid-template-columns: repeat(6, 1fr); } }
 
-    .tile-text { color: var(--muted); font-size: 14px; }
-    .about-lead { font-size: 17px; margin-bottom: 12px; }
+.tile {
+  position: relative; overflow: hidden;
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 18px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  display: flex; flex-direction: column; gap: 10px;
+  grid-column: span 2;
+  transition: border-color .25s ease, transform .25s cubic-bezier(.2,.7,.3,1), background-color .25s ease;
+}
 
-    .facts { display: grid; gap: 12px; margin-top: auto; padding-top: 18px; border-top: 1px solid var(--line); }
-    .facts div { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; }
-    .facts span:last-child { font-weight: 500; }
+/* Пятно света под курсором. Координаты кладёт JS в --mx/--my,
+   сам эффект — чистый CSS, так он не дёргает layout. */
+.tile::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0;
+  background: radial-gradient(360px circle at var(--mx, 50%) var(--my, 50%),
+              color-mix(in srgb, var(--accent) 13%, transparent), transparent 62%);
+  transition: opacity .3s ease;
+}
+.tile:hover::after, .tile:focus-visible::after { opacity: 1; }
+.tile:hover, .tile:focus-visible { border-color: var(--border-hi); transform: translateY(-2px); outline: none; }
 
-    .proj-num { font-family: var(--font-mono); font-size: 10px; color: var(--muted); letter-spacing: .12em; }
-    .proj-title { font-size: 22px; margin-bottom: 8px; }
-    .proj-arrow { margin-top: auto; font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; }
+.label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--muted);
+}
 
-    .skills-cols { display: flex; gap: 34px; flex-wrap: wrap; }
-    .skills-cols > div { display: grid; gap: 10px; align-content: start; }
+/* ---------- Плитка имени ---------- */
+.t-name { grid-column: span 2; justify-content: space-between; padding: 22px; }
+@media (min-width: 760px)  { .t-name { grid-column: span 4; grid-row: span 2; } }
+@media (min-width: 1080px) { .t-name { grid-column: span 4; grid-row: span 2; } }
 
-    .exp-row { display: grid; gap: 2px; padding: 8px 0; border-bottom: 1px solid var(--line); }
-    .exp-row:last-child { border-bottom: none; }
-    .exp-role { font-family: var(--font-body); font-size: 13px; font-weight: 600; }
+.t-name h1 {
+  font-family: var(--display); font-weight: 700;
+  font-size: clamp(34px, 6.4vw, 76px); line-height: .95; letter-spacing: -.035em;
+  margin: 4px 0 0;
+}
+.t-name h1 em { font-style: normal; color: var(--accent); }
+.t-name p { margin: 0; color: var(--muted); max-width: 52ch; }
 
-    .mail-value { font-family: var(--font-mono); font-size: 11px; word-break: break-all; margin-top: auto; }
+/* ---------- Статус ---------- */
+.t-status .big { font-family: var(--display); font-size: 19px; font-weight: 600; letter-spacing: -.01em; }
+.pulse {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent); margin-right: 9px; vertical-align: 1px;
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 70%, transparent);
+  animation: pulse 2.4s infinite;
+}
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent); }
+  70%  { box-shadow: 0 0 0 11px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
 
-    @media (max-width: 900px) {
-      body { height: auto; overflow: auto; }
-      .bento {
-        height: auto; grid-template-columns: 1fr 1fr;
-        grid-template-rows: none;
-        grid-template-areas:
-          "name  name"
-          "clock theme"
-          "about about"
-          "p1    p2"
-          "skills skills"
-          "exp   mail";
-      }
-      .tile { min-height: 150px; }
-      .t-name { min-height: 240px; }
-    }
-  </style>
+/* ---------- Часы ---------- */
+.t-time .clock { font-family: var(--mono); font-size: clamp(24px, 3.4vw, 34px); letter-spacing: -.02em; }
+.t-time .where { color: var(--muted); font-size: 13px; }
+
+/* ---------- О себе ---------- */
+.t-about { }
+@media (min-width: 1080px) { .t-about { grid-column: span 2; grid-row: span 2; } }
+.t-about p { margin: 0; color: var(--muted); font-size: 15px; }
+.t-about p + p { margin-top: 12px; }
+
+/* ---------- Стек ---------- */
+@media (min-width: 760px) { .t-stack { grid-column: span 4; } }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; }
+.chips li {
+  font-family: var(--mono); font-size: 11px; padding: 5px 10px;
+  border: 1px solid var(--border); border-radius: 999px; color: var(--muted);
+  transition: border-color .2s, color .2s;
+}
+.chips li:hover { border-color: var(--accent); color: var(--fg); }
+
+/* ---------- Проекты ---------- */
+.t-proj { min-height: 168px; justify-content: space-between; }
+.t-proj.wide { grid-column: span 2; }
+@media (min-width: 760px) { .t-proj.wide { grid-column: span 4; } }
+
+.proj-title {
+  font-family: var(--display); font-size: 21px; font-weight: 600; letter-spacing: -.02em;
+  display: flex; align-items: center; gap: 8px;
+}
+.proj-title .arrow { color: var(--muted); transition: transform .25s ease, color .25s ease; }
+.t-proj:hover .arrow { transform: translate(3px, -3px); color: var(--accent); }
+.proj-desc { color: var(--muted); font-size: 14px; margin: 0; }
+.proj-tags { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: .06em; }
+
+/* ---------- Контакты ---------- */
+.t-mail { grid-column: span 2; }
+@media (min-width: 760px)  { .t-mail { grid-column: span 4; } }
+/* На шести колонках почта занимает две, а не четыре: иначе GitHub добивает
+   ряд до конца, а Telegram уезжает на отдельную строку и внизу зияет дыра. */
+@media (min-width: 1080px) { .t-mail { grid-column: span 2; } }
+
+.t-mail .addr {
+  font-family: var(--display); font-weight: 600; letter-spacing: -.03em;
+  font-size: clamp(20px, 3.6vw, 40px); word-break: break-word;
+}
+@media (min-width: 1080px) { .t-mail .addr { font-size: clamp(18px, 1.9vw, 25px); } }
+.t-mail:hover .addr { color: var(--accent); }
+
+.t-social { align-items: flex-start; justify-content: space-between; min-height: 112px; }
+.t-social .name { font-family: var(--display); font-size: 18px; font-weight: 600; }
+
+/* ---------- Низ ---------- */
+.foot {
+  display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between;
+  font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--muted); padding: 20px 4px 8px;
+}
+
+/* Появление плиток волной — тот самый stagger из навыка, только на
+   Web Animations API, без GSAP. Прятать плитки в CSS нельзя: не отработает
+   JS — и страница окажется пустой. Их прячет сама анимация
+   (fill: 'backwards' держит начальный кадр во время задержки). */
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition-duration: .01ms !important; }
+  #gl { display: none; }
+}
+</style>
 </head>
 <body>
-  <main class="bento">
-    <section class="tile t-name">
-      <span class="label status"><span class="dot"></span> Available for work</span>
+
+<canvas id="gl" aria-hidden="true"></canvas>
+
+<div class="page">
+  <div class="bento">
+
+    <!-- ===== Имя ===== -->
+    <div class="tile t-name">
+      <span class="label">Backend engineer · Tashkent, UZ</span>
       <div>
-        <h1 class="name-title">Pahlavon<br />Numonjonov</h1>
-        <p class="name-role">I'm a <b id="role">developer</b></p>
+        <h1>Pahlavon<br />Numonjo<em>nov</em></h1>
       </div>
-    </section>
+      <p>Java and Spring Boot for a living. Banking integrations by day,
+         Telegram bots and small tools at night.</p>
+    </div>
 
-    <section class="tile t-clock">
+    <!-- ===== Статус ===== -->
+    <div class="tile t-status">
+      <span class="label">Status</span>
+      <div class="big"><span class="pulse"></span>Open to work</div>
+      <span class="label" style="letter-spacing:.04em;text-transform:none">Backend · Java · remote or Tashkent</span>
+    </div>
+
+    <!-- ===== Часы ===== -->
+    <div class="tile t-time">
       <span class="label">Local time</span>
-      <span class="clock-value" id="clock">--:--</span>
-    </section>
+      <div class="clock" id="clock">--:--:--</div>
+      <span class="where">UTC+5 — usually replying</span>
+    </div>
 
-    <section class="tile t-theme">
-      <div class="tile-head" style="width:100%">
-        <span class="label">Theme</span>
-      </div>
-      <button class="theme-btn" id="theme-toggle" type="button" aria-label="Toggle theme" style="margin-top:auto">
-        <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-        <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
-      </button>
-    </section>
+    <!-- ===== О себе ===== -->
+    <div class="tile t-about">
+      <span class="label">About</span>
+      <p>Most of what I write talks to something older or stricter than itself: a bank core
+         on Oracle, a state identification service, a legacy JavaEE app.</p>
+      <p>I like the part where it finally answers — and the part where a job queue keeps
+         answering under load.</p>
+    </div>
 
-    <section class="tile t-about">
-      <div class="tile-head"><span class="label label-accent">01 — About</span></div>
-      <p class="tile-text about-lead">
-        Replace this with a few words about yourself: who you are, what you do
-        and what you find interesting.
-      </p>
-      <p class="tile-text">
-        Second line with specifics: where you study or work and what you are
-        building right now.
-      </p>
-      <dl class="facts">
-        <div><span class="label">Location</span><span>City, Country</span></div>
-        <div><span class="label">Status</span><span>Open to opportunities</span></div>
-        <div><span class="label">Languages</span><span>EN / RU / UZ</span></div>
-      </dl>
-    </section>
+    <!-- ===== Стек ===== -->
+    <div class="tile t-stack">
+      <span class="label">Day to day</span>
+      <ul class="chips">
+        <li>Java 21</li><li>Spring Boot</li><li>Oracle</li><li>PL/SQL</li><li>PostgreSQL</li>
+        <li>Python</li><li>Maven</li><li>Docker</li><li>Flyway</li><li>JUnit</li><li>Git</li>
+      </ul>
+    </div>
 
-    <a class="tile tile-link t-p1" href="#">
-      <div class="tile-head"><span class="proj-num">001</span><span class="label label-accent">Featured</span></div>
-      <h3 class="proj-title">Project name</h3>
-      <p class="tile-text">What the project does and what you built.</p>
-      <span class="proj-arrow">Open ↗</span>
+    <!-- ===== Проекты ===== -->
+    <a class="tile t-proj wide" href="#">
+      <span class="label">01 · Live</span>
+      <div class="proj-title">uz-status <span class="arrow">↗</span></div>
+      <p class="proj-desc">Public uptime monitor for Uzbek services — Payme, Click, Uzum, soliq.uz,
+         banks. Incident history, heatmaps and an open API.</p>
+      <span class="proj-tags">JAVA 21 · SPRING BOOT · POSTGRESQL · DOCKER</span>
     </a>
 
-    <a class="tile tile-link t-p2" href="#">
-      <div class="tile-head"><span class="proj-num">002</span></div>
-      <h3 class="proj-title">Project name</h3>
-      <p class="tile-text">What the project does and what you built.</p>
-      <span class="proj-arrow">Open ↗</span>
+    <a class="tile t-proj" href="#">
+      <span class="label">02</span>
+      <div class="proj-title">exchange <span class="arrow">↗</span></div>
+      <p class="proj-desc">Currency rates, zero dependencies. Own HTTP, own Telegram client,
+         charts drawn by hand.</p>
+      <span class="proj-tags">PYTHON · STDLIB ONLY</span>
     </a>
 
-    <section class="tile t-skills">
-      <div class="tile-head"><span class="label label-accent">03 — Skills</span></div>
-      <div class="skills-cols">
-        <div>
-          <span class="label">Development</span>
-          <ul class="tags"><li>HTML</li><li>CSS</li><li>JavaScript</li><li>Python</li></ul>
-        </div>
-        <div>
-          <span class="label">Tools</span>
-          <ul class="tags"><li>Git</li><li>Figma</li><li>VS Code</li></ul>
-        </div>
-      </div>
-    </section>
-
-    <section class="tile t-exp">
-      <div class="tile-head"><span class="label label-accent">02 — Experience</span></div>
-      <div class="exp-row"><span class="label">2024 — now</span><span class="exp-role">Your role</span></div>
-      <div class="exp-row"><span class="label">2023 — 2024</span><span class="exp-role">Your role</span></div>
-    </section>
-
-    <a class="tile tile-link t-mail" href="mailto:numonjonovpahlavon1@gmail.com">
-      <div class="tile-head"><span class="label label-accent">04 — Contact</span></div>
-      <span class="mail-value">numonjonovpahlavon1@gmail.com ↗</span>
+    <a class="tile t-proj" href="#">
+      <span class="label">03</span>
+      <div class="proj-title">tgagent <span class="arrow">↗</span></div>
+      <p class="proj-desc">Telegram Business assistant on bare Java. Gemini as the model,
+         Groq as the fallback.</p>
+      <span class="proj-tags">JAVA · SQLITE · LLM</span>
     </a>
-  </main>
 
-  <div class="proto-tag">Образец 1 — Bento-сетка <a href="index.html">все образцы</a></div>
+    <a class="tile t-proj" href="#">
+      <span class="label">04</span>
+      <div class="proj-title">tekstlybot <span class="arrow">↗</span></div>
+      <p class="proj-desc">Compress video, extract audio, transcribe speech. A worker queue
+         inside 256 MB of heap.</p>
+      <span class="proj-tags">JAVA · FFMPEG · WHISPER.CPP</span>
+    </a>
 
-  <script>
-    var root = document.documentElement;
-    document.getElementById('theme-toggle').addEventListener('click', function () {
-      var dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      var now = root.getAttribute('data-theme') || (dark ? 'dark' : 'light');
-      root.setAttribute('data-theme', now === 'dark' ? 'light' : 'dark');
+    <a class="tile t-proj" href="#">
+      <span class="label">05</span>
+      <div class="proj-title">PLUSLINE / KEYLINE <span class="arrow">↗</span></div>
+      <p class="proj-desc">Two Telegram storefronts — phones and keyboards — on one codebase.</p>
+      <span class="proj-tags">PYTHON · AIOGRAM 3</span>
+    </a>
+
+    <a class="tile t-proj" href="#">
+      <span class="label">06</span>
+      <div class="proj-title">downloader <span class="arrow">↗</span></div>
+      <p class="proj-desc">Send a link, get the video. Instagram, YouTube, Pinterest
+         and ~1000 more.</p>
+      <span class="proj-tags">PYTHON · YT-DLP</span>
+    </a>
+
+    <!-- ===== Опыт ===== -->
+    <div class="tile t-about" style="grid-row:auto">
+      <span class="label">Experience</span>
+      <p><b style="color:var(--fg)">2024 — now</b> · Backend engineer, banking. REST services over
+         an Oracle bank core behind JWT, a wrapper around the state biometric identification
+         service, digital signatures inside a legacy JavaEE app, PL/SQL packages.</p>
+    </div>
+
+    <!-- ===== Контакты ===== -->
+    <a class="tile t-mail" href="mailto:pahlavon@numonjonov.com" id="mail">
+      <span class="label">Write to me</span>
+      <div class="addr">pahlavon@numonjonov.com</div>
+    </a>
+
+    <a class="tile t-social" href="https://github.com/numonjonov" rel="noopener">
+      <span class="label">Code</span>
+      <span class="name">GitHub ↗</span>
+    </a>
+
+    <a class="tile t-social" href="https://t.me/CustomAnnotation" rel="noopener">
+      <span class="label">Chat</span>
+      <span class="name">Telegram ↗</span>
+    </a>
+
+  </div>
+
+  <div class="foot">
+    <span>© 2026 Pahlavon Numonjonov</span>
+    <span>Prototype B — Dark bento</span>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   Живой фон на чистом WebGL. Three.js здесь не нужен: одна
+   полноэкранная пара треугольников и фрагментный шейдер — это
+   ~60 строк против 600 КБ библиотеки.
+   ============================================================ */
+(function () {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  var cv = document.getElementById('gl');
+  var gl = cv.getContext('webgl', { antialias: false, alpha: true, powerPreference: 'low-power' });
+  if (!gl) { cv.style.display = 'none'; return; }   // фон останется CSS-градиентом
+
+  var VERT = [
+    'attribute vec2 p;',
+    'void main(){ gl_Position = vec4(p, 0.0, 1.0); }'
+  ].join('\n');
+
+  /* Медленно плывущий шум двух октав, тонированный в зелёный и синий,
+     плюс зерно — без него градиент полосит на тёмном фоне. */
+  var FRAG = [
+    'precision mediump float;',
+    'uniform vec2 u_res;',
+    'uniform float u_time;',
+
+    'float hash(vec2 v){ return fract(sin(dot(v, vec2(127.1, 311.7))) * 43758.5453); }',
+
+    'float noise(vec2 v){',
+    '  vec2 i = floor(v), f = fract(v);',
+    '  vec2 u = f * f * (3.0 - 2.0 * f);',
+    '  return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x),',
+    '             mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);',
+    '}',
+
+    'void main(){',
+    '  vec2 uv = gl_FragCoord.xy / u_res.xy;',
+    '  vec2 q = uv * vec2(u_res.x / u_res.y, 1.0);',
+
+    '  float t = u_time * 0.035;',
+    '  float n = noise(q * 2.2 + vec2(t, t * 0.6)) * 0.65',
+    '          + noise(q * 4.7 - vec2(t * 0.8, t)) * 0.35;',
+
+    '  vec3 green = vec3(0.043, 0.145, 0.094);',
+    '  vec3 blue  = vec3(0.055, 0.078, 0.169);',
+    '  vec3 col = mix(blue, green, smoothstep(0.35, 0.85, n + uv.y * 0.25));',
+
+    /* Виньетка: к краям почти чёрный, чтобы плитки читались */
+    '  float vig = smoothstep(1.25, 0.25, length(uv - 0.5) * 1.6);',
+    '  col *= vig;',
+
+    /* Зерно */
+    '  col += (hash(gl_FragCoord.xy + u_time) - 0.5) * 0.022;',
+
+    '  gl_FragColor = vec4(col, 1.0);',
+    '}'
+  ].join('\n');
+
+  function compile(type, src) {
+    var s = gl.createShader(type);
+    gl.shaderSource(s, src); gl.compileShader(s);
+    return gl.getShaderParameter(s, gl.COMPILE_STATUS) ? s : null;
+  }
+
+  var vs = compile(gl.VERTEX_SHADER, VERT), fs = compile(gl.FRAGMENT_SHADER, FRAG);
+  if (!vs || !fs) { cv.style.display = 'none'; return; }
+
+  var prog = gl.createProgram();
+  gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
+  gl.useProgram(prog);
+
+  var buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+  var loc = gl.getAttribLocation(prog, 'p');
+  gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+  var uRes = gl.getUniformLocation(prog, 'u_res');
+  var uTime = gl.getUniformLocation(prog, 'u_time');
+
+  /* Рендерим в половинном разрешении: шум размытый, разницы не видно,
+     а нагрузка на слабый ноут падает вчетверо. */
+  function resize() {
+    var s = 0.5;
+    cv.width  = Math.floor(innerWidth  * s);
+    cv.height = Math.floor(innerHeight * s);
+    gl.viewport(0, 0, cv.width, cv.height);
+    gl.uniform2f(uRes, cv.width, cv.height);
+  }
+  addEventListener('resize', resize);
+  resize();
+
+  var running = true;
+  document.addEventListener('visibilitychange', function () {
+    running = !document.hidden;
+    if (running) requestAnimationFrame(frame);
+  });
+
+  var start = performance.now();
+  function frame(now) {
+    if (!running) return;
+    gl.uniform1f(uTime, (now - start) / 1000);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+
+/* Часы Ташкента. Считаем не по локальной зоне посетителя, а по UTC+5 —
+   иначе гость из Берлина увидит своё время и подумает, что я рядом. */
+(function () {
+  var el = document.getElementById('clock');
+  function tick() {
+    var d = new Date(Date.now() + (5 * 60 + new Date().getTimezoneOffset()) * 60000);
+    el.textContent = [d.getHours(), d.getMinutes(), d.getSeconds()]
+      .map(function (n) { return String(n).padStart(2, '0'); }).join(':');
+  }
+  tick(); setInterval(tick, 1000);
+})();
+
+/* Пятно света под курсором: пишем координаты в CSS-переменные плитки. */
+(function () {
+  if (matchMedia('(hover: none)').matches) return;
+  document.querySelectorAll('.tile').forEach(function (tile) {
+    tile.addEventListener('pointermove', function (e) {
+      var r = tile.getBoundingClientRect();
+      tile.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      tile.style.setProperty('--my', (e.clientY - r.top) + 'px');
     });
+  });
+})();
 
-    var clock = document.getElementById('clock');
-    (function tick() {
-      var d = new Date(), p = function (n) { return n < 10 ? '0' + n : n; };
-      clock.textContent = p(d.getHours()) + ':' + p(d.getMinutes());
-      setTimeout(tick, 1000);
-    })();
+/* Появление плиток волной. Web Animations API вместо GSAP — эффект
+   тот же stagger, а зависимостей ноль. */
+(function () {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  document.querySelectorAll('.tile').forEach(function (t, i) {
+    t.animate(
+      [{ opacity: 0, transform: 'translateY(14px) scale(.97)' },
+       { opacity: 1, transform: 'none' }],
+      { duration: 520, delay: 60 + i * 45, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'backwards' }
+    );
+  });
+})();
 
-    var roles = ['developer', 'designer', 'problem solver'], i = 0;
-    setInterval(function () {
-      i = (i + 1) % roles.length;
-      document.getElementById('role').textContent = roles[i];
-    }, 2400);
-  </script>
+/* «Магнитная» плитка с почтой: слегка тянется к курсору. */
+(function () {
+  var el = document.getElementById('mail');
+  if (!el || matchMedia('(hover: none)').matches) return;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  el.addEventListener('pointermove', function (e) {
+    var r = el.getBoundingClientRect();
+    var dx = (e.clientX - (r.left + r.width / 2)) / r.width;
+    var dy = (e.clientY - (r.top + r.height / 2)) / r.height;
+    el.style.transform = 'translate(' + dx * 9 + 'px,' + (dy * 7 - 2) + 'px)';
+  });
+  el.addEventListener('pointerleave', function () { el.style.transform = ''; });
+})();
+</script>
 </body>
 </html>
