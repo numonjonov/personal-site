@@ -31,6 +31,11 @@
 html {
   background: rgb(var(--paper));
   scroll-padding-top: 96px;
+  /* Дублирует overflow-x:hidden у body. На части Android-браузеров
+     скрытие переполнения на body само по себе не мешает скроллиться
+     вбок самому html — это известное расхождение, а не выдумка;
+     страховка на обоих уровнях ничего не стоит. */
+  overflow-x: hidden;
   /* Android Chrome иногда сам укрупняет текст «для читаемости» —
      это называется text-size-adjust/font-boosting и включается
      эвристикой браузера на реальном устройстве, а не в DevTools-
@@ -429,6 +434,17 @@ h2.big {
   display: grid; gap: 10px var(--s4); grid-template-columns: 1fr;
   padding: var(--s4) 0; border-bottom: 1px solid rgba(var(--ink), .16);
 }
+/* Грид-элемент по спецификации не сжимается своим min-width ниже
+   содержимого (min-width:auto у детей grid/flex), даже если у самого
+   содержимого стоит max-width:100%: у явного width (как у .spoiler
+   с --w в ch) собственный вклад в min-content — это и есть та ширина,
+   max-width на неё уже не влияет. Пустой спойлер-заглушка на
+   --w:54ch в незаполненной записи опыта раздувал так весь <li>,
+   а с ним и всю страницу вширь на мобильном — не наложение и не
+   зум, а буквально более широкий документ. min-width:0 разрешает
+   элементу сжаться, после чего у спойлера уже реально работает
+   max-width:100% от актуальной, а не раздутой ширины родителя. */
+.tl li > div { min-width: 0; }
 @media (min-width: 900px) { .tl li { grid-template-columns: 220px 1fr; } }
 .tl .when { font-family: var(--display); font-size: clamp(18px, 2.2vw, 26px); line-height: 1.1; letter-spacing: -.02em; }
 .tl h3 {
