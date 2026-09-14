@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<title>downloader — case study · Pahlavon Numonjonov</title>
+<meta name="description" content="Case study: a universal Telegram download bot — one dispatcher over yt-dlp and gallery-dl, and treating extractor breakage as operations, not bugs." />
+<link rel="canonical" href="https://numonjonov.com/work/downloader.html" />
+<meta name="theme-color" content="#E8E8E6" />
+
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://numonjonov.com/work/downloader.html" />
+<meta property="og:title" content="downloader — case study" />
+<meta property="og:description" content="Case study: a universal Telegram download bot — one dispatcher over yt-dlp and gallery-dl, and treating extractor breakage as operations, not bugs." />
+<meta property="og:image" content="https://numonjonov.com/og.png?v=4" />
+<meta name="twitter:card" content="summary_large_image" />
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23E8E8E6'/><text x='50' y='76' font-family='Arial Black,sans-serif' font-size='78' font-weight='900' fill='%230A0A0A' text-anchor='middle'>N</text></svg>" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css?v=39" />
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "downloader — case study",
+  "description": "Case study: a universal Telegram download bot — one dispatcher over yt-dlp and gallery-dl, and treating extractor breakage as operations, not bugs.",
+  "author": { "@type": "Person", "name": "Pahlavon Numonjonov", "url": "https://numonjonov.com/" },
+  "url": "https://numonjonov.com/work/downloader.html"
+}
+</script>
+</head>
+
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<canvas id="grain" aria-hidden="true"></canvas>
+<div id="cursor" aria-hidden="true"><span class="lbl">GO</span></div>
+<div id="progress" aria-hidden="true"></div>
+
+<div id="hud-scrim-top" aria-hidden="true"></div>
+<div id="hud-scrim-bot" aria-hidden="true"></div>
+<div class="hud">
+  <div class="ruler" id="ruler" aria-hidden="true"></div>
+  <span class="corner tl" aria-hidden="true"></span><span class="corner tr" aria-hidden="true"></span>
+  <span class="corner bl" aria-hidden="true"></span><span class="corner br" aria-hidden="true"></span>
+
+  <div class="hud-row hud-top">
+    <a class="mono" href="../index.html">Pahlavon Numonjonov</a>
+    <nav class="hud-nav mono" id="hud-nav" aria-label="Sections">
+      <a href="../index.html#index">Work</a>
+      <a href="../index.html#stack">Stack</a>
+      <a href="../index.html#contact">Contact</a>
+    </nav>
+    <span class="hud-right mono">
+      <span>Case study</span><br /><span class="dim">downloader</span>
+    </span>
+  </div>
+
+  <div class="hud-row hud-bot mono" aria-hidden="true">
+    <span class="faint">2026 — present</span>
+    <span class="faint" id="hud-coord">X 0000 Y 0000</span>
+  </div>
+</div>
+
+<div id="view">
+<main id="main">
+
+  <header class="case-head">
+    <a class="back mono" href="../index.html#index">&larr; All work</a>
+    <h1>downloader</h1>
+    <p class="case-sub">Send a link, get the media back. Instagram, YouTube, Pinterest and roughly a thousand other sites.</p>
+
+    <dl class="case-meta mono">
+      <div><dt class="dim">Role</dt><dd>Solo — design, build, run</dd></div>
+      <div><dt class="dim">Timeline</dt><dd>2026 — present</dd></div>
+      <div><dt class="dim">Stack</dt><dd>Python · yt-dlp · gallery-dl</dd></div>
+      <div><dt class="dim">Status</dt><dd>Running</dd></div>
+    </dl>
+  </header>
+
+  <article class="case-body">
+
+    <h2>The problem</h2>
+    <p>
+      Someone sends you a Reel. You want to keep it. Between those two facts sit a dozen sites that
+      would rather you did not, each with its own player, its own markup and its own reasons to
+      change both next week.
+    </p>
+    <p>
+      The bot collapses that into one move: <b>send a link, get the file back.</b> Instagram reels,
+      posts and carousels, YouTube video, Shorts and audio, Pinterest, and roughly a thousand other
+      sites through yt-dlp.
+    </p>
+
+    <h2>Constraints and tradeoffs</h2>
+    <h3>Two tools, one decision</h3>
+    <p>
+      <code>yt-dlp</code> handles video platforms, <code>gallery-dl</code> handles image galleries.
+      They overlap badly and fail differently. All the &ldquo;what should download this?&rdquo;
+      logic lives in one module, so adding a site means editing one function rather than hunting
+      through handlers.
+    </p>
+
+    <h3>The tools go stale, and that is normal</h3>
+    <div class="pull">
+      <p>
+        When a download breaks, the first move is to update yt-dlp and gallery-dl — not to read my
+        own code. Platforms change their markup and their APIs on their own schedule, and the
+        extractors follow days later. Treating breakage as an operations task instead of a bug
+        saved me a lot of pointless debugging.
+      </p>
+    </div>
+
+    <h3>Downloading must not block the bot</h3>
+    <p>
+      A download is a subprocess that can run for minutes. Run it inside the update handler and the
+      bot stops answering <em>everyone</em> — the same mistake I had already made in
+      <a href="tekstlybot.html">tekstlybot</a>, which is why this one was built the other way round
+      from the first version.
+    </p>
+
+    <h3>What I traded away</h3>
+    <ul>
+      <li><b>Telegram's upload limit stays.</b> Large videos cannot be sent by a bot at all. Saying
+        so plainly, with the actual number, beats a generic failure — and beats running a local Bot
+        API server just for the rare big file.</li>
+      <li><b>No accounts, no cookies.</b> Private and age-gated content needs a logged-in session.
+        Storing someone's session is a liability I have no interest in holding.</li>
+      <li><b>No queue of pending links.</b> Unlike tekstlybot this one is thin: a download either
+        starts now or the user is told to wait. Adding a queue would be the next step, not the first.</li>
+    </ul>
+
+    <h2>Architecture</h2>
+    <figure class="figure">
+      <div class="figure-frame">
+        <svg viewBox="0 0 880 210" role="img" aria-label="Link goes to a dispatcher, which picks yt-dlp or gallery-dl">
+          <defs>
+            <marker id="da" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+              <path d="M0 0 L9 4.5 L0 9 z" fill="rgb(var(--ink))"/>
+            </marker>
+          </defs>
+          <g font-family="monospace" font-size="12" fill="rgb(var(--ink))">
+
+            <rect x="12" y="76" width="150" height="58" rx="10" fill="rgba(var(--ink), .06)" stroke="rgb(var(--ink))"/>
+            <text x="87" y="100" text-anchor="middle">handlers.py</text>
+            <text x="87" y="118" text-anchor="middle" fill="rgba(var(--ink), .6)" font-size="10">a link arrives</text>
+
+            <rect x="216" y="72" width="164" height="66" rx="10" fill="rgba(var(--ink), .12)" stroke="rgb(var(--ink))"/>
+            <text x="298" y="98" text-anchor="middle">downloader.py</text>
+            <text x="298" y="116" text-anchor="middle" fill="rgba(var(--ink), .6)" font-size="10">what downloads this?</text>
+            <text x="298" y="130" text-anchor="middle" fill="rgba(var(--ink), .6)" font-size="10">one place, one rule</text>
+
+            <rect x="434" y="26"  width="150" height="48" rx="10" fill="rgba(var(--ink), .06)" stroke="rgb(var(--ink))"/>
+            <text x="509" y="48" text-anchor="middle">yt-dlp</text>
+            <text x="509" y="64" text-anchor="middle" fill="rgba(var(--ink), .6)" font-size="10">video, audio</text>
+
+            <rect x="434" y="136" width="150" height="48" rx="10" fill="rgba(var(--ink), .06)" stroke="rgb(var(--ink))"/>
+            <text x="509" y="158" text-anchor="middle">gallery-dl</text>
+            <text x="509" y="174" text-anchor="middle" fill="rgba(var(--ink), .6)" font-size="10">galleries</text>
+
+            <rect x="638" y="72" width="150" height="66" rx="10" fill="rgba(var(--ink), .06)" stroke="rgb(var(--ink))"/>
+            <text x="713" y="98" text-anchor="middle">downloads/</text>
+            <text x="713" y="116" text-anchor="middle" fill="rgba(var(--ink), .6)" font-size="10">sent, then deleted</text>
+
+            <g stroke="rgb(var(--ink))" stroke-width="1.2" fill="none" marker-end="url(#da)" opacity=".65">
+              <path d="M162 104 L210 104"/>
+              <path d="M380 92  L428 56"/>
+              <path d="M380 120 L428 158"/>
+              <path d="M584 52  L632 92"/>
+              <path d="M584 158 L632 122"/>
+            </g>
+          </g>
+        </svg>
+      </div>
+      <figcaption>One dispatcher decides the tool; everything downstream is the same path.</figcaption>
+    </figure>
+
+    <h2>Screens and states</h2>
+    <div class="states">
+      <div class="state">
+        <div class="shot">https://instagram.com/reel/&hellip;
+&rarr; instagram &middot; gallery-dl
+&rarr; downloading&hellip;
+&rarr; sent (8.4 MB, 0:31)</div>
+        <p class="cap"><b>Normal.</b> The tool that was chosen is shown — when something breaks, that line is the first clue.</p>
+      </div>
+      <div class="state">
+        <div class="shot">https://youtu.be/&hellip;
+[ video ] [ audio only ]
+&rarr; audio &rarr; mp3, 192 kbps
+&rarr; sent (4.1 MB)</div>
+        <p class="cap"><b>YouTube.</b> Two buttons instead of a settings menu — video or just the sound.</p>
+      </div>
+      <div class="state">
+        <div class="shot">&#10007; 214 MB &mdash; Telegram does not
+  let bots upload files this large.
+  Try a shorter clip, or open the
+  original link.</div>
+        <p class="cap"><b>Too large.</b> The platform limit named out loud, with something to do next.</p>
+      </div>
+      <div class="state">
+        <div class="shot">$ ./bot.sh status
+running, pid 4821, up 6d
+$ ./bot.sh logs
+extractor failed: update yt-dlp</div>
+        <p class="cap"><b>Operating it.</b> One script for start, stop, status and logs, and a log that names the real cause.</p>
+      </div>
+    </div>
+
+    <h2>Results and lessons</h2>
+    <div class="results">
+      <div class="result"><div class="n">~1000</div><div class="t">sites reachable, through two extractors</div></div>
+      <div class="result"><div class="n">1</div><div class="t">module decides what downloads what</div></div>
+      <div class="result"><div class="n">0</div><div class="t">downloads run in the update handler</div></div>
+    </div>
+
+    <h3>What I would tell myself at the start</h3>
+    <ul>
+      <li><b>Put the routing decision in one place immediately.</b> It started spread across
+        handlers and every new site made it worse.</li>
+      <li><b>Update before you debug.</b> Most &ldquo;bugs&rdquo; here are an extractor that has not
+        caught up with a site yet.</li>
+      <li><b>Delete temporary files in a <code>finally</code>.</b> The disk fills long before
+        anything else complains.</li>
+      <li><b>Name the platform limit in the error.</b> &ldquo;Failed&rdquo; generates a question;
+        &ldquo;Telegram does not allow bots to upload files this large&rdquo; does not.</li>
+    </ul>
+
+    <div class="case-links">
+      <a class="btn" href="https://github.com/numonjonov" rel="noopener">Source on GitHub</a>
+      
+      <a class="btn btn-solid" href="../index.html#contact">Talk about this project</a>
+    </div>
+  </article>
+
+  <nav class="case-next" aria-label="Next case study">
+    <span class="mono dim">Next case study</span>
+    <a href="myid.html">MyID &rarr;</a>
+  </nav>
+
+</main>
+
+<footer class="foot mono dim">
+  <span>&copy; 2026 Pahlavon Numonjonov</span>
+  <a href="../index.html">Back to the index</a>
+</footer>
+</div>
+
+<div id="spacer"></div>
+
+<script src="../main.js?v=39"></script>
+</body>
+</html>

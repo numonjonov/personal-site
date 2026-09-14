@@ -1,85 +1,78 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Четыре образца каркаса</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Doto:wght@500;700;900&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="base.css" />
-  <style>
-    .wrap { max-width: 900px; margin: 0 auto; padding: 64px 24px 80px; }
-    h1 { font-size: clamp(30px, 6vw, 54px); font-weight: 900; margin-bottom: 14px; }
-    .intro { color: var(--muted); max-width: 56ch; margin-bottom: 44px; }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>numonjonov.com v2 — прототипы</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+:root { --bg:#0B0B0D; --fg:#EDEDF0; --muted:#8A8A94; --line:#232329; }
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font-family: Inter, system-ui, sans-serif; line-height: 1.5;
+  padding: clamp(24px, 6vw, 72px);
+}
+h1 { font-size: clamp(26px, 4vw, 40px); letter-spacing: -.03em; margin: 0 0 8px; }
+.sub { color: var(--muted); margin: 0 0 40px; max-width: 62ch; }
+.mono { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
 
-    .list { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); }
-    .item {
-      display: grid; grid-template-columns: 54px 1fr auto; gap: 20px; align-items: center;
-      padding: 24px; background: var(--bg);
-      transition: background-color .25s ease, color .25s ease;
-    }
-    .item:hover { background: var(--text); color: var(--bg); }
-    .item:hover .muted { color: inherit; opacity: .75; }
-    .item-num { font-family: var(--font-display); font-weight: 700; font-size: 26px; }
-    .item-title { display: block; font-family: var(--font-display); font-weight: 700; font-size: 23px; margin-bottom: 4px; }
-    .muted { display: block; color: var(--muted); font-size: 14px; }
-    .go { font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+.grid { display: grid; gap: 16px; grid-template-columns: 1fr; max-width: 1100px; }
+@media (min-width: 820px) { .grid { grid-template-columns: 1fr 1fr; } }
 
-    .note { margin-top: 34px; color: var(--muted); font-size: 14px; }
-  </style>
+.card {
+  display: block; text-decoration: none; color: inherit;
+  border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+  transition: border-color .25s, transform .25s;
+}
+.card:hover { border-color: #4A4A56; transform: translateY(-3px); }
+
+/* Превью: не картинка, а миниатюра самого прототипа в iframe.
+   pointer-events выключены, чтобы клик уходил на карточку целиком. */
+.shot { position: relative; height: 300px; overflow: hidden; background: #111; border-bottom: 1px solid var(--line); }
+.shot iframe {
+  width: 1440px; height: 900px; border: 0;
+  transform: scale(.42); transform-origin: 0 0; pointer-events: none;
+}
+.body { padding: 18px 20px 22px; }
+.body h2 { margin: 8px 0 6px; font-size: 20px; letter-spacing: -.02em; }
+.body p { margin: 0; color: var(--muted); font-size: 14px; }
+.open { display: inline-block; margin-top: 14px; font-size: 13px; }
+.open::after { content: ' →'; }
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Четыре каркаса</h1>
-    <p class="intro">
-      Один и тот же контент, четыре разные конструкции. Оформление везде общее —
-      чтобы сравнивать именно устройство страницы. Выбранный вариант доведу до
-      полного сайта: с переключателем EN / RU / UZ, темами и вашим текстом.
-    </p>
 
-    <div class="list">
-      <a class="item" href="bento.html">
-        <span class="item-num">01</span>
-        <span>
-          <span class="item-title">Bento-сетка</span>
-          <span class="muted">Плитки разного размера на один экран. Всё видно сразу, скролла почти нет.</span>
-        </span>
-        <span class="go">Открыть ↗</span>
-      </a>
+<p class="mono">numonjonov.com — v2</p>
+<h1>Два направления</h1>
+<p class="sub">Одинаковый контент, разная подача. Открой оба в полном размере, посмотри на
+телефоне — и скажи, какое берём. Можно и смешать: например, сетку от B, типографику от A.</p>
 
-      <a class="item" href="split.html">
-        <span class="item-num">02</span>
-        <span>
-          <span class="item-title">Сплит с боковой колонкой</span>
-          <span class="muted">Слева закреплённое имя, меню и контакты. Справа скроллится содержимое.</span>
-        </span>
-        <span class="go">Открыть ↗</span>
-      </a>
-
-      <a class="item" href="horizontal.html">
-        <span class="item-num">03</span>
-        <span>
-          <span class="item-title">Горизонтальная лента</span>
-          <span class="muted">Колесо мыши листает панели вбок. На телефоне разворачивается в обычную вертикаль.</span>
-        </span>
-        <span class="go">Открыть ↗</span>
-      </a>
-
-      <a class="item" href="terminal.html">
-        <span class="item-num">04</span>
-        <span>
-          <span class="item-title">Терминал</span>
-          <span class="muted">Сайт как программа: разделы открываются командами. Есть подсказки-кнопки.</span>
-        </span>
-        <span class="go">Открыть ↗</span>
-      </a>
+<div class="grid">
+  <a class="card" href="editorial.html">
+    <div class="shot"><iframe src="editorial.html" loading="lazy" title="Прототип A"></iframe></div>
+    <div class="body">
+      <span class="mono">Вариант A</span>
+      <h2>Editorial / Swiss</h2>
+      <p>Светлый лист, крупное имя, проекты списком-таблицей. Строгая сетка, красный акцент,
+         сдержанная анимация. Читается за 30 секунд и печатается в PDF как есть.</p>
+      <span class="open">Открыть</span>
     </div>
+  </a>
 
-    <p class="note">
-      В каждом образце работает переключение светлой и тёмной темы — кнопка в углу.
-      Текст везде заглушки, только чтобы оценить каркас.
-    </p>
-  </div>
+  <a class="card" href="bento.html">
+    <div class="shot"><iframe src="bento.html" loading="lazy" title="Прототип B"></iframe></div>
+    <div class="body">
+      <span class="mono">Вариант B</span>
+      <h2>Тёмный bento-грид</h2>
+      <p>Плитки поверх живого WebGL-фона: имя, статус, часы Ташкента, шесть проектов, контакты.
+         Пятно света под курсором, «магнитная» кнопка почты. Плотно и эффектно в скриншоте.</p>
+      <span class="open">Открыть</span>
+    </div>
+  </a>
+</div>
+
 </body>
 </html>

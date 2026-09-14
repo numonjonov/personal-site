@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<title>tgagent — case study · Pahlavon Numonjonov</title>
+<meta name="description" content="Case study: building a Telegram Business agent in plain Java without Spring or a bot library — API semantics, a two-provider fallback chain and SQLite memory." />
+<link rel="canonical" href="https://numonjonov.com/work/tgagent.html" />
+<meta name="theme-color" content="#E8E8E6" />
+
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://numonjonov.com/work/tgagent.html" />
+<meta property="og:title" content="tgagent — case study" />
+<meta property="og:description" content="Case study: building a Telegram Business agent in plain Java without Spring or a bot library — API semantics, a two-provider fallback chain and SQLite memory." />
+<meta property="og:image" content="https://numonjonov.com/og.png?v=4" />
+<meta name="twitter:card" content="summary_large_image" />
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23E8E8E6'/><text x='50' y='76' font-family='Arial Black,sans-serif' font-size='78' font-weight='900' fill='%230A0A0A' text-anchor='middle'>N</text></svg>" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css?v=39" />
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "tgagent — case study",
+  "description": "Case study: building a Telegram Business agent in plain Java without Spring or a bot library — API semantics, a two-provider fallback chain and SQLite memory.",
+  "author": { "@type": "Person", "name": "Pahlavon Numonjonov", "url": "https://numonjonov.com/" },
+  "url": "https://numonjonov.com/work/tgagent.html"
+}
+</script>
+</head>
+
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<canvas id="grain" aria-hidden="true"></canvas>
+<div id="cursor" aria-hidden="true"><span class="lbl">GO</span></div>
+<div id="progress" aria-hidden="true"></div>
+
+<div id="hud-scrim-top" aria-hidden="true"></div>
+<div id="hud-scrim-bot" aria-hidden="true"></div>
+<div class="hud">
+  <div class="ruler" id="ruler" aria-hidden="true"></div>
+  <span class="corner tl" aria-hidden="true"></span><span class="corner tr" aria-hidden="true"></span>
+  <span class="corner bl" aria-hidden="true"></span><span class="corner br" aria-hidden="true"></span>
+
+  <div class="hud-row hud-top">
+    <a class="mono" href="../index.html">Pahlavon Numonjonov</a>
+    <nav class="hud-nav mono" id="hud-nav" aria-label="Sections">
+      <a href="../index.html#index">Work</a>
+      <a href="../index.html#stack">Stack</a>
+      <a href="../index.html#contact">Contact</a>
+    </nav>
+    <span class="hud-right mono">
+      <span>Case study</span><br /><span class="dim">tgagent</span>
+    </span>
+  </div>
+
+  <div class="hud-row hud-bot mono" aria-hidden="true">
+    <span class="faint">2026 — present</span>
+    <span class="faint" id="hud-coord">X 0000 Y 0000</span>
+  </div>
+</div>
+
+<div id="view">
+<main id="main">
+
+  <header class="case-head">
+    <a class="back mono" href="../index.html#index">&larr; All work</a>
+    <h1>tgagent</h1>
+    <p class="case-sub">A Telegram Business assistant on bare Java — answers private messages as me, keeps tasks, moderates groups. Gemini as the model, Groq as the fallback.</p>
+
+    <dl class="case-meta mono">
+      <div><dt class="dim">Role</dt><dd>Solo — design, build, run</dd></div>
+      <div><dt class="dim">Timeline</dt><dd>2026 — present</dd></div>
+      <div><dt class="dim">Stack</dt><dd>Java · SQLite · Gemini · Groq</dd></div>
+      <div><dt class="dim">Status</dt><dd>Running</dd></div>
+    </dl>
+  </header>
+
+  <article class="case-body">
+
+    <h2>The problem</h2>
+    <p>
+      Telegram Business lets a bot answer on behalf of a personal account. Almost every bot library
+      still treats this as an afterthought: business messages arrive as a different update type,
+      carry a <code>business_connection_id</code>, and must be answered through it. Reply the
+      ordinary way and the message goes out <b>from the bot</b> instead of from you — visible,
+      wrong, and exactly what you were trying to avoid.
+    </p>
+    <p>
+      I wanted an assistant that handles the first round of routine messages, keeps my tasks, and
+      moderates a couple of groups — without a framework between me and the API.
+    </p>
+
+    <h2>Constraints and tradeoffs</h2>
+    <h3>Bare Java, no Spring, no bot library</h3>
+    <p>
+      The Telegram types are modelled by hand and parsed with Jackson; HTTP calls live in one
+      <code>TelegramClient</code>. The cost is real: adding a field means editing both the DTO and
+      the parsing. The benefit is that the part the libraries handle worst — Business API
+      semantics — is the part I control completely.
+    </p>
+
+    <h3>Two model providers, one chain</h3>
+    <div class="pull">
+      <p>
+        Gemini 2.5 Flash-Lite answers by default; on an error or a spent quota the request falls
+        through to Groq running Llama 3.3 70B. A free tier that runs out on a Tuesday afternoon is
+        not an exception — it is the normal operating condition, so the fallback is part of the
+        design rather than an error handler.
+      </p>
+    </div>
+
+    <h3>Memory that stays small</h3>
+    <p>
+      Conversation context lives in SQLite next to the jar, trimmed per chat. Sending an entire
+      history on every turn costs tokens and makes replies worse, not better — a short window of
+      recent turns plus a fixed instruction beats a long transcript.
+    </p>
+
+    <h3>What I traded away</h3>
+    <ul>
+      <li><b>No webhooks.</b> Longpolling needs no public address and no certificate. For one
+        account this is strictly simpler.</li>
+      <li><b>No autonomy.</b> The assistant drafts and answers routine things; anything with a
+        commitment in it is left for me. An assistant that agrees to meetings on your behalf is a
+        liability, not a feature.</li>
+      <li><b>No RAG, no embeddings.</b> The useful context here is the last few messages, and it
+        already fits in the prompt.</li>
+    </ul>
+
+    <h2>Architecture</h2>
+    <figure class="figure">
+      <div class="figure-frame">
+        <svg viewBox="0 0 880 260" role="img" aria-label="Update routing from Telegram through handlers to model providers">
+          <defs>
+            <marker id="ar3" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+              <path d="M0 0 L9 4.5 L0 9 z" fill="rgb(var(--ink))"/>
+            </marker>
+          </defs>
+          <g font-family="monospace" font-size="12" fill="rgb(var(--ink))">
+
+            <rect x="12" y="96"  width="140" height="60" rx="10" fill="rgba(var(--ink), .06)" stroke="rgb(var(--ink))"/>
+            <text x="82" y="121" text-anchor="middle">Telegram</text>
+            <text x="82" y="139" text-anchor="middle" fill="rgba(var(--ink), .6)" font-size="10">longpolling</text>
+
+            <rect x="196" y="96" width="150" height="60" rx="10" fill="rgba(var(--ink), .06)" stroke="rgb(var(--ink))"/>
+            <text x="271" y="121" text-anchor="middle">UpdateRouter</text>
+            <text x="271" y="139" text-anchor="middle" fill="rgba(var(--ink), .6)" font-size="10">three branches</text>
+
+            <rect x="392" y="18"  width="168" height="48" rx="10" fill="rgba(var(--ink), .06)" stroke="rgb(var(--ink))"/>
+            <text x="476" y="40" text-anchor="middle">BusinessMessage</text>
+            <text x="476" y="56" text-anchor="middle" fill="rgba(var(--ink), .6)" font-size="10">answers as me</text>
+
+            <rect x="392" y="102" width="168" height="48" rx="10" fill="rgba(var(--ink), .06)" stroke="rgb(var(--ink))"/>
+            <text x="476" y="130" text-anchor="middle">CommandHandler</text>
+
+            <rect x="392" y="186" width="168" height="48" rx="10" fill="rgba(var(--ink), .06)" stroke="rgb(var(--ink))"/>
+            <text x="476" y="214" text-anchor="middle">GroupModeration</text>
+
+            <rect x="624" y="18"  width="150" height="48" rx="10" fill="rgba(var(--ink), .06)" stroke="rgb(var(--ink))"/>
+            <text x="699" y="40" text-anchor="middle">Gemini</text>
+            <text x="699" y="56" text-anchor="middle" fill="rgba(var(--ink), .6)" font-size="10">primary</text>
+
+            <rect x="624" y="84"  width="150" height="48" rx="10" fill="rgba(var(--ink), .06)" stroke="rgb(var(--ink))"/>
+            <text x="699" y="106" text-anchor="middle">Groq / Llama</text>
+            <text x="699" y="122" text-anchor="middle" fill="rgba(var(--ink), .6)" font-size="10">fallback</text>
+
+            <rect x="624" y="168" width="150" height="66" rx="10" fill="rgba(var(--ink), .12)" stroke="rgb(var(--ink))"/>
+            <text x="699" y="194" text-anchor="middle">SQLite</text>
+            <text x="699" y="212" text-anchor="middle" fill="rgba(var(--ink), .6)" font-size="10">memory, tasks,</text>
+            <text x="699" y="226" text-anchor="middle" fill="rgba(var(--ink), .6)" font-size="10">moderation rules</text>
+
+            <g stroke="rgb(var(--ink))" stroke-width="1.4" fill="none" marker-end="url(#ar3)">
+              <path d="M152 126 L190 126"/>
+              <path d="M346 112 L386 52"/>
+              <path d="M346 126 L386 126"/>
+              <path d="M346 140 L386 200"/>
+              <path d="M560 38  L618 40"/>
+              <path d="M560 50  L618 100"/>
+              <path d="M560 130 L618 190"/>
+              <path d="M560 210 L618 205"/>
+            </g>
+            <g stroke="rgb(var(--ink))" stroke-width="1.4" fill="none" stroke-dasharray="4 3" marker-end="url(#ar3)">
+              <path d="M699 66 L699 80"/>
+            </g>
+          </g>
+        </svg>
+      </div>
+      <figcaption>One router, three branches. The dashed arrow is the fallback that fires on quota or error.</figcaption>
+    </figure>
+
+    <h2>Screens and states</h2>
+    <div class="states">
+      <div class="state">
+        <div class="shot">them: are you around tomorrow?
+ me : after 15:00 — want me
+      to put it in the calendar?
+      [sent as me, not as a bot]</div>
+        <p class="cap"><b>Business reply.</b> Sent through <code>business_connection_id</code>, so it appears as my own message.</p>
+      </div>
+      <div class="state">
+        <div class="shot">/task add ship uz-status v2
+✓ #14 added
+/task list
+#14 ship uz-status v2   open
+#13 renew certificate   done</div>
+        <p class="cap"><b>Tasks.</b> Plain commands, stored locally. No account, no sync service.</p>
+      </div>
+      <div class="state">
+        <div class="shot">[group] flood: 7 msgs / 4s
+→ user muted 10m
+→ reason logged</div>
+        <p class="cap"><b>Moderation.</b> Stop words, flood limits, mute and ban — rules live in SQLite.</p>
+      </div>
+      <div class="state">
+        <div class="shot">gemini: 429 quota exceeded
+→ falling back to groq
+→ replied in 840ms</div>
+        <p class="cap"><b>Fallback.</b> The provider switch is logged and invisible to whoever is chatting.</p>
+      </div>
+    </div>
+
+    <h2>Results and lessons</h2>
+    <div class="results">
+      <div class="result"><div class="n">2</div><div class="t">providers behind one interface — neither is load-bearing alone</div></div>
+      <div class="result"><div class="n">&lt;1 s</div><div class="t">typical reply, fallback path included</div></div>
+      <div class="result"><div class="n">1 jar</div><div class="t">plus a SQLite file — the whole deployment</div></div>
+    </div>
+
+    <h3>What I would tell myself at the start</h3>
+    <ul>
+      <li><b>Read the Business API docs before writing the handler, not after.</b> The difference
+        between a business update and an ordinary message is the entire feature, and it is invisible
+        until you see your bot's name on a message meant to come from you.</li>
+      <li><b>Design for the quota, not the happy path.</b> Free tiers end mid-conversation. Treating
+        that as normal made the fallback a first-class path instead of a rescue attempt.</li>
+      <li><b>Hand-written DTOs are fine until they are not.</b> Six types is pleasant. Forty would
+        not be — and I would want a generator long before that.</li>
+    </ul>
+
+    <div class="case-links">
+      <a class="btn" href="https://github.com/numonjonov" rel="noopener">Source on GitHub</a>
+      
+      <a class="btn btn-solid" href="../index.html#contact">Talk about this project</a>
+    </div>
+  </article>
+
+  <nav class="case-next" aria-label="Next case study">
+    <span class="mono dim">Next case study</span>
+    <a href="tekstlybot.html">tekstlybot &rarr;</a>
+  </nav>
+
+</main>
+
+<footer class="foot mono dim">
+  <span>&copy; 2026 Pahlavon Numonjonov</span>
+  <a href="../index.html">Back to the index</a>
+</footer>
+</div>
+
+<div id="spacer"></div>
+
+<script src="../main.js?v=39"></script>
+</body>
+</html>

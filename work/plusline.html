@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<title>plusline / keyline — case study · Pahlavon Numonjonov</title>
+<meta name="description" content="Case study: two Telegram shop bots on one aiogram codebase — a JSON catalogue with atomic writes, media groups, and why there is no cart." />
+<link rel="canonical" href="https://numonjonov.com/work/plusline.html" />
+<meta name="theme-color" content="#E8E8E6" />
+
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://numonjonov.com/work/plusline.html" />
+<meta property="og:title" content="plusline / keyline — case study" />
+<meta property="og:description" content="Case study: two Telegram shop bots on one aiogram codebase — a JSON catalogue with atomic writes, media groups, and why there is no cart." />
+<meta property="og:image" content="https://numonjonov.com/og.png?v=4" />
+<meta name="twitter:card" content="summary_large_image" />
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23E8E8E6'/><text x='50' y='76' font-family='Arial Black,sans-serif' font-size='78' font-weight='900' fill='%230A0A0A' text-anchor='middle'>N</text></svg>" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css?v=39" />
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "plusline / keyline — case study",
+  "description": "Case study: two Telegram shop bots on one aiogram codebase — a JSON catalogue with atomic writes, media groups, and why there is no cart.",
+  "author": { "@type": "Person", "name": "Pahlavon Numonjonov", "url": "https://numonjonov.com/" },
+  "url": "https://numonjonov.com/work/plusline.html"
+}
+</script>
+</head>
+
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<canvas id="grain" aria-hidden="true"></canvas>
+<div id="cursor" aria-hidden="true"><span class="lbl">GO</span></div>
+<div id="progress" aria-hidden="true"></div>
+
+<div id="hud-scrim-top" aria-hidden="true"></div>
+<div id="hud-scrim-bot" aria-hidden="true"></div>
+<div class="hud">
+  <div class="ruler" id="ruler" aria-hidden="true"></div>
+  <span class="corner tl" aria-hidden="true"></span><span class="corner tr" aria-hidden="true"></span>
+  <span class="corner bl" aria-hidden="true"></span><span class="corner br" aria-hidden="true"></span>
+
+  <div class="hud-row hud-top">
+    <a class="mono" href="../index.html">Pahlavon Numonjonov</a>
+    <nav class="hud-nav mono" id="hud-nav" aria-label="Sections">
+      <a href="../index.html#index">Work</a>
+      <a href="../index.html#stack">Stack</a>
+      <a href="../index.html#contact">Contact</a>
+    </nav>
+    <span class="hud-right mono">
+      <span>Case study</span><br /><span class="dim">plusline</span>
+    </span>
+  </div>
+
+  <div class="hud-row hud-bot mono" aria-hidden="true">
+    <span class="faint">2026 — present</span>
+    <span class="faint" id="hud-coord">X 0000 Y 0000</span>
+  </div>
+</div>
+
+<div id="view">
+<main id="main">
+
+  <header class="case-head">
+    <a class="back mono" href="../index.html#index">&larr; All work</a>
+    <h1>plusline / keyline</h1>
+    <p class="case-sub">Two Telegram storefronts — phones and keyboards — running on one codebase, with an admin panel in the chat, photo albums and search.</p>
+
+    <dl class="case-meta mono">
+      <div><dt class="dim">Role</dt><dd>Solo — design, build, run</dd></div>
+      <div><dt class="dim">Timeline</dt><dd>2026 — present</dd></div>
+      <div><dt class="dim">Stack</dt><dd>Python · aiogram 3 · JSON</dd></div>
+      <div><dt class="dim">Status</dt><dd>Running</dd></div>
+    </dl>
+  </header>
+
+  <article class="case-body">
+
+    <h2>The problem</h2>
+    <p>
+      A shop selling phones in Tashkent already had customers in Telegram — and a catalogue that
+      lived as a folder of photos and a person retyping specifications into chat all day. Every
+      &ldquo;what do you have in stock?&rdquo; cost a human twenty minutes.
+    </p>
+    <p>
+      They did not need a marketplace. They needed the browsing part automated and the selling part
+      left to a person: <b>categories, models, a card with photos and specs, search, and a button
+      that hands the conversation to a manager.</b>
+    </p>
+
+    <h2>Two shops, one codebase</h2>
+    <p>
+      The same thing was needed twice: <b>PLUSLINE</b> for phones, <b>KEYLINE</b> for keyboards.
+      Same structure, different texts, categories, and one extra field — phones carry a condition
+      flag, new or used, keyboards do not.
+    </p>
+    <div class="pull">
+      <p>
+        They are one codebase in two copies, not a shared library. For two small shops run by
+        different people, a shared package would mean coordinated releases and a versioning story
+        for a change that takes five minutes. The cost is honest and written down: touch a shared
+        mechanism in one, check whether the other needs it too.
+      </p>
+    </div>
+
+    <h2>Constraints and tradeoffs</h2>
+    <h3>A JSON file instead of a database</h3>
+    <p>
+      The catalogue is a few hundred items edited by one person through the admin panel.
+      A database would add an operational surface — backups, migrations, a process to keep alive —
+      to a bot that otherwise runs from a single file. <code>products.json</code> is the whole store.
+    </p>
+    <p>
+      The price is that writes must be atomic: a crash mid-write does not corrupt a row, it destroys
+      the catalogue. Every save goes to a temporary file and then replaces the original.
+    </p>
+
+    <h3>Photos go as an album, not one by one</h3>
+    <p>
+      A product with five photos sent as five messages is unreadable. Telegram media groups solve
+      it — the photos become one swipeable card — but they come with rules that shape the card:
+      <b>at most ten files, and only the first one carries a caption.</b> That single constraint
+      decides how the whole product card is composed.
+    </p>
+
+    <h3>No cart, no payment</h3>
+    <ul>
+      <li><b>No checkout.</b> Payments mean a payment provider, refunds, receipts and legal
+        responsibility. The shop already sells fine through a person; the bot's job is to get the
+        customer to that person knowing what they want.</li>
+      <li><b>No recommendations.</b> A few hundred items do not need a ranking model. Categories and
+        search cover it.</li>
+      <li><b>Strings are not in the code.</b> All of them live in <code>texts.py</code>, because the
+        two shops differ mostly by wording and the owners edit it themselves.</li>
+    </ul>
+
+    <h2>Architecture</h2>
+    <figure class="figure">
+      <div class="figure-frame">
+        <svg viewBox="0 0 880 250" role="img" aria-label="Bot routers, catalogue file and rendering">
+          <defs>
+            <marker id="pa" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+              <path d="M0 0 L9 4.5 L0 9 z" fill="rgb(var(--ink))"/>
+            </marker>
+          </defs>
+          <g font-family="monospace" font-size="12" fill="rgb(var(--ink))">
+
+            <rect x="12" y="96" width="140" height="58" rx="10" fill="rgba(var(--ink), .06)" stroke="rgb(var(--ink))"/>
+            <text x="82" y="120" text-anchor="middle">main.py</text>
+            <text x="82" y="138" text-anchor="middle" fill="rgba(var(--ink), .6)" font-size="10">routers</text>
+
+            <rect x="206" y="26"  width="150" height="48" rx="10" fill="rgba(var(--ink), .06)" stroke="rgb(var(--ink))"/>
+            <text x="281" y="55" text-anchor="middle">shop.py</text>
+            <rect x="206" y="98"  width="150" height="48" rx="10" fill="rgba(var(--ink), .06)" stroke="rgb(var(--ink))"/>
+            <text x="281" y="127" text-anchor="middle">admin.py</text>
+            <rect x="206" y="170" width="150" height="48" rx="10" fill="rgba(var(--ink), .06)" stroke="rgb(var(--ink))"/>
+            <text x="281" y="199" text-anchor="middle">common.py</text>
+
+            <rect x="410" y="92" width="150" height="66" rx="10" fill="rgba(var(--ink), .12)" stroke="rgb(var(--ink))"/>
+            <text x="485" y="118" text-anchor="middle">catalog.py</text>
+            <text x="485" y="136" text-anchor="middle" fill="rgba(var(--ink), .6)" font-size="10">products.json</text>
+            <text x="485" y="150" text-anchor="middle" fill="rgba(var(--ink), .6)" font-size="10">atomic write</text>
+
+            <rect x="614" y="26"  width="160" height="48" rx="10" fill="rgba(var(--ink), .06)" stroke="rgb(var(--ink))"/>
+            <text x="694" y="48" text-anchor="middle">render.py</text>
+            <text x="694" y="64" text-anchor="middle" fill="rgba(var(--ink), .6)" font-size="10">media group &le; 10</text>
+
+            <rect x="614" y="98"  width="160" height="48" rx="10" fill="rgba(var(--ink), .06)" stroke="rgb(var(--ink))"/>
+            <text x="694" y="120" text-anchor="middle">keyboards.py</text>
+            <text x="694" y="136" text-anchor="middle" fill="rgba(var(--ink), .6)" font-size="10">texts.py</text>
+
+            <rect x="614" y="170" width="160" height="48" rx="10" fill="rgba(var(--ink), .06)" stroke="rgb(var(--ink))"/>
+            <text x="694" y="192" text-anchor="middle">data/photos</text>
+            <text x="694" y="208" text-anchor="middle" fill="rgba(var(--ink), .6)" font-size="10">on disk</text>
+
+            <g stroke="rgb(var(--ink))" stroke-width="1.2" fill="none" marker-end="url(#pa)" opacity=".65">
+              <path d="M152 112 L200 52"/>
+              <path d="M152 124 L200 122"/>
+              <path d="M152 136 L200 192"/>
+              <path d="M356 56  L404 112"/>
+              <path d="M356 122 L404 124"/>
+              <path d="M356 192 L404 140"/>
+              <path d="M560 116 L608 52"/>
+              <path d="M560 124 L608 122"/>
+              <path d="M560 136 L608 192"/>
+            </g>
+          </g>
+        </svg>
+      </div>
+      <figcaption>Three routers, one catalogue, one place where cards are built.</figcaption>
+    </figure>
+
+    <h2>Screens and states</h2>
+    <div class="states">
+      <div class="state">
+        <div class="shot">Phones
+&gt; Apple        (24)
+&gt; Samsung      (31)
+&gt; Xiaomi       (46)
+&gt; Used &#9851;      (12)</div>
+        <p class="cap"><b>Categories.</b> Counts come from the catalogue, so an empty category cannot be browsed into.</p>
+      </div>
+      <div class="state">
+        <div class="shot">[album: 5 photos, swipeable]
+iPhone 13 &middot; 128 GB &middot; &#9851; used
+battery 89% &middot; no scratches
+&mdash;&mdash;
+[ Ask a manager ]</div>
+        <p class="cap"><b>Product card.</b> One media group, caption on the first photo — the format the platform allows.</p>
+      </div>
+      <div class="state">
+        <div class="shot">/add
+&gt; category? &gt; name? &gt; price?
+&gt; condition: new | used &#9851;
+&gt; send photos, then /done
+&#10003; saved, catalogue rewritten</div>
+        <p class="cap"><b>Admin.</b> The owner edits the shop from the same chat, no dashboard to log into.</p>
+      </div>
+      <div class="state">
+        <div class="shot">search: 13 pro
+&#10003; 4 matches
+  iPhone 13 Pro 128
+  iPhone 13 Pro 256
+  iPhone 13 Pro Max &#9851;</div>
+        <p class="cap"><b>Search.</b> Plain substring matching over names — enough at this size, and it never surprises anyone.</p>
+      </div>
+    </div>
+
+    <h2>Results and lessons</h2>
+    <div class="results">
+      <div class="result"><div class="n">2</div><div class="t">shops running the same code, phones and keyboards</div></div>
+      <div class="result"><div class="n">0</div><div class="t">catalogue files lost — every write is atomic</div></div>
+      <div class="result"><div class="n">1 file</div><div class="t">is the whole database, backed up by copying it</div></div>
+    </div>
+
+    <h3>What I would tell myself at the start</h3>
+    <ul>
+      <li><b>Write down that the two copies diverge.</b> They already had when I came back to them.
+        The note in the repository — &ldquo;fixing a shared mechanism? check the other one&rdquo; —
+        is worth more than any amount of intended-to-be-shared code.</li>
+      <li><b>Read the media group rules before designing the card.</b> Ten files and a caption only
+        on the first are not details; they are the layout.</li>
+      <li><b>Atomic writes from the first commit.</b> A JSON catalogue is a fine database right up
+        until the process dies halfway through <code>write()</code>.</li>
+      <li><b>Keep every string in one file.</b> The owners rewrite wording constantly, and none of
+        them are going to open a handler to do it.</li>
+    </ul>
+
+    <div class="case-links">
+      <a class="btn" href="https://github.com/numonjonov" rel="noopener">Source on GitHub</a>
+      
+      <a class="btn btn-solid" href="../index.html#contact">Talk about this project</a>
+    </div>
+  </article>
+
+  <nav class="case-next" aria-label="Next case study">
+    <span class="mono dim">Next case study</span>
+    <a href="downloader.html">downloader &rarr;</a>
+  </nav>
+
+</main>
+
+<footer class="foot mono dim">
+  <span>&copy; 2026 Pahlavon Numonjonov</span>
+  <a href="../index.html">Back to the index</a>
+</footer>
+</div>
+
+<div id="spacer"></div>
+
+<script src="../main.js?v=39"></script>
+</body>
+</html>
