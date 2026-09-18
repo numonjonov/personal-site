@@ -31,7 +31,7 @@
 <!-- Версия в адресе: без неё браузер и GitHub Pages ещё сутки
      отдают старый файл, и вёрстка приезжает от прошлого дизайна.
      Правите styles.css или main.js — поднимите число здесь. -->
-<link rel="stylesheet" href="styles.css?v=42" />
+<link rel="stylesheet" href="styles.css?v=43" />
 
 <script type="application/ld+json">
 {
@@ -74,7 +74,6 @@
       <a href="#index">Work</a>
       <a href="#stack">Stack</a>
       <a href="#experience">Experience</a>
-      <a href="#notes">Notes</a>
       <a href="#contact">Contact</a>
     </nav>
 
@@ -97,8 +96,7 @@
   <a href="#index">Work <small>02</small></a>
   <a href="#stack">Stack <small>03</small></a>
   <a href="#experience">Experience <small>04</small></a>
-  <a href="#notes">Notes <small>05</small></a>
-  <a href="#contact">Contact <small>06</small></a>
+  <a href="#contact">Contact <small>05</small></a>
 </nav>
 
 <!-- ==================== Содержимое ==================== -->
@@ -133,15 +131,9 @@
 
     <div class="split">
       <div class="up">
-       <!-- Два отдельных спойлера: тезис и текст под ним. -->
-       <div class="spoilered">
-        <div class="sp-content">
-         <p class="claim">Most of it talks to something older than itself.</p>
-        </div>
-       </div>
+       <p class="claim">Most of it talks to something older than itself.</p>
 
-       <div class="spoilered">
-        <div class="sp-content" id="about-text">
+       <div id="about-text">
         <p class="lead">
           I'm a backend engineer at <b>SQB in Tashkent</b>, working the layer between
           a core banking system on Oracle and everything that needs to reach it: REST services
@@ -159,7 +151,6 @@
           teaches the parts a big codebase hides: deployment, retention, what happens at 3 a.m.
         </p>
         </div>
-       </div>
       </div>
 
       <div class="up">
@@ -272,21 +263,12 @@
   <section class="sc" id="stack" aria-labelledby="stack-h">
     <div class="sec-head mono"><span id="stack-h">03 — Stack</span><span class="dim">Specification</span></div>
 
-    <!-- Два спойлера: заголовок и текст под ним — как в разделе About. -->
-    <div class="spoilered">
-      <div class="sp-content">
-        <h2 class="big">What I actually use</h2>
-      </div>
-    </div>
+    <h2 class="big">What I actually use</h2>
 
-    <div class="spoilered">
-      <div class="sp-content">
-        <p class="lead">
-          No progress bars — a percentage next to a language name means nothing. This is the list of
-          things that appear in my repositories and in code I have shipped to production.
-        </p>
-      </div>
-    </div>
+    <p class="lead">
+      No progress bars — a percentage next to a language name means nothing. This is the list of
+      things that appear in my repositories and in code I have shipped to production.
+    </p>
 
     <div class="spec">
       <div class="spec-row up">
@@ -350,66 +332,25 @@
           <h3>Backend Engineer</h3>
           <p class="org mono">SQB · Tashkent, Uzbekistan</p>
 
-          <!-- Описание и стек — под спойлером. -->
-          <div class="spoilered">
-            <div class="sp-content">
-              <p>
-                Services around <b>iABS</b>, the core banking system on Oracle: REST endpoints for
-                currency rates and reference data secured with JWT. A service wrapping <b>MyID</b>, the
-                state biometric identification provider — authentication, profile and document export.
-                Digital-signature support (<b>e-key</b>, DVS over Styx) inside a legacy JavaEE
-                application on WebLogic. Plus PL/SQL packages where the logic belongs in the database.
-              </p>
-              <ul class="chips">
-                <li>Java 17 / 21</li><li>Spring Boot</li><li>Oracle</li><li>PL/SQL</li>
-                <li>iABS</li><li>MyID</li><li>e-key / DVS</li><li>JWT</li><li>WebLogic</li><li>HikariCP</li>
-              </ul>
-            </div>
-          </div>
+          <p>
+            Services around <b>iABS</b>, the core banking system on Oracle: REST endpoints for
+            currency rates and reference data secured with JWT. A service wrapping <b>MyID</b>, the
+            state biometric identification provider — authentication, profile and document export.
+            Digital-signature support (<b>e-key</b>, DVS over Styx) inside a legacy JavaEE
+            application on WebLogic. Plus PL/SQL packages where the logic belongs in the database.
+          </p>
+          <ul class="chips">
+            <li>Java 17 / 21</li><li>Spring Boot</li><li>Oracle</li><li>PL/SQL</li>
+            <li>iABS</li><li>MyID</li><li>e-key / DVS</li><li>JWT</li><li>WebLogic</li><li>HikariCP</li>
+          </ul>
         </div>
       </li>
     </ol>
   </section>
 
-  <!-- ========== 05 · Заметки и открытый код ========== -->
-  <section class="sc" id="notes" aria-labelledby="notes-h">
-    <div class="sec-head mono"><span id="notes-h">05 — Notes</span><span class="dim">PL/SQL course</span></div>
-
-    <div class="spoilered">
-      <div class="sp-content">
-        <p class="lead">
-          Teaching material I write while learning things properly myself. Currently a PL/SQL course
-          that starts from an empty schema — every lesson runs from zero.
-        </p>
-      </div>
-    </div>
-
-    <div class="spoilered">
-     <div class="sp-content">
-    <div class="notes">
-      <a class="note up" href="#notes">
-        <span class="mono dim">PL/SQL · 8 min</span>
-        <h3>Day 0 — a schema you can throw away</h3>
-        <p>A disposable learning user, tables and seed data in Oracle Free, so every later lesson starts clean.</p>
-      </a>
-      <a class="note up" href="#notes">
-        <span class="mono dim">PL/SQL · 12 min</span>
-        <h3>Day 1 — anonymous blocks</h3>
-        <p>DECLARE, BEGIN, EXCEPTION: what runs where, and why the exception section is not a try/catch.</p>
-      </a>
-      <a class="note up" href="#notes">
-        <span class="mono dim">Draft · —</span>
-        <h3>Day 2 — cursors without regret</h3>
-        <p>Implicit, explicit and bulk collect — when a loop over a cursor is fine and when it becomes the bottleneck.</p>
-      </a>
-    </div>
-     </div>
-    </div>
-  </section>
-
-  <!-- ========== 06 · Контакт ========== -->
+  <!-- ========== 05 · Контакт ========== -->
   <section class="sc sc-full" id="contact" aria-labelledby="contact-h">
-    <div class="sec-head mono"><span id="contact-h">06 — Contact</span><span class="dim">Open to work</span></div>
+    <div class="sec-head mono"><span id="contact-h">05 — Contact</span><span class="dim">Open to work</span></div>
 
     <h2 class="big">Interested in working together?</h2>
     <p class="lead">
@@ -456,6 +397,6 @@
 
 <div id="spacer"></div>
 
-<script src="main.js?v=42"></script>
+<script src="main.js?v=43"></script>
 </body>
 </html>

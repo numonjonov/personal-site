@@ -554,18 +554,6 @@
     [].forEach.call(document.querySelectorAll('.spoiler'), function (el) {
       addSpoiler(el, el);
     });
-
-    /* Блок с текстом: точки лежат поверх и никуда не деваются.
-       Раскрытия нет намеренно — это визуальная метка, а не спойлер
-       из мессенджера. Сам текст остаётся в разметке: он нужен поиску
-       и скринридеру, прячется только цветом, поэтому блок сохраняет
-       ровно ту же высоту, а канвас точно совпадает с его площадью. */
-    [].forEach.call(document.querySelectorAll('.spoilered'), function (box) {
-      var content = box.querySelector('.sp-content');
-      if (!content) return;
-      box.classList.add('is-hidden');
-      addSpoiler(box, box);
-    });
   }
 
   /* host — элемент, по которому меряем площадь; mount — куда класть канвас */
@@ -706,8 +694,7 @@
     { id: 'trace',      label: '04 / Trace' },
     { id: 'stack',      label: '05 / Stack' },
     { id: 'experience', label: '06 / Experience' },
-    { id: 'notes',      label: '07 / Notes' },
-    { id: 'contact',    label: '08 / Contact' }
+    { id: 'contact',    label: '07 / Contact' }
   ].filter(function (s) { return document.getElementById(s.id); });
 
   var lastLabel = '', lastNav = null, lastInv = -1;
