@@ -272,21 +272,21 @@
   // плотные подписи не должны сбиваться в одну сторону.
   var SPOKES = [
     { t: 'JAVA',          bold: true  },
-    { t: 'no dependencies', bold: false },
+    { t: 'docker',        bold: false },
     { t: 'SPRING BOOT',   bold: true  },
-    { t: 'utc+5',         bold: false },
+    { t: 'postgresql',    bold: false },
     { t: 'ORACLE',        bold: true  },
-    { t: 'legacy',        bold: false },
+    { t: 'python',        bold: false },
     { t: 'PL/SQL',        bold: true  },
-    { t: '3 a.m. deploys', bold: false },
+    { t: 'jwt',           bold: false },
     { t: 'MYID',          bold: true  },
-    { t: 'ship it',       bold: false },
+    { t: 'weblogic',      bold: false },
     { t: 'E-KEY',         bold: true  },
-    { t: 'ctrl+z',        bold: false },
+    { t: 'maven',         bold: false },
     { t: 'IABS',          bold: true  },
-    { t: 'uz',            bold: false },
+    { t: 'nginx',         bold: false },
     { t: 'UZ-STATUS',     bold: true  },
-    { t: 'oracle 21c',    bold: false },
+    { t: 'junit',         bold: false },
     { t: 'TELEGRAM BOTS', bold: true  }
   ];
 

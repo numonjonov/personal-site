@@ -6,6 +6,9 @@
 вручную: пиксели в буфер, zlib для сжатия, заголовки чанков по спецификации.
 Шрифт — своя точечная матрица 5x7, как и весь дизайн сайта.
 
+Цвета — те же --paper / --ink, что в styles.css: чёрные буквы на светлом
+листе, а не терминал v1. Правите палитру сайта — поправьте и здесь.
+
 Перерисовать после правок:  python3 og.py
 """
 
@@ -16,11 +19,10 @@ W, H = 1200, 630          # итоговый размер
 SS = 2                    # рисуем вдвое крупнее и уменьшаем — так сглаживаются диагонали
 BW, BH = W * SS, H * SS
 
-BG      = (0, 0, 0)
-INK     = (236, 234, 231)
-DIM     = (139, 139, 134)
-GREY    = (107, 103, 98)
-ACCENT  = (255, 64, 64)
+BG      = (232, 232, 230)   # --paper
+INK     = (10, 10, 10)      # --ink
+DIM     = (95, 95, 92)
+GREY    = (140, 140, 136)
 
 buf = bytearray(BW * BH * 3)
 
@@ -117,58 +119,25 @@ def draw_text(s, cx, top, dot, pitch, space, color, alpha=1.0):
 # =========================================================
 fill_rect(0, 0, BW, BH, BG)
 
-# --- коридор: та же математика, что и на сайте ---
-cx, cy = BW / 2, BH / 2
-FAR, N, HALF, FOCAL = 8.0, 16, 1.0, 2.6
-scale = BW * 0.62
-CORNERS = [(-1, -1), (1, -1), (1, 1), (-1, 1)]
-
-prev = None
-for i in range(N - 1, -1, -1):
-    z = (i / N) * FAR
-    persp = FOCAL / (FOCAL + z)
-    depth = 1 - z / FAR
-    alpha = 0.07 + depth * 0.45
-    accent = (i % 5 == 0)
-    color = ACCENT if accent else INK
-    width = 3 if accent else 2
-
-    pts = [(cx + kx * HALF * persp * scale,
-            cy + ky * HALF * persp * scale * 0.55) for kx, ky in CORNERS]
-
-    for k in range(4):
-        a, b = pts[k], pts[(k + 1) % 4]
-        line(a[0], a[1], b[0], b[1], color, alpha, width)
-
-    if prev:
-        for k in range(4):
-            line(prev[k][0], prev[k][1], pts[k][0], pts[k][1], INK, alpha * 0.5, 2)
-
-    prev = pts
-
-# --- затемнение под текстом, с мягкими краями чтобы не было шва ---
-def dark_band(top, bottom, feather, alpha):
-    top, bottom, feather = top * SS, bottom * SS, feather * SS
-    for py in range(int(top - feather), int(bottom + feather)):
-        if py < top:
-            k = (py - (top - feather)) / feather
-        elif py > bottom:
-            k = ((bottom + feather) - py) / feather
-        else:
-            k = 1.0
-        fill_rect(0, py, BW, py + 1, BG, alpha * max(0.0, min(1.0, k)))
+# --- линейка с делениями по верхнему и нижнему краю, как на сайте ---
+def ruler(y, up):
+    step = 24 * SS
+    for i, x in enumerate(range(0, BW + step, step)):
+        tall = (i % 5 == 0)
+        h = (18 if tall else 9) * SS
+        y1 = y - h if up else y + h
+        line(x, y, x, y1, INK, 0.5 if tall else 0.28, 1 * SS)
 
 
-dark_band(196, 528, 42, 0.84)
+ruler(14 * SS, up=False)
+ruler((H - 14) * SS, up=True)
 
-# --- текст ---
-draw_text('$', (600 - 92) * SS, 214 * SS, 3 * SS, 4 * SS, 6 * SS, ACCENT)
-draw_text('whoami', (600 + 22) * SS, 214 * SS, 3 * SS, 4 * SS, 6 * SS, DIM)
+# --- текст: имя во весь кадр, тем же кеглем, что и заголовок сайта ---
+draw_text('Pahlavon',   600 * SS, 236 * SS, 8 * SS, 10 * SS, 12 * SS, INK)
+draw_text('Numonjonov', 600 * SS, 326 * SS, 8 * SS, 10 * SS, 12 * SS, INK)
 
-draw_text('Pahlavon',   600 * SS, 262 * SS, 8 * SS, 10 * SS, 12 * SS, INK)
-draw_text('Numonjonov', 600 * SS, 352 * SS, 8 * SS, 10 * SS, 12 * SS, INK)
-
-draw_text('pahlavon@numonjonov.com', 600 * SS, 470 * SS, 3 * SS, 4 * SS, 6 * SS, GREY)
+draw_text('pahlavon@numonjonov.com', 600 * SS, 430 * SS, 3 * SS, 4 * SS, 6 * SS, DIM)
+draw_text('numonjonov.com',          600 * SS, 466 * SS, 3 * SS, 4 * SS, 6 * SS, GREY)
 
 # =========================================================
 #  Уменьшаем в SS раз (усреднение) и пишем PNG
