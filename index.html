@@ -9,29 +9,26 @@
 <meta name="author" content="Pahlavon Numonjonov" />
 <link rel="canonical" href="https://numonjonov.com/" />
 
-<meta name="theme-color" content="#E8E8E6" />
+<meta name="theme-color" content="#0a0a0a" />
 
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://numonjonov.com/" />
 <meta property="og:title" content="Pahlavon Numonjonov — Backend Engineer" />
 <meta property="og:description" content="Java, Spring Boot and Oracle in a bank. Telegram bots and small tools after hours. Projects, case studies and source code." />
-<meta property="og:image" content="https://numonjonov.com/og.png?v=5" />
+<meta property="og:image" content="https://numonjonov.com/og.png?v=6" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Pahlavon Numonjonov — Backend Engineer" />
 <meta name="twitter:description" content="Java, Spring Boot and Oracle in a bank. Telegram bots and small tools after hours." />
-<meta name="twitter:image" content="https://numonjonov.com/og.png?v=5" />
+<meta name="twitter:image" content="https://numonjonov.com/og.png?v=6" />
 
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23E8E8E6'/><text x='50' y='76' font-family='Arial Black,sans-serif' font-size='78' font-weight='900' fill='%230A0A0A' text-anchor='middle'>N</text></svg>" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='14' fill='%230a0a0a'/><text x='50' y='70' font-family='Courier New,monospace' font-size='62' font-weight='700' fill='%2300ff41' text-anchor='middle'>&gt;_</text></svg>" />
 
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
 <!-- Версия в адресе: без неё браузер и GitHub Pages ещё сутки
      отдают старый файл, и вёрстка приезжает от прошлого дизайна.
      Правите styles.css или main.js — поднимите число здесь. -->
-<link rel="stylesheet" href="styles.css?v=43" />
+<link rel="stylesheet" href="styles.css?v=50" />
 
 <script type="application/ld+json">
 {
@@ -51,354 +48,441 @@
 <body>
 <a class="skip" href="#main">Skip to content</a>
 
-<!-- Схема первого экрана: узел, лучи к подписям, след за курсором.
-     Декорация — все те же слова есть в разделе Stack обычным текстом. -->
-<canvas id="spokes" aria-hidden="true"></canvas>
-<canvas id="grain" aria-hidden="true"></canvas>
-<div id="cursor" aria-hidden="true"><span class="lbl">OPEN</span></div>
-<div id="progress" aria-hidden="true"></div>
+<canvas id="matrix" aria-hidden="true"></canvas>
+<div id="cursor" aria-hidden="true"><span class="pt"></span><span class="halo"><span></span></span></div>
 
-<!-- ==================== Чертёжная рамка ==================== -->
-<div id="hud-scrim-top" aria-hidden="true"></div>
-<div id="hud-scrim-bot" aria-hidden="true"></div>
-<div class="hud">
-  <div class="ruler" id="ruler" aria-hidden="true"></div>
-  <span class="corner tl" aria-hidden="true"></span><span class="corner tr" aria-hidden="true"></span>
-  <span class="corner bl" aria-hidden="true"></span><span class="corner br" aria-hidden="true"></span>
+<div class="page">
 
-  <div class="hud-row hud-top">
-    <a class="mono" href="#hero">numonjonov.com</a>
+<!-- ==================== Шапка ==================== -->
+<header class="site-header">
+  <div class="container">
+    <a class="logo" href="#home" data-nav="home" aria-label="Go to Home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+      <span class="caret">root@numonjonov</span>
+    </a>
 
-    <nav class="hud-nav mono" id="hud-nav" aria-label="Sections">
-      <a href="#about">About</a>
-      <a href="#index">Work</a>
-      <a href="#stack">Stack</a>
-      <a href="#experience">Experience</a>
-      <a href="#contact">Contact</a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#home" data-nav="home">./home.exe</a>
+      <a href="#about" data-nav="about">./about.sys</a>
+      <a href="#skills" data-nav="skills">./skills.jar</a>
+      <a href="#contact" data-nav="contact">./contact.sh</a>
     </nav>
 
-    <span class="hud-right mono">
-      <span>Tashkent — UTC+5</span><br />
-      <button id="menu-btn" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
-      <span class="faint" id="hud-count" aria-hidden="true">00 — 06 index</span>
-    </span>
+    <button class="menu-btn" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mnav">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+    </button>
+
+    <nav class="mnav" id="mnav" aria-label="Sections">
+      <a href="#home" data-nav="home">./home.exe</a>
+      <a href="#about" data-nav="about">./about.sys</a>
+      <a href="#skills" data-nav="skills">./skills.jar</a>
+      <a href="#contact" data-nav="contact">./contact.sh</a>
+    </nav>
   </div>
+</header>
 
-  <div class="hud-row hud-bot mono" aria-hidden="true">
-    <span class="faint" id="hud-sect">01 / Intro</span>
-    <span class="faint" id="hud-coord">X 0000 Y 0000</span>
-  </div>
-</div>
-
-<!-- ==================== Полноэкранное меню ==================== -->
-<nav id="menu" aria-label="Menu" hidden>
-  <a href="#about">About <small>01</small></a>
-  <a href="#index">Work <small>02</small></a>
-  <a href="#stack">Stack <small>03</small></a>
-  <a href="#experience">Experience <small>04</small></a>
-  <a href="#contact">Contact <small>05</small></a>
-  <a href="resume.html">Résumé <small>PDF</small></a>
-</nav>
-
-<!-- ==================== Содержимое ==================== -->
-<div id="view">
 <main id="main">
 
-  <!-- ========== 00 · Первый экран ========== -->
-  <section class="sc" id="hero" aria-labelledby="giant">
+  <!-- ========== home ========== -->
+  <section data-section="home" class="is-active" aria-label="Home">
+    <div class="container">
+      <div class="hero">
 
-    <!-- Такт первый: имя во весь экран. Оно же h1 страницы —
-         и для поиска, и для человека это главное, что тут есть. -->
-    <div class="hero-stage">
-      <h1 class="giant" id="giant">
-        <span>Pahlavon</span>
-        <span>Numonjonov</span>
-      </h1>
-
-      <div class="hero-foot mono">
-        <span>Backend Engineer — Java, Spring Boot, Oracle</span>
-        <span class="dim">Scroll ↓</span>
-      </div>
-    </div>
-
-    <!-- Такт второй: пустой экран, пока мимо него проходит схема.
-         Сама схема — на канвасе #spokes, зафиксированном на вьюпорт. -->
-    <div class="hero-scene" aria-hidden="true"></div>
-  </section>
-
-  <!-- ========== 01 · О себе ========== -->
-  <section class="sc sc-full" id="about" aria-labelledby="about-h">
-    <div class="sec-head mono"><span id="about-h">01 — About</span><span class="dim">Since 2026</span></div>
-
-    <div class="split">
-      <div class="up">
-       <p class="claim">Most of it talks to something older than itself.</p>
-
-       <div id="about-text">
-        <p class="lead">
-          I'm a backend engineer at <b>SQB in Tashkent</b>, working the layer between
-          a core banking system on Oracle and everything that needs to reach it: REST services
-          behind JWT, a wrapper around the state biometric identification provider, and
-          digital-signature support inside a legacy JavaEE application.
-        </p>
-        <p class="lead">
-          The interesting problems are rarely the framework ones. They are the Oracle driver that
-          breaks Cyrillic without the right encoding library, the vendor daemon whose annotations
-          stopped matching its own API, the job queue that has to stay responsive on 256 MB of heap.
-        </p>
-        <p class="lead">
-          Outside work I ship small things end to end — a public uptime monitor, a few Telegram
-          bots, a currency tracker with <b>deliberately zero dependencies</b>. Shipping alone
-          teaches the parts a big codebase hides: deployment, retention, what happens at 3 a.m.
-        </p>
+        <!-- Терминал. Команды печатаются посимвольно, ответы падают целиком. -->
+        <div class="terminal cyber">
+          <div class="terminal-bar">
+            <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+            <span class="name"><span class="scramble">terminal.app</span></span>
+          </div>
+          <div class="term-lines" data-terminal>
+            <div class="cmd">whoami</div>
+            <div>Pahlavon Numonjonov — Backend Engineer</div>
+            <div class="cmd">ls -la portfolio/</div>
+            <div>drwxr-xr-x  about/</div>
+            <div>drwxr-xr-x  work/</div>
+            <div>drwxr-xr-x  skills/</div>
+            <div>drwxr-xr-x  contact/</div>
+            <div class="cmd">cat mission.txt</div>
+            <div>Java and Spring Boot services around a core banking system on Oracle.</div>
+            <div>Telegram bots and small tools that run unattended, built end to end.</div>
+            <div class="cmd">echo "I.AM.NUMONJONOV"</div>
+          </div>
         </div>
-      </div>
 
-      <div class="up">
-        <div class="stats">
-          <div class="stat"><div class="n">02</div><div class="c mono dim">Years writing backend</div></div>
-          <div class="stat"><div class="n">06</div><div class="c mono dim">Projects shipped solo</div></div>
-          <div class="stat"><div class="n">03</div><div class="c mono dim">Bank integrations</div></div>
-          <div class="stat"><div class="n">21</div><div class="c mono dim">Java version in prod</div></div>
+        <!-- Лента работ. Каждая запись ведёт на кейс в work/. -->
+        <section class="feed" aria-labelledby="work-title">
+          <a class="post cyber" href="work/uz-status.html" aria-label="Read uz-status case study">
+            <h2 id="work-title"><span class="scramble">WORK</span></h2>
+            <article>
+              <div>
+                <h3><span class="scramble">uz-status — public uptime monitor</span></h3>
+                <span class="meta">Java 21 · Spring Boot · PostgreSQL · 2026</span>
+                <p>A status page for the services Uzbekistan runs on — payments, the tax portal, marketplaces, banks. Probes every minute, 90 days of history at flat storage cost, open JSON API.</p>
+              </div>
+              <div class="cover" data-art="Payme     ●  operational  99.98%
+Click     ●  operational  99.91%
+Uzum      ●  operational  99.97%
+soliq.uz  ●  degraded     97.40%
+
+GET /api/v1/status → 200"></div>
+            </article>
+          </a>
+
+          <a class="post cyber" href="work/exchange.html" aria-label="Read exchange case study">
+            <article>
+              <div>
+                <h3><span class="scramble">exchange — currency tracker, zero dependencies</span></h3>
+                <span class="meta">Python 3.11 · standard library only · 2026</span>
+                <p>Central-bank and exchange-office rates into SQLite. CLI, Telegram bot, charts and threshold alerts share one core — HTTP, the Telegram client and the chart renderer are all hand-written against the standard library.</p>
+              </div>
+              <div class="cover" data-art="$ pip freeze | wc -l
+0
+
+USD/UZS  12 740 ▲ 0.3%
+EUR/UZS  13 905 ▼ 0.1%"></div>
+            </article>
+          </a>
+
+          <a class="post cyber" href="work/tgagent.html" aria-label="Read tgagent case study">
+            <article>
+              <div>
+                <h3><span class="scramble">tgagent — Telegram Business assistant</span></h3>
+                <span class="meta">Java · Gemini → Groq · SQLite · 2026</span>
+                <p>An assistant on bare Java with a two-provider model fallback chain and local conversation memory. When the first provider is down or rate-limited, the second one answers.</p>
+              </div>
+              <div class="cover" data-art="[gemini]  429 rate limited
+[groq]    200 ok  (fallback)
+memory    sqlite://chat.db
+uptime    41d 06h"></div>
+            </article>
+          </a>
+
+          <a class="post cyber" href="work/tekstlybot.html" aria-label="Read tekstlybot case study">
+            <article>
+              <div>
+                <h3><span class="scramble">tekstlybot — media worker in 256 MB</span></h3>
+                <span class="meta">Java · ffmpeg · whisper.cpp · 2026</span>
+                <p>Compression, audio extraction and speech-to-text through a worker queue — all held inside a 256 MB heap on a small VPS.</p>
+              </div>
+              <div class="cover" data-art="queue   3 jobs
+ffmpeg  → audio.ogg
+whisper → transcript.txt
+heap    231 / 256 MB"></div>
+            </article>
+          </a>
+
+          <a class="post cyber" href="work/plusline.html" aria-label="Read plusline case study">
+            <article>
+              <div>
+                <h3><span class="scramble">plusline / keyline — Telegram bots</span></h3>
+                <span class="meta">Python · aiogram 3 · 2026</span>
+                <p>Two production bots on aiogram 3: subscriptions, payments and admin tooling, deployed with systemd and watched by Prometheus.</p>
+              </div>
+              <div class="cover" data-art="/start   → onboarding
+/pay     → invoice
+/admin   → stats
+systemd  active (running)"></div>
+            </article>
+          </a>
+
+          <a class="post cyber" href="work/downloader.html" aria-label="Read downloader case study">
+            <article>
+              <div>
+                <h3><span class="scramble">downloader — media fetcher bot</span></h3>
+                <span class="meta">Python · yt-dlp · gallery-dl · 2026</span>
+                <p>Send a link, get the file. yt-dlp and gallery-dl behind one Telegram interface, with size limits, retries and cleanup that keeps the disk from filling.</p>
+              </div>
+              <div class="cover" data-art="→ https://…/video
+  fetching  ████████░░ 80%
+  47.2 MB   ok
+  cleanup   -1 tmp"></div>
+            </article>
+          </a>
+
+          <a class="post cyber" href="work/myid.html" aria-label="Open MyID project">
+            <article>
+              <div>
+                <h3><span class="scramble">MyID · e-key — bank integrations</span></h3>
+                <span class="meta">Java 17 · Spring Boot · Oracle · JavaEE · closed source</span>
+                <p>A service wrapping the state biometric identification provider, and digital-signature support inside a legacy JavaEE application on WebLogic. Work inside a bank — no case study, but happy to talk about it.</p>
+              </div>
+              <div class="cover" data-art="source    closed
+myid      auth · profile · export
+e-key     DVS over Styx
+status    in production"></div>
+            </article>
+          </a>
+        </section>
+
+        <!-- Три карточки-ссылки на разделы -->
+        <div class="cards">
+          <a class="card-btn cyber" href="#about" data-nav="about">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            <span>./about.sys</span>
+            <small>About Me</small>
+          </a>
+          <a class="card-btn cyber" href="#skills" data-nav="skills">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+            <span>./skills.jar</span>
+            <small>My Stack</small>
+          </a>
+          <a class="card-btn cyber" href="#contact" data-nav="contact">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 7L2 7"/></svg>
+            <span>./contact.sh</span>
+            <small>Get in Touch</small>
+          </a>
         </div>
+
+        <div class="end-mark"><span class="scramble" data-loop>// END OF PAGE</span></div>
       </div>
     </div>
   </section>
 
-  <!-- ========== 02 · Индекс работ ========== -->
-  <section class="sc" id="index" aria-labelledby="index-h">
-    <div class="sec-head mono"><span id="index-h">02 — Selected index</span><span class="dim">08 entries · 2026</span></div>
-
-    <ul class="work" id="work">
-
-      <li class="up"><a href="work/myid.html" data-word="MYID">
-        <span class="mono dim">001</span>
-        <span class="t">MyID</span>
-        <span class="k mono">Java 17 · Spring Boot · Oracle</span>
-        <span class="y mono">2026</span>
-        <span class="go mono">Closed ↗</span>
-      </a></li>
-
-      <li class="up"><a href="work/ekey.html" data-word="E-KEY">
-        <span class="mono dim">002</span>
-        <span class="t">e-key</span>
-        <span class="k mono">JavaEE · WebLogic · DVS</span>
-        <span class="y mono">2026</span>
-        <span class="go mono">Closed ↗</span>
-      </a></li>
-
-      <li class="up"><a href="work/uz-status.html" data-word="UZ-STATUS">
-        <span class="mono dim">003</span>
-        <span class="t">uz-status</span>
-        <span class="k mono">Java 21 · Spring Boot · Postgres</span>
-        <span class="y mono">2026</span>
-        <span class="go mono">Case ↗</span>
-      </a></li>
-
-      <li class="up"><a href="work/exchange.html" data-word="EXCHANGE">
-        <span class="mono dim">004</span>
-        <span class="t">exchange</span>
-        <span class="k mono">Python · zero dependencies</span>
-        <span class="y mono">2026</span>
-        <span class="go mono">Case ↗</span>
-      </a></li>
-
-      <li class="up"><a href="work/tgagent.html" data-word="TGAGENT">
-        <span class="mono dim">005</span>
-        <span class="t">tgagent</span>
-        <span class="k mono">Java · Gemini → Groq</span>
-        <span class="y mono">2026</span>
-        <span class="go mono">Case ↗</span>
-      </a></li>
-
-      <li class="up"><a href="work/tekstlybot.html" data-word="TEKSTLY">
-        <span class="mono dim">006</span>
-        <span class="t">tekstlybot</span>
-        <span class="k mono">Java · ffmpeg · whisper.cpp</span>
-        <span class="y mono">2026</span>
-        <span class="go mono">Case ↗</span>
-      </a></li>
-
-      <li class="up"><a href="work/plusline.html" data-word="PLUSLINE">
-        <span class="mono dim">007</span>
-        <span class="t">plusline / keyline</span>
-        <span class="k mono">Python · aiogram 3</span>
-        <span class="y mono">2026</span>
-        <span class="go mono">Case ↗</span>
-      </a></li>
-
-      <li class="up"><a href="work/downloader.html" data-word="DOWNLOADER">
-        <span class="mono dim">008</span>
-        <span class="t">downloader</span>
-        <span class="k mono">Python · yt-dlp · gallery-dl</span>
-        <span class="y mono">2026</span>
-        <span class="go mono">Case ↗</span>
-      </a></li>
-    </ul>
-  </section>
-
-  <!-- ========== Сцена с частицами ========== -->
-  <section class="sc" id="trace" aria-labelledby="trace-h">
-    <div class="sec-head mono"><span id="trace-h">Trace pen</span><span class="dim" id="trace-name">UZ-STATUS</span></div>
-
-    <div class="trace-wrap">
-      <canvas id="particles" aria-hidden="true"></canvas>
-      <p class="trace-hint mono dim">
-        Hold and move to pull the name together<br />Release — it scatters back
-      </p>
-    </div>
-
-    <div class="tabs" id="tabs">
-      <button type="button" data-word="MYID" aria-pressed="false">myid</button>
-      <button type="button" data-word="E-KEY" aria-pressed="false">e-key</button>
-      <button type="button" data-word="UZ-STATUS" aria-pressed="true">uz-status</button>
-      <button type="button" data-word="EXCHANGE" aria-pressed="false">exchange</button>
-      <button type="button" data-word="TGAGENT" aria-pressed="false">tgagent</button>
-      <button type="button" data-word="TEKSTLY" aria-pressed="false">tekstlybot</button>
-      <button type="button" data-word="PLUSLINE" aria-pressed="false">plusline</button>
-      <button type="button" data-word="DOWNLOADER" aria-pressed="false">downloader</button>
-    </div>
-  </section>
-
-  <!-- ========== 03 · Стек ========== -->
-  <section class="sc" id="stack" aria-labelledby="stack-h">
-    <div class="sec-head mono"><span id="stack-h">03 — Stack</span><span class="dim">Specification</span></div>
-
-    <h2 class="big">What I actually use</h2>
-
-    <p class="lead">
-      No progress bars — a percentage next to a language name means nothing. This is the list of
-      things that appear in my repositories and in code I have shipped to production.
-    </p>
-
-    <div class="spec">
-      <div class="spec-row up">
-        <h3>Languages</h3>
-        <ul class="spec-list">
-          <li>Java <i></i><em>21 / 17</em></li>
-          <li>Python <i></i><em>3.11+</em></li>
-          <li>SQL <i></i><em>Oracle / Postgres</em></li>
-          <li>PL/SQL <i></i><em>packages</em></li>
-          <li>JavaScript <i></i><em>vanilla</em></li>
-          <li>Bash <i></i><em>deploy scripts</em></li>
-        </ul>
+  <!-- ========== about ========== -->
+  <section data-section="about" aria-labelledby="about-title">
+    <div class="container">
+      <div class="section-head">
+        <div class="title cyber"><h2 id="about-title" data-title="About"><span class="scramble">ABOUT</span></h2></div>
+        <p>Backend engineer in Tashkent. Most of what I write talks to something older than itself.</p>
       </div>
 
-      <div class="spec-row up">
-        <h3>Backend</h3>
-        <ul class="spec-list">
-          <li>Spring Boot <i></i><em>3.x / 4.x</em></li>
-          <li>Spring Security <i></i><em>JWT</em></li>
-          <li>REST API design <i></i><em>feature packages</em></li>
-          <li>JavaEE / JSP <i></i><em>legacy</em></li>
-          <li>Maven <i></i><em>shade, failsafe</em></li>
-          <li>JUnit, Testcontainers <i></i><em>integration</em></li>
-        </ul>
-      </div>
+      <div class="grid">
+        <article class="card cyber cyber-soft">
+          <div class="art"><span class="num">#01</span><span class="big">&gt;_ bank</span></div>
+          <div class="body">
+            <h3><span class="scramble">Where I work</span></h3>
+            <p>Backend engineer at <b>SQB</b>, working the layer between a core banking system on Oracle and everything that needs to reach it: REST services behind JWT, a wrapper around the state biometric identification provider, and digital-signature support inside a legacy JavaEE application.</p>
+            <ul class="tags"><li>SQB · Tashkent</li><li>2025 — present</li><li>iABS</li><li>MyID</li><li>e-key / DVS</li></ul>
+          </div>
+        </article>
 
-      <div class="spec-row up">
-        <h3>Data</h3>
-        <ul class="spec-list">
-          <li>Oracle Database <i></i><em>ojdbc, orai18n</em></li>
-          <li>PostgreSQL <i></i><em>production</em></li>
-          <li>SQLite <i></i><em>embedded</em></li>
-          <li>Flyway <i></i><em>migrations</em></li>
-          <li>HikariCP <i></i><em>pooling</em></li>
-          <li>Thymeleaf <i></i><em>server rendered</em></li>
-        </ul>
-      </div>
+        <article class="card cyber cyber-soft">
+          <div class="art"><span class="num">#02</span><span class="big">3 a.m.</span></div>
+          <div class="body">
+            <h3><span class="scramble">What I find interesting</span></h3>
+            <p>Rarely the framework. It is the Oracle driver that breaks Cyrillic without the right encoding library, the vendor daemon whose annotations stopped matching its own API, the job queue that has to stay responsive on 256 MB of heap.</p>
+            <ul class="tags"><li>Oracle</li><li>legacy JavaEE</li><li>WebLogic</li><li>memory limits</li></ul>
+          </div>
+        </article>
 
-      <div class="spec-row up">
-        <h3>Ops</h3>
-        <ul class="spec-list">
-          <li>Docker, Compose <i></i><em>dev + prod</em></li>
-          <li>Linux <i></i><em>systemd, deploy</em></li>
-          <li>Caddy, Nginx <i></i><em>TLS</em></li>
-          <li>Prometheus <i></i><em>Micrometer</em></li>
-          <li>Git, GitHub Actions <i></i><em>CI</em></li>
-          <li>WebLogic <i></i><em>legacy</em></li>
-        </ul>
+        <article class="card cyber cyber-soft">
+          <div class="art"><span class="num">#03</span><span class="big">ship it</span></div>
+          <div class="body">
+            <h3><span class="scramble">After hours</span></h3>
+            <p>Small things end to end — a public uptime monitor, a few Telegram bots, a currency tracker with <b>deliberately zero dependencies</b>. Shipping alone teaches the parts a big codebase hides: deployment, retention, what happens at night.</p>
+            <ul class="tags"><li>uz-status</li><li>exchange</li><li>tgagent</li><li>tekstlybot</li></ul>
+          </div>
+        </article>
+
+        <article class="card cyber cyber-soft">
+          <div class="art"><span class="num">#04</span><span class="big">stats</span></div>
+          <div class="body">
+            <h3><span class="scramble">In numbers</span></h3>
+            <div class="stats">
+              <div class="stat"><div class="n">02</div><div class="c">years writing backend</div></div>
+              <div class="stat"><div class="n">06</div><div class="c">projects shipped solo</div></div>
+              <div class="stat"><div class="n">03</div><div class="c">bank integrations</div></div>
+              <div class="stat"><div class="n">21</div><div class="c">Java version in prod</div></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card cyber cyber-soft">
+          <div class="art"><span class="num">#05</span><span class="big">cv.pdf</span></div>
+          <div class="body">
+            <h3><span class="scramble">Résumé</span></h3>
+            <p>One page, printable. Experience, selected projects, stack and languages — Uzbek, Russian, English.</p>
+            <p><a class="btn" href="resume.html">open resume.html →</a></p>
+          </div>
+        </article>
+
+        <article class="card cyber cyber-soft">
+          <div class="art"><span class="num">#06</span><span class="big">open</span></div>
+          <div class="body">
+            <h3><span class="scramble">Open to</span></h3>
+            <p><b>Full-time:</b> backend roles in Java or Spring Boot, remote or in Tashkent. Banking and integration work especially.</p>
+            <p><b>Freelance:</b> Telegram bots, small services, monitoring and automation. Built to run unattended.</p>
+            <ul class="tags"><li>remote</li><li>Tashkent · UTC+5</li></ul>
+          </div>
+        </article>
       </div>
     </div>
   </section>
 
-  <!-- ========== 04 · Опыт ========== -->
-  <section class="sc" id="experience" aria-labelledby="exp-h">
-    <div class="sec-head mono"><span id="exp-h">04 — Experience</span><span class="dim">Banking</span></div>
+  <!-- ========== skills ========== -->
+  <section data-section="skills" aria-labelledby="skills-title">
+    <div class="container">
+      <div class="section-head">
+        <div class="title cyber"><h2 id="skills-title" data-title="Skills"><span class="scramble">SKILLS</span></h2></div>
+        <p>No progress bars — a percentage next to a language name means nothing. This is what appears in my repositories and in code shipped to production.</p>
+      </div>
 
-    <ol class="tl">
-      <li class="up">
-        <div class="when">2025 — <br />present</div>
+      <div class="grid">
+        <article class="card cyber cyber-soft">
+          <div class="art"><span class="num">#01</span><span class="big">java</span></div>
+          <div class="body">
+            <h3><span class="scramble">Languages</span></h3>
+            <ul class="list">
+              <li><span>Java</span><em>21 / 17</em></li>
+              <li><span>Python</span><em>3.11+</em></li>
+              <li><span>SQL</span><em>Oracle / Postgres</em></li>
+              <li><span>PL/SQL</span><em>packages</em></li>
+              <li><span>JavaScript</span><em>vanilla</em></li>
+              <li><span>Bash</span><em>deploy scripts</em></li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="card cyber cyber-soft">
+          <div class="art"><span class="num">#02</span><span class="big">spring</span></div>
+          <div class="body">
+            <h3><span class="scramble">Backend</span></h3>
+            <ul class="list">
+              <li><span>Spring Boot</span><em>3.x / 4.x</em></li>
+              <li><span>Spring Security</span><em>JWT</em></li>
+              <li><span>REST API design</span><em>feature packages</em></li>
+              <li><span>JavaEE / JSP</span><em>legacy</em></li>
+              <li><span>Maven</span><em>shade, failsafe</em></li>
+              <li><span>JUnit, Testcontainers</span><em>integration</em></li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="card cyber cyber-soft">
+          <div class="art"><span class="num">#03</span><span class="big">sql</span></div>
+          <div class="body">
+            <h3><span class="scramble">Data</span></h3>
+            <ul class="list">
+              <li><span>Oracle Database</span><em>ojdbc, orai18n</em></li>
+              <li><span>PostgreSQL</span><em>production</em></li>
+              <li><span>SQLite</span><em>embedded</em></li>
+              <li><span>Flyway</span><em>migrations</em></li>
+              <li><span>HikariCP</span><em>pooling</em></li>
+              <li><span>Thymeleaf</span><em>server rendered</em></li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="card cyber cyber-soft">
+          <div class="art"><span class="num">#04</span><span class="big">ops</span></div>
+          <div class="body">
+            <h3><span class="scramble">Ops</span></h3>
+            <ul class="list">
+              <li><span>Docker, Compose</span><em>dev + prod</em></li>
+              <li><span>Linux</span><em>systemd, deploy</em></li>
+              <li><span>Caddy, Nginx</span><em>TLS</em></li>
+              <li><span>Prometheus</span><em>Micrometer</em></li>
+              <li><span>Git, GitHub Actions</span><em>CI</em></li>
+              <li><span>WebLogic</span><em>legacy</em></li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="card cyber cyber-soft">
+          <div class="art"><span class="num">#05</span><span class="big">bots</span></div>
+          <div class="body">
+            <h3><span class="scramble">Telegram</span></h3>
+            <p>Bots in Java and Python that run for months without being touched: worker queues, model fallbacks, payments, media processing.</p>
+            <ul class="tags"><li>aiogram 3</li><li>Bot API</li><li>Telegram Business</li><li>yt-dlp</li><li>ffmpeg</li><li>whisper.cpp</li></ul>
+          </div>
+        </article>
+
+        <article class="card cyber cyber-soft">
+          <div class="art"><span class="num">#06</span><span class="big">bank</span></div>
+          <div class="body">
+            <h3><span class="scramble">Banking integrations</span></h3>
+            <p>Core banking on Oracle, state identity provider, digital signatures — the systems that do not come with a nice SDK.</p>
+            <ul class="tags"><li>iABS</li><li>MyID</li><li>e-key / DVS</li><li>JWT</li><li>WebLogic</li><li>HikariCP</li></ul>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== contact ========== -->
+  <section data-section="contact" aria-labelledby="contact-title">
+    <div class="container">
+      <div class="section-head">
+        <div class="title cyber"><h2 id="contact-title" data-title="Contact"><span class="scramble">CONTACT.INTERFACE</span></h2></div>
+        <p>The fastest way to reach me is Telegram — I read everything and answer real messages. Usually replies within 24 hours.</p>
+      </div>
+
+      <div class="contact">
+        <!-- Форма: без бэкенда, письмо уходит через mailto -->
+        <div class="panel cyber cyber-soft">
+          <div class="panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+            <h3>message.send()</h3>
+          </div>
+          <form id="contact-form" data-to="pahlavon@numonjonov.com" novalidate="">
+            <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" hidden />
+            <div class="field">
+              <label for="c-name">--name</label>
+              <input id="c-name" name="name" type="text" placeholder="Enter your name..." maxlength="100" required />
+            </div>
+            <div class="field">
+              <label for="c-email">--email</label>
+              <input id="c-email" name="email" type="email" placeholder="your.email@domain.com" maxlength="254" required />
+            </div>
+            <div class="field">
+              <label for="c-message">--message</label>
+              <textarea id="c-message" name="message" placeholder="Hello! I'd like to discuss..." maxlength="3000" required></textarea>
+            </div>
+            <button class="btn btn-solid btn-solid-full" type="submit" data-idle="&#9654; Execute Send" data-busy="Transmitting...">&#9654; Execute Send</button>
+          </form>
+        </div>
+
         <div>
-          <h3>Backend Engineer</h3>
-          <p class="org mono">SQB · Tashkent, Uzbekistan</p>
+          <div class="panel cyber cyber-soft">
+            <div class="terminal-bar" style="margin-bottom:1rem;padding-bottom:0;border:0">
+              <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+              <span class="name">terminal.log</span>
+            </div>
+            <div class="log" id="contact-log" role="status" aria-live="polite">
+              <div>&gt; system_status: online</div>
+              <div>&gt; contact_form: initialized</div>
+              <div>&gt; waiting_for_input...</div>
+              <div><span class="caret">_</span></div>
+            </div>
+          </div>
 
-          <p>
-            Services around <b>iABS</b>, the core banking system on Oracle: REST endpoints for
-            currency rates and reference data secured with JWT. A service wrapping <b>MyID</b>, the
-            state biometric identification provider — authentication, profile and document export.
-            Digital-signature support (<b>e-key</b>, DVS over Styx) inside a legacy JavaEE
-            application on WebLogic. Plus PL/SQL packages where the logic belongs in the database.
-          </p>
-          <ul class="chips">
-            <li>Java 17 / 21</li><li>Spring Boot</li><li>Oracle</li><li>PL/SQL</li>
-            <li>iABS</li><li>MyID</li><li>e-key / DVS</li><li>JWT</li><li>WebLogic</li><li>HikariCP</li>
-          </ul>
+          <div class="panel cyber cyber-soft links">
+            <h3 style="margin-bottom:1rem">connection.links</h3>
+            <a href="https://t.me/CustomAnnotation" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.9 4.6 18.7 19.7c-.2 1.1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.4-5 9.1-8.2c.4-.4-.1-.5-.6-.2L6.2 13.4 1.4 11.9c-1-.3-1.1-1 .2-1.5L20.5 3c.9-.3 1.6.2 1.4 1.6z"/></svg>
+              <span><span class="l">Telegram</span><br /><span class="v">@CustomAnnotation</span></span>
+            </a>
+            <a href="mailto:pahlavon@numonjonov.com">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 7L2 7"/></svg>
+              <span><span class="l">email.sh</span><br /><span class="v">pahlavon@numonjonov.com</span></span>
+            </a>
+            <a href="https://github.com/numonjonov" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.4-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg>
+              <span><span class="l">github.com</span><br /><span class="v">numonjonov</span></span>
+            </a>
+            <a href="resume.html">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+              <span><span class="l">resume.pdf</span><br /><span class="v">one page, printable</span></span>
+            </a>
+            <a aria-disabled="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span><span class="l">location.geo</span><br /><span class="v">Tashkent, Uzbekistan · UTC+5</span></span>
+            </a>
+          </div>
         </div>
-      </li>
-    </ol>
-  </section>
-
-  <!-- ========== 05 · Контакт ========== -->
-  <section class="sc sc-full" id="contact" aria-labelledby="contact-h">
-    <div class="sec-head mono"><span id="contact-h">05 — Contact</span><span class="dim">Open to work</span></div>
-
-    <h2 class="big">Interested in working together?</h2>
-    <p class="lead">
-      The fastest way to reach me is <b>Telegram</b> — I read everything and answer real messages.
-      Tell me what you are building and what is currently in the way.
-      <b>Usually replies within 24 hours.</b>
-    </p>
-
-    <!-- Телеграм крупно, почта строкой ниже: раз он назван самым быстрым
-         способом, он же должен быть и самым заметным. -->
-    <p style="margin:var(--s4) 0 0">
-      <a class="mail" href="https://t.me/CustomAnnotation" rel="noopener">t.me/CustomAnnotation</a>
-    </p>
-
-    <p class="mono dim" style="margin:var(--s3) 0 0">
-      Or email — <a href="mailto:pahlavon@numonjonov.com" style="text-decoration:underline;text-underline-offset:3px">pahlavon@numonjonov.com</a>
-    </p>
-
-    <div class="offers">
-      <div class="offer">
-        <h3>Full-time</h3>
-        <p>Backend roles in Java or Spring Boot, remote or in Tashkent. Banking and integration work especially.</p>
       </div>
-      <div class="offer">
-        <h3>Freelance</h3>
-        <p>Telegram bots, small services, monitoring and automation. Built to run unattended.</p>
-      </div>
-    </div>
-
-    <div class="case-links">
-      <a class="btn btn-solid" href="https://t.me/CustomAnnotation" rel="noopener">Message on Telegram</a>
-      <a class="btn" href="mailto:pahlavon@numonjonov.com">Send an email</a>
-      <a class="btn" href="https://github.com/numonjonov" rel="noopener">GitHub</a>
-      <a class="btn" href="resume.html">Résumé</a>
     </div>
   </section>
 
 </main>
 
-<footer class="foot mono dim">
-  <span>© 2026 Pahlavon Numonjonov</span>
-  <a href="#hero">Back to top ↑</a>
+<footer class="foot">
+  <p>© 2026 Pahlavon Numonjonov — Java, Spring Boot, Oracle. Built by hand, no frameworks.</p>
+  <p class="sys">System.Status: <b>Online</b> | Last.Update: <b>2026.10.26</b> | Build.Version: <b>v3.0.0</b></p>
 </footer>
+
 </div>
 
-<div id="spacer"></div>
-
-<script src="main.js?v=43"></script>
+<script src="main.js?v=50"></script>
 </body>
 </html>
