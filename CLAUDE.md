@@ -162,7 +162,7 @@ repository». С ключом появляется `edit`: textarea с живы�
 блоба в `sessionStorage`, заголовок/описание для списка — по sha в
 `localStorage`. Кнопка `reload` сбрасывает дерево.
 
-**Версии.** `docs/docs.css` и `docs/docs.js` подключаются с `?v=1` в
+**Версии.** `docs/docs.css` и `docs/docs.js` подключаются с `?v=2` в
 `404.html` и в заглушках `<slug>/index.html`; правите — поднимайте число
 там же (это отдельный счётчик, не `?v=` у `styles.css`/`main.js`).
 Отладка из консоли: `DOCS.render(md)`, `DOCS.meta(md)`.
