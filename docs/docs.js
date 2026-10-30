@@ -6,28 +6,36 @@
    Владелец вводит fine-grained PAT (кнопка key) — он хранится в этом браузере
    и даёт чтение приватных репозиториев и кнопку edit: правка в textarea
    с предпросмотром, сохранение = коммит через Contents API.
-   Никакого бэкенда: сайт статический, GitHub Pages. */
+   Никакого бэкенда: сайт статический, GitHub Pages.
+
+   Оформление — прежний «чертёж» сайта (docs/docs.css). Скрипт сам строит
+   всё тело страницы: чертёжную рамку с линейкой, зерно, свой курсор,
+   полосу прогресса — и выключает терминальный styles.css, если тот
+   подключён (404.html). Терминальный main.js на этих страницах не грузится. */
 (function () {
   'use strict';
-  const doc = document, win = window;
+  const doc = document, win = window, root = doc.documentElement;
   const PROJECTS = win.DOCS_PROJECTS || [];
   const dec = s => { try { return decodeURIComponent(s); } catch (e) { return s; } };
   const segs = location.pathname.split('/').filter(Boolean).map(dec);
   const project = segs.length ? PROJECTS.find(p => p.slug === segs[0]) : null;
-  const main = doc.getElementById('main');
-  if (!project || !main) return;
+  if (!project || !doc.body) return;
 
   const API = 'https://api.github.com';
   const VENDOR = ['/vendor/marked.min.js', '/vendor/highlight.min.js', '/vendor/highlight-powershell.min.js'];
+  const FONTS = 'https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&display=swap';
   const SITE = 'Pahlavon Numonjonov';
   const KEY = 'docs.token';
   const base = '/' + project.slug;
   const repo = project.repo, branch = project.branch || 'main';
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const touch = matchMedia('(hover: none)').matches;
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const $ = (s, r) => (r || doc).querySelector(s);
   const $$ = (s, r) => Array.from((r || doc).querySelectorAll(s));
   const encPath = p => p.split('/').map(encodeURIComponent).join('/');
   const state = { files: null, user: null, dirty: false, editor: null };
+  let main;
 
   /* ====================== Хранилище ====================== */
   const mem = {
@@ -165,14 +173,14 @@
   }
 
   /* ссылки: относительные .md — внутрь приложения, картинки — на raw.githubusercontent, внешние — в новой вкладке */
-  function fixLinks(root, docPath) {
+  function fixLinks(rootEl, docPath) {
     const dir = docPath.includes('/') ? docPath.slice(0, docPath.lastIndexOf('/') + 1) : '';
     const resolve = rel => {
       const parts = (dir + rel).split('/'), out = [];
       for (const p of parts) { if (p === '..') out.pop(); else if (p !== '.' && p !== '') out.push(p); }
       return out.join('/');
     };
-    $$('a[href]', root).forEach(a => {
+    $$('a[href]', rootEl).forEach(a => {
       const href = a.getAttribute('href');
       if (!href || href.startsWith('#') || a.classList.contains('anchor')) return;
       if (/^[a-z]+:/i.test(href) || href.startsWith('//')) { a.target = '_blank'; a.rel = 'noopener'; return; }
@@ -181,7 +189,7 @@
       a.setAttribute('href', 'https://github.com/' + repo + '/blob/' + branch + '/' + encPath(resolve(href)));
       a.target = '_blank'; a.rel = 'noopener';
     });
-    $$('img[src]', root).forEach(img => {
+    $$('img[src]', rootEl).forEach(img => {
       const src = img.getAttribute('src');
       if (/^[a-z]+:/i.test(src) || src.startsWith('//') || src.startsWith('data:')) return;
       img.src = 'https://raw.githubusercontent.com/' + repo + '/' + branch + '/' + encPath(resolve(src));
@@ -210,8 +218,9 @@
     desc = clean(desc); if (desc.length > 180) desc = desc.slice(0, 177).replace(/\s+\S*$/, '') + '…';
     return { title: clean(title), desc, lines: lines.length };
   }
+  const niceName = path => path.split('/').pop().replace(/\.md$/i, '').replace(/[_-]+/g, ' ');
 
-  /* ====================== Каркас ====================== */
+  /* ====================== Каркас страницы (чертёж) ====================== */
   function loadScript(src) {
     return new Promise((ok, fail) => { const s = doc.createElement('script'); s.src = src; s.onload = ok; s.onerror = () => fail(new Error('cannot load ' + src)); doc.head.appendChild(s); });
   }
@@ -221,29 +230,48 @@
     return vendorReady;
   }
 
-  function route() {
-    const s = location.pathname.split('/').filter(Boolean).slice(1).map(dec);
-    let path = s.join('/');
-    if (path === 'index.html') path = '';
-    return { path, edit: new URLSearchParams(location.search).has('edit') };
-  }
-
-  function go(url) { history.pushState(null, '', url); render(); }
-
-  const shell = function () {
-    main.innerHTML = '<section><div class="container docs">' +
-      '<nav class="docs-crumbs" id="docs-crumbs" aria-label="Breadcrumb"></nav>' +
-      '<div id="docs-view"><p class="docs-loading">loading ' + esc(repo) + '</p></div>' +
-      '</div></section>' +
+  function shell() {
+    root.dataset.docs = '1';
+    if (!reduce) root.classList.add('js');
+    // терминальный styles.css (если это 404.html) — выключаем, оформление целиком в docs.css
+    $$('link[rel="stylesheet"]').forEach(l => { if (/(^|\/)styles\.css/.test(l.getAttribute('href') || '')) l.disabled = true; });
+    if (!$('link[href^="' + FONTS.slice(0, 40) + '"]')) {
+      ['https://fonts.googleapis.com', 'https://fonts.gstatic.com'].forEach(h => { const l = doc.createElement('link'); l.rel = 'preconnect'; l.href = h; if (h.includes('gstatic')) l.crossOrigin = ''; doc.head.appendChild(l); });
+      const f = doc.createElement('link'); f.rel = 'stylesheet'; f.href = FONTS; doc.head.appendChild(f);
+    }
+    doc.body.removeAttribute('class'); doc.body.removeAttribute('data-custom-cursor'); doc.body.removeAttribute('data-section');
+    const boot = $('#docs-boot'); if (boot) boot.remove();   // страница была скрыта до старта скрипта (404.html, заглушки)
+    doc.body.innerHTML =
+      '<a class="skip" href="#main">Skip to content</a>' +
+      '<canvas id="grain" aria-hidden="true"></canvas>' +
+      '<div id="cursor" aria-hidden="true"><span class="lbl">GO</span></div>' +
+      '<div id="progress" aria-hidden="true"></div>' +
+      '<div id="hud-scrim-top" aria-hidden="true"></div><div id="hud-scrim-bot" aria-hidden="true"></div>' +
+      '<div class="hud">' +
+        '<div class="ruler" id="ruler" aria-hidden="true"></div>' +
+        '<span class="corner tl" aria-hidden="true"></span><span class="corner tr" aria-hidden="true"></span>' +
+        '<span class="corner bl" aria-hidden="true"></span><span class="corner br" aria-hidden="true"></span>' +
+        '<div class="hud-row hud-top">' +
+          '<a class="mono" href="/">' + SITE + '</a>' +
+          '<nav class="hud-nav mono" aria-label="Sections"><a href="/">Site</a><a href="' + base + '" id="hud-docs">Docs</a><a href="https://github.com/' + esc(repo) + '" target="_blank" rel="noopener">GitHub</a></nav>' +
+          '<span class="hud-right mono"><span>Documentation</span><br /><span class="dim">' + esc(project.slug) + '</span></span>' +
+        '</div>' +
+        '<div class="hud-row hud-bot mono" aria-hidden="true"><span class="faint">' + esc(repo) + ' @ ' + esc(branch) + '</span><span class="faint" id="hud-coord">X 0000 Y 0000</span></div>' +
+      '</div>' +
+      '<main id="main">' +
+        '<nav class="docs-crumbs mono" id="docs-crumbs" aria-label="Breadcrumb"></nav>' +
+        '<div id="docs-view"><p class="docs-loading mono">loading ' + esc(repo) + '</p></div>' +
+      '</main>' +
       '<dialog class="docs-dialog" id="docs-key">' +
       '<form method="dialog" id="docs-key-form">' +
       '<h2>GitHub key</h2>' +
       '<p>Fine-grained personal access token with <b>Contents</b> permission (read, or read &amp; write to edit) for the repositories listed in <code>docs/projects.js</code>. It stays in this browser only and is sent to api.github.com, nowhere else.</p>' +
-      '<div class="field"><label for="docs-key-input">token</label><input id="docs-key-input" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…"></div>' +
+      '<div class="field"><label class="mono" for="docs-key-input">token</label><input id="docs-key-input" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…"></div>' +
       '<label class="check"><input type="checkbox" id="docs-key-remember" checked> remember on this device (otherwise until the tab closes)</label>' +
       '<div class="err" id="docs-key-err"></div>' +
-      '<div class="actions"><button type="button" class="btn" data-act="forget">forget key</button><button type="button" class="btn" data-act="cancel">cancel</button><button type="submit" class="btn btn-solid">use key</button></div>' +
+      '<div class="actions"><button type="button" class="btn btn-s" data-act="forget">forget key</button><button type="button" class="btn btn-s" data-act="cancel">cancel</button><button type="submit" class="btn btn-s btn-solid">use key</button></div>' +
       '</form></dialog>';
+    main = $('#main');
     doc.title = project.title + ' — docs — ' + SITE;
 
     main.addEventListener('click', onClick);
@@ -254,7 +282,76 @@
     doc.addEventListener('keydown', e => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's' && state.editor) { e.preventDefault(); state.editor.save(); }
     });
-  };
+    engine();
+  }
+
+  /* Зерно, курсор, прогресс, линейка, координаты — как на прежнем сайте, без плавного скролла. */
+  function engine() {
+    const rulerBox = $('#ruler');
+    if (rulerBox) {
+      let html = '';
+      for (let ry = 0; ry < 2400; ry += 20) {
+        const big = ry % 100 === 0;
+        html += '<i class="' + (big ? 'big' : '') + '" style="top:' + ry + 'px"></i>';
+        if (big && ry) html += '<b style="top:' + ry + 'px">' + ry + '</b>';
+      }
+      rulerBox.innerHTML = html;
+    }
+    // экраны за строками HUD: высота меряется с реальных строк
+    const topRow = $('.hud-top'), botRow = $('.hud-bot');
+    const sync = () => {
+      root.style.setProperty('--hud-top-h', topRow.getBoundingClientRect().height + 'px');
+      root.style.setProperty('--hud-bot-h', botRow.getBoundingClientRect().height + 'px');
+    };
+    sync();
+    if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(sync);
+    if ('ResizeObserver' in win) { new ResizeObserver(sync).observe(topRow); new ResizeObserver(sync).observe(botRow); }
+    else win.addEventListener('resize', sync);
+
+    if (reduce) return;
+    // зерно: шум в маленький буфер, растянутый на экран, раз в ~80 мс
+    const gc = $('#grain'), g = gc.getContext('2d');
+    const GW = 190, GH = 130;
+    let grainAt = 0;
+    // курсор
+    const cur = $('#cursor'), lbl = $('.lbl', cur), coord = $('#hud-coord');
+    let mx = innerWidth / 2, my = innerHeight / 2, cx = mx, cy = my;
+    if (!touch) {
+      win.addEventListener('pointermove', e => {
+        mx = e.clientX; my = e.clientY;
+        if (coord) coord.textContent = 'X ' + String(Math.round(mx)).padStart(4, '0') + ' Y ' + String(Math.round(my)).padStart(4, '0');
+      }, { passive: true });
+      doc.addEventListener('pointerover', e => {
+        const hit = e.target.closest('a, button, summary, label');
+        cur.classList.toggle('wide', !!hit);
+        if (hit) lbl.textContent = hit.closest('.docs-list') ? 'OPEN' : hit.matches('[data-key], .btn-solid') ? 'OK' : hit.closest('.toc') ? 'JUMP' : 'GO';
+      });
+    }
+    const progress = $('#progress');
+    const frame = now => {
+      if (now - grainAt >= 80) {
+        grainAt = now;
+        gc.width = GW; gc.height = GH;
+        const img = g.createImageData(GW, GH), d = img.data;
+        for (let i = 0; i < d.length; i += 4) { d[i] = d[i + 1] = d[i + 2] = 200 + Math.random() * 55; d[i + 3] = 26; }
+        g.putImageData(img, 0, 0);
+      }
+      if (!touch) { cx += (mx - cx) * .35; cy += (my - cy) * .35; cur.style.transform = 'translate(' + cx + 'px,' + cy + 'px)'; }
+      const max = doc.documentElement.scrollHeight - innerHeight;
+      progress.style.width = (max > 0 ? Math.min(1, scrollY / max) * 100 : 0) + '%';
+      requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+  }
+
+  function route() {
+    const s = location.pathname.split('/').filter(Boolean).slice(1).map(dec);
+    let path = s.join('/');
+    if (path === 'index.html') path = '';
+    return { path, edit: new URLSearchParams(location.search).has('edit') };
+  }
+
+  function go(url) { history.pushState(null, '', url); render(); }
 
   function onClick(e) {
     const copy = e.target.closest('button.copy');
@@ -272,9 +369,9 @@
     const url = new URL(a.href, location.href);
     if (url.origin !== location.origin) return;
     if (url.pathname === location.pathname && url.hash && url.search === location.search) {
-      // якорь внутри документа — плавно и без перезагрузки
+      // якорь внутри документа — без перезагрузки
       const el = doc.getElementById(dec(url.hash.slice(1)));
-      if (el) { e.preventDefault(); history.pushState(null, '', url.hash); el.scrollIntoView({ block: 'start' }); }
+      if (el) { e.preventDefault(); history.pushState(null, '', url.hash); el.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' }); }
       return;
     }
     if (url.pathname === base || url.pathname.startsWith(base + '/')) {
@@ -312,19 +409,20 @@
   }
 
   function crumbs(r) {
-    const parts = ['<a href="/">root@numonjonov</a>', '<span class="sep">/</span>', '<a href="' + base + '">' + esc(project.slug) + '</a>'];
+    const parts = ['<a href="/">numonjonov.com</a>', '<span class="sep">/</span>', '<a href="' + base + '">' + esc(project.slug) + '</a>'];
     if (r.path) {
       const bits = r.path.split('/');
       bits.forEach((b, i) => {
         parts.push('<span class="sep">/</span>');
-        parts.push(i === bits.length - 1 ? '<span class="path">' + esc(b) + '</span>' : '<span>' + esc(b) + '</span>');
+        parts.push(i === bits.length - 1 ? '<span>' + esc(b) + '</span>' : '<span class="dim">' + esc(b) + '</span>');
       });
     }
     parts.push('<span class="grow"></span>');
-    if (state.user) parts.push('<span class="who">key: <b>@' + esc(state.user) + '</b></span>');
-    parts.push('<button type="button" class="btn" data-key>' + (token() ? 'key' : 'key…') + '</button>');
-    parts.push('<button type="button" class="btn" data-refresh title="Reload the file list from GitHub">reload</button>');
+    if (state.user) parts.push('<span class="who dim">key <b>@' + esc(state.user) + '</b></span>');
+    parts.push('<button type="button" class="btn btn-s" data-key>' + (token() ? 'key' : 'key…') + '</button>');
+    parts.push('<button type="button" class="btn btn-s" data-refresh title="Reload the file list from GitHub">reload</button>');
     $('#docs-crumbs').innerHTML = parts.join('');
+    const hd = $('#hud-docs'); if (hd) { if (r.path) hd.removeAttribute('aria-current'); else hd.setAttribute('aria-current', 'page'); }
   }
 
   /* ====================== Экраны ====================== */
@@ -337,12 +435,12 @@
     crumbs(r);
     try {
       await ensureVendor();
-      if (!state.files || force) { view.innerHTML = '<p class="docs-loading">git ls-tree ' + esc(repo) + '@' + esc(branch) + '</p>'; state.files = await loadTree(force); }
+      if (!state.files || force) { view.innerHTML = '<p class="docs-loading mono">git ls-tree ' + esc(repo) + '@' + esc(branch) + '</p>'; state.files = await loadTree(force); }
       if (id !== renderId) return;
       if (!r.path) { renderList(view); return; }
       const file = state.files.find(f => f.path === r.path);
       if (!file) { renderMsg(view, 'No such file', '<code>' + esc(r.path) + '</code> is not in ' + esc(repo) + '@' + esc(branch) + '. <a href="' + base + '">Back to the list.</a>', false); return; }
-      view.innerHTML = '<p class="docs-loading">cat ' + esc(file.path) + '</p>';
+      view.innerHTML = '<p class="docs-loading mono">cat ' + esc(file.path) + '</p>';
       const text = await loadFile(file);
       if (id !== renderId) return;
       doc.title = (meta(text).title || file.path) + ' — ' + project.title + ' — ' + SITE;
@@ -355,8 +453,8 @@
   }
 
   function renderMsg(view, title, html, isErr, key) {
-    view.innerHTML = '<div class="docs-msg cyber' + (isErr ? ' err' : '') + '"><h2>' + esc(title) + '</h2><p>' + html + '</p>' +
-      '<div class="actions">' + (key ? '<button type="button" class="btn btn-solid" data-key>enter key</button>' : '') + '<a class="btn" href="' + base + '">list</a><a class="btn" href="/">home</a></div></div>';
+    view.innerHTML = '<div class="docs-msg' + (isErr ? ' err' : '') + '"><h2>' + esc(title) + '</h2><p>' + html + '</p>' +
+      '<div class="actions">' + (key ? '<button type="button" class="btn btn-solid" data-key>Enter key</button>' : '') + '<a class="btn" href="' + base + '">All docs</a><a class="btn" href="/">Home</a></div></div>';
   }
 
   function fmtSize(n) { return n < 1024 ? n + ' B' : (n / 1024).toFixed(n < 10240 ? 1 : 0) + ' KB'; }
@@ -374,28 +472,36 @@
     files.forEach(f => {
       const isF = featured.includes(f.path);
       const dir = isF ? '' : (f.path.includes('/') ? f.path.slice(0, f.path.lastIndexOf('/')) + '/' : '');
-      const g = isF ? '★' : dir || './';
+      const g = isF ? 'Featured' : dir || 'Root';
       if (!groups.has(g)) groups.set(g, []);
       groups.get(g).push(f);
     });
-    let html = '<div class="docs-head cyber"><div class="terminal-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="name">' + esc(project.slug) + '/docs</span></div>' +
-      '<h1>' + esc(project.title) + '</h1><p class="lead">' + esc(project.description || '') + '</p>' +
-      '<div class="repo"><span>repo: <a href="https://github.com/' + esc(repo) + '" target="_blank" rel="noopener">' + esc(repo) + '</a></span><span>branch: ' + esc(branch) + '</span><span>' + files.length + ' .md files</span>' +
-      (token() ? '' : '<span>read-only: no key</span>') + '</div></div>';
+    const access = token() ? (state.user ? 'Owner — @' + state.user : 'Key set') : 'Read-only, no key';
+    let html = '<header class="page-head"><a class="back mono" href="/">&larr; numonjonov.com</a>' +
+      '<h1>' + esc(project.title) + '</h1><p class="page-sub">' + esc(project.description || '') + '</p>' +
+      '<dl class="page-meta mono">' +
+      '<div><dt class="dim">Repository</dt><dd><a href="https://github.com/' + esc(repo) + '" target="_blank" rel="noopener">' + esc(repo) + '</a></dd></div>' +
+      '<div><dt class="dim">Branch</dt><dd>' + esc(branch) + '</dd></div>' +
+      '<div><dt class="dim">Documents</dt><dd>' + files.length + ' markdown files</dd></div>' +
+      '<div><dt class="dim">Access</dt><dd>' + esc(access) + '</dd></div>' +
+      '</dl></header>';
     if (!files.length) html += '<p class="dim">No markdown files in this repository.</p>';
+    let n = 0;
     groups.forEach((list, g) => {
-      html += '<section class="docs-group"><h2>' + esc(g === '★' ? 'featured' : g) + '</h2><ul class="docs-list">';
+      html += '<section class="docs-group"><h2 class="mono"><span>' + esc(g) + '</span><span class="dim">' + list.length + '</span></h2><ul class="docs-list">';
       list.forEach(f => {
         const m = cachedMeta(f);
+        n += 1;
         html += '<li><a href="' + base + '/' + encPath(f.path) + '" data-path="' + esc(f.path) + '">' +
-          '<span class="title' + (m ? '' : ' pending') + '">' + esc(m ? (m.title || f.path.split('/').pop()) : f.path.split('/').pop()) + '</span>' +
+          '<span class="num mono">' + String(n).padStart(2, '0') + '</span>' +
+          '<span class="title' + (m ? '' : ' pending') + '">' + esc(m ? (m.title || niceName(f.path)) : niceName(f.path)) + '</span>' +
           '<span class="desc">' + esc(m ? m.desc : '') + '</span>' +
-          '<span class="name">' + esc(f.path) + '</span>' +
-          '<span class="size">' + (m ? m.lines + ' lines · ' : '') + fmtSize(f.size) + '</span></a></li>';
+          '<span class="meta mono"><span class="name">' + esc(f.path) + '</span><span class="size">' + (m ? m.lines + ' lines · ' : '') + fmtSize(f.size) + '</span></span></a></li>';
       });
       html += '</ul></section>';
     });
     view.innerHTML = html;
+    win.scrollTo(0, 0);
     fillMeta(files);
   }
 
@@ -415,7 +521,7 @@
           mem.set('docs.meta.' + f.sha, JSON.stringify(m));
           const a = $('#docs-view a[data-path="' + CSS.escape(f.path) + '"]');
           if (!a) continue;
-          const t = $('.title', a); t.textContent = m.title || f.path.split('/').pop(); t.classList.remove('pending');
+          const t = $('.title', a); t.textContent = m.title || niceName(f.path); t.classList.remove('pending');
           $('.desc', a).textContent = m.desc;
           $('.size', a).textContent = m.lines + ' lines · ' + fmtSize(f.size);
         } catch (e) { return; }
@@ -426,14 +532,27 @@
 
   function renderDoc(view, file, text, r) {
     const html = renderMarkdown(text);
+    const m = meta(text);
+    const title = m.title || niceName(file.path);
     const canEdit = !!token();
-    view.innerHTML = '<div class="doc">' +
-      '<aside class="doc-side"><details open><summary>contents</summary><ol class="toc" id="docs-toc"></ol></details></aside>' +
-      '<article class="doc-main cyber"><div class="doc-bar"><span class="path">' + esc(file.path) + '</span><span class="grow"></span>' +
-      '<a class="dim" href="https://github.com/' + esc(repo) + '/blob/' + esc(branch) + '/' + encPath(file.path) + '" target="_blank" rel="noopener">github</a>' +
-      (canEdit ? '<a class="btn" href="' + base + '/' + encPath(file.path) + '?edit">edit</a>' : '<button type="button" class="btn" data-key title="Enter a key to edit">edit…</button>') +
-      '</div><div class="md" id="docs-md">' + html + '</div></article></div>';
+    view.innerHTML = '<header class="page-head"><a class="back mono" href="' + base + '">&larr; All docs</a>' +
+      '<h1 class="' + (title.length > 28 ? 'long' : '') + '">' + esc(title) + '</h1>' +
+      (m.desc ? '<p class="page-sub">' + esc(m.desc) + '</p>' : '') +
+      '<dl class="page-meta mono">' +
+      '<div><dt class="dim">File</dt><dd>' + esc(file.path) + '</dd></div>' +
+      '<div><dt class="dim">Size</dt><dd>' + m.lines + ' lines · ' + fmtSize(file.size) + '</dd></div>' +
+      '<div><dt class="dim">Source</dt><dd><a href="https://github.com/' + esc(repo) + '/blob/' + esc(branch) + '/' + encPath(file.path) + '" target="_blank" rel="noopener">' + esc(repo) + '@' + esc(branch) + '</a></dd></div>' +
+      '<div><dt class="dim">Access</dt><dd>' + (canEdit ? 'Owner, editable' : 'Read-only') + '</dd></div>' +
+      '</dl>' +
+      '<div class="page-actions">' + (canEdit ? '<a class="btn" href="' + base + '/' + encPath(file.path) + '?edit">Edit</a>' : '<button type="button" class="btn" data-key title="Enter a key to edit">Edit — key needed</button>') + '</div>' +
+      '</header>' +
+      '<div class="doc">' +
+      '<aside class="doc-side"><details open><summary class="mono">Contents</summary><ol class="toc" id="docs-toc"></ol></details></aside>' +
+      '<article class="doc-main"><div class="md" id="docs-md">' + html + '</div></article></div>';
     const md = $('#docs-md');
+    // первый h1 уже вынесен в шапку страницы
+    const h1 = md.firstElementChild;
+    if (h1 && h1.tagName === 'H1' && m.title && h1.textContent.replace(/^#/, '').trim() === m.title) h1.remove();
     fixLinks(md, file.path);
     buildToc(md, $('#docs-toc'));
     if (win.innerWidth < 1024) $('.doc-side details').open = false;
@@ -444,11 +563,9 @@
   let spy;
   function buildToc(md, toc) {
     const hs = $$('h1, h2, h3, h4', md);
-    const first = hs[0];
-    const items = hs.filter(h => !(h === first && h.tagName === 'H1' && hs.filter(x => x.tagName === 'H1').length === 1));
-    if (!items.length) { toc.innerHTML = '<li class="empty">no headings</li>'; return; }
-    const min = Math.min.apply(null, items.map(h => +h.tagName[1]));
-    toc.innerHTML = items.map(h => '<li class="d' + (+h.tagName[1] - min + 2) + '"><a href="#' + esc(h.id) + '">' + esc(h.textContent.replace(/^#\s*/, '')) + '</a></li>').join('');
+    if (!hs.length) { toc.innerHTML = '<li class="empty">No headings</li>'; return; }
+    const min = Math.min.apply(null, hs.map(h => +h.tagName[1]));
+    toc.innerHTML = hs.map(h => '<li class="d' + (+h.tagName[1] - min + 2) + '"><a href="#' + esc(h.id) + '">' + esc(h.textContent.replace(/^#\s*/, '')) + '</a></li>').join('');
     const links = $$('a', toc);
     if (spy) win.removeEventListener('scroll', spy);
     let tick = false;
@@ -456,11 +573,11 @@
       if (tick) return; tick = true;
       requestAnimationFrame(() => {
         tick = false;
-        const top = (parseFloat(getComputedStyle(doc.documentElement).getPropertyValue('--header-h')) || 57) + 24;
+        const top = (parseFloat(root.style.getPropertyValue('--hud-top-h')) || 40) + 48;
         let cur = -1;
-        items.forEach((h, i) => { if (h.getBoundingClientRect().top <= top) cur = i; });
+        hs.forEach((h, i) => { if (h.getBoundingClientRect().top <= top) cur = i; });
         links.forEach((a, i) => a.classList.toggle('active', i === cur));
-        if (cur >= 0 && links[cur].scrollIntoView && !doc.hidden) {
+        if (cur >= 0 && !doc.hidden) {
           const side = toc.closest('.doc-side'), rect = links[cur].getBoundingClientRect(), box = side.getBoundingClientRect();
           if (rect.top < box.top || rect.bottom > box.bottom) links[cur].scrollIntoView({ block: 'nearest' });
         }
@@ -475,14 +592,16 @@
     const draftKey = 'docs.draft.' + repo + '/' + file.path;
     const draft = mem.get(draftKey);
     const url = base + '/' + encPath(file.path) + '?edit';
-    view.innerHTML = '<div class="ed">' +
-      '<div class="ed-bar cyber"><span class="path">' + esc(file.path) + '</span>' +
-      '<input id="ed-msg" type="text" placeholder="commit message (optional)" maxlength="200">' +
+    view.innerHTML = '<header class="page-head"><a class="back mono" href="' + base + '/' + encPath(file.path) + '">&larr; Back to the document</a>' +
+      '<h1 class="long">Edit</h1><p class="page-sub">Changes are committed to <b>' + esc(repo) + '@' + esc(branch) + '</b> under your GitHub account. Ctrl+S saves.</p></header>' +
+      '<div class="ed">' +
+      '<div class="ed-bar mono"><span class="path">' + esc(file.path) + '</span>' +
+      '<input id="ed-msg" type="text" placeholder="Commit message (optional)" maxlength="200">' +
       '<span class="state" id="ed-state"></span>' +
-      '<button type="button" class="btn btn-solid" id="ed-save">save ⌃S</button>' +
-      '<a class="btn" href="' + base + '/' + encPath(file.path) + '" id="ed-cancel">cancel</a></div>' +
+      '<button type="button" class="btn btn-s btn-solid" id="ed-save">Save</button>' +
+      '<a class="btn btn-s" href="' + base + '/' + encPath(file.path) + '" id="ed-cancel">Cancel</a></div>' +
       '<div class="ed-panes"><textarea id="ed-text" spellcheck="false" aria-label="Markdown source"></textarea>' +
-      '<div class="ed-preview cyber"><div class="md" id="ed-preview"></div></div></div></div>';
+      '<div class="ed-preview"><div class="md" id="ed-preview"></div></div></div></div>';
     const ta = $('#ed-text'), pv = $('#ed-preview'), st = $('#ed-state'), btn = $('#ed-save');
     let original = text;
     ta.value = draft !== null && draft !== text ? draft : text;
@@ -505,7 +624,6 @@
         ta.dispatchEvent(new Event('input'));
       }
     });
-    if (draft !== null && draft !== text) setState('dirty', 'draft restored');
     update();
     if (draft !== null && draft !== text) setState('dirty', 'draft restored');
 
@@ -532,6 +650,7 @@
     btn.addEventListener('click', save);
     state.editor = { save, url };
     ta.focus();
+    win.scrollTo(0, 0);
   }
 
   /* ====================== Старт ====================== */
