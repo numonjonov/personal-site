@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Pahlavon Numonjonov — v7</title>
+<meta name="description" content="Backend engineer portfolio — Java, Spring Boot, Oracle. Version 7: Captain Clark walks you to each section on the walls of a 3D room." />
+<meta name="robots" content="noindex" />
+<meta name="theme-color" content="#14110a" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23e3cf7e'/><text x='50' y='68' font-family='Arial,sans-serif' font-size='48' font-weight='800' fill='%2314110a' text-anchor='middle'>PN</text></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css?v=1" />
+</head>
+
+<body>
+<a class="skip" href="#home">Skip to content</a>
+
+<!-- 3D: комната, в ней Captain Clark. По клику в навигации он идёт к стене
+     раздела, камера встаёт к стене, и доска с текстом раздела ложится на стену.
+     Без WebGL всё ниже — обычная страница с навигацией справа -->
+<div class="stage" id="stage" aria-hidden="true"></div>
+<p class="bubble" id="bubble" aria-hidden="true"></p>
+<p class="sr-only" id="status" aria-live="polite"></p>
+
+<aside class="rail">
+  <a class="brand" href="#home">
+    <b>Pahlavon Numonjonov</b>
+    <span>Backend Engineer</span>
+  </a>
+  <nav aria-label="Sections">
+    <ol>
+      <li><a href="#home"><i>00</i>Home</a></li>
+      <li><a href="#about"><i>01</i>About</a></li>
+      <li><a href="#work"><i>02</i>Work</a></li>
+      <li><a href="#skills"><i>03</i>Skills</a></li>
+      <li><a href="#experience"><i>04</i>Experience</a></li>
+      <li><a href="#contact"><i>05</i>Contact</a></li>
+    </ol>
+  </nav>
+  <p class="hint">Pick a section — Captain Clark walks you to its wall.</p>
+  <nav class="versions" aria-label="Site versions">
+    <a href="/">main</a><a href="/v2/">v2</a><a href="/v3/">v3</a><a href="/v4/">v4</a><a href="/v5/">v5</a><a href="/v6/">v6</a><a href="/v7/" aria-current="page">v7</a>
+  </nav>
+</aside>
+
+<main class="boards">
+
+  <section class="board" id="home" tabindex="-1" aria-labelledby="h-home" data-say="Ahoy! This be the captain's log.">
+    <p class="eyebrow">Tashkent · UTC+5 · open to work</p>
+    <h1 id="h-home">Pahlavon Numonjonov</h1>
+    <p class="role">Backend Engineer — Java, Spring Boot, Oracle</p>
+    <p class="lede">Most of what I write talks to something older than itself: a core banking system on Oracle, a legacy JavaEE app on WebLogic, a state identity provider without an SDK.</p>
+    <div class="actions">
+      <a class="btn" href="#work">See the work</a>
+      <a class="btn ghost" href="https://t.me/CustomAnnotation" rel="noopener">Telegram</a>
+    </div>
+  </section>
+
+  <section class="board" id="about" tabindex="-1" aria-labelledby="h-about" data-say="Who built this place? Follow me.">
+    <p class="num">01</p>
+    <h2 id="h-about">About</h2>
+    <div class="about">
+      <div>
+        <p>I'm a backend engineer at a <b>commercial bank in Tashkent</b>, working the layer between a core banking system on Oracle and everything that needs to reach it: REST services behind JWT, a wrapper around the state biometric identification provider, and digital-signature support inside a legacy JavaEE application.</p>
+        <p>The interesting problems are rarely the framework ones. They are the Oracle driver that breaks Cyrillic without the right encoding library, the vendor daemon whose annotations stopped matching its own API, the job queue that has to stay responsive on 256 MB of heap.</p>
+        <p>Outside work I ship small things end to end — a public uptime monitor, a few Telegram bots, a currency tracker with <b>deliberately zero dependencies</b>. Shipping alone teaches the parts a big codebase hides: deployment, retention, what happens at 3 a.m.</p>
+      </div>
+      <ul class="stats">
+        <li><b>02</b><span>years writing backend</span></li>
+        <li><b>06</b><span>projects shipped solo</span></li>
+        <li><b>03</b><span>bank integrations</span></li>
+        <li><b>21</b><span>Java version in prod</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="board" id="work" tabindex="-1" aria-labelledby="h-work" data-say="Seven treasures, all shipped.">
+    <p class="num">02</p>
+    <h2 id="h-work">Work</h2>
+    <ol class="cards">
+      <li><a href="/work/uz-status.html"><small>Java 21 · Spring Boot · PostgreSQL · 2026</small><b>uz-status — public uptime monitor</b>A status page for the services Uzbekistan runs on — payments, the tax portal, marketplaces, banks. Probes every minute, 90 days of history at flat storage cost, open JSON API.</a></li>
+      <li><a href="/work/exchange.html"><small>Python 3.11 · standard library only · 2026</small><b>exchange — currency tracker, zero dependencies</b>Central-bank and exchange-office rates into SQLite. CLI, Telegram bot, charts and threshold alerts share one core — HTTP, the Telegram client and the chart renderer are all hand-written against the standard library.</a></li>
+      <li><a href="/work/tgagent.html"><small>Java · Gemini → Groq · SQLite · 2026</small><b>tgagent — Telegram Business assistant</b>An assistant on bare Java with a two-provider model fallback chain and local conversation memory. When the first provider is down or rate-limited, the second one answers.</a></li>
+      <li><a href="/work/tekstlybot.html"><small>Java · ffmpeg · whisper.cpp · 2026</small><b>tekstlybot — media worker in 256 MB</b>Compression, audio extraction and speech-to-text through a worker queue — all held inside a 256 MB heap on a small VPS.</a></li>
+      <li><a href="/work/plusline.html"><small>Python · aiogram 3 · 2026</small><b>plusline / keyline — Telegram bots</b>Two production bots on aiogram 3: subscriptions, payments and admin tooling, deployed with systemd and watched by Prometheus.</a></li>
+      <li><a href="/work/downloader.html"><small>Python · yt-dlp · gallery-dl · 2026</small><b>downloader — media fetcher bot</b>Send a link, get the file. yt-dlp and gallery-dl behind one Telegram interface, with size limits, retries and cleanup that keeps the disk from filling.</a></li>
+      <li><a href="/work/myid.html"><small>Java 17 · Spring Boot · Oracle · JavaEE · closed source</small><b>MyID · e-key — bank integrations</b>A service wrapping the state biometric identification provider, and digital-signature support inside a legacy JavaEE application on WebLogic. Work inside a bank — no case study, but happy to talk about it.</a></li>
+    </ol>
+  </section>
+
+  <section class="board" id="skills" tabindex="-1" aria-labelledby="h-skills" data-say="The captain's toolbox.">
+    <p class="num">03</p>
+    <h2 id="h-skills">Skills</h2>
+    <p class="sub">No progress bars — a percentage next to a language name means nothing. This is what appears in my repositories and in code shipped to production.</p>
+    <div class="groups">
+      <div><h3>Languages</h3><ul><li>Java<em>21 / 17</em></li><li>Python<em>3.11+</em></li><li>SQL<em>Oracle / Postgres</em></li><li>PL/SQL<em>packages</em></li><li>JavaScript<em>vanilla</em></li><li>Bash<em>deploy scripts</em></li></ul></div>
+      <div><h3>Backend</h3><ul><li>Spring Boot<em>3.x / 4.x</em></li><li>Spring Security<em>JWT</em></li><li>REST API design<em>feature packages</em></li><li>JavaEE / JSP<em>legacy</em></li><li>Maven<em>shade, failsafe</em></li><li>JUnit, Testcontainers<em>integration</em></li></ul></div>
+      <div><h3>Data</h3><ul><li>Oracle Database<em>ojdbc, orai18n</em></li><li>PostgreSQL<em>production</em></li><li>SQLite<em>embedded</em></li><li>Flyway<em>migrations</em></li><li>HikariCP<em>pooling</em></li><li>Thymeleaf<em>server rendered</em></li></ul></div>
+      <div><h3>Ops</h3><ul><li>Docker, Compose<em>dev + prod</em></li><li>Linux<em>systemd, deploy</em></li><li>Caddy, Nginx<em>TLS</em></li><li>Prometheus<em>Micrometer</em></li><li>Git, GitHub Actions<em>CI</em></li><li>WebLogic<em>legacy</em></li></ul></div>
+    </div>
+  </section>
+
+  <section class="board" id="experience" tabindex="-1" aria-labelledby="h-experience" data-say="Where the real voyage happens.">
+    <p class="num">04</p>
+    <h2 id="h-experience">Experience</h2>
+    <p class="when">2025 — present · Commercial bank · Tashkent, Uzbekistan</p>
+    <h3>Backend Engineer</h3>
+    <p>Services around <b>iABS</b>, the core banking system on Oracle: REST endpoints for currency rates and reference data secured with JWT. A service wrapping <b>MyID</b>, the state biometric identification provider — authentication, profile and document export. Digital-signature support (<b>e-key</b>, DVS over Styx) inside a legacy JavaEE application on WebLogic. Plus PL/SQL packages where the logic belongs in the database.</p>
+    <ul class="chips"><li>Java 17 / 21</li><li>Spring Boot</li><li>Oracle</li><li>PL/SQL</li><li>iABS</li><li>MyID</li><li>e-key / DVS</li><li>JWT</li><li>WebLogic</li><li>HikariCP</li></ul>
+  </section>
+
+  <section class="board" id="contact" tabindex="-1" aria-labelledby="h-contact" data-say="Send a message in a bottle.">
+    <p class="num">05</p>
+    <h2 id="h-contact">Contact</h2>
+    <p class="sub">The fastest way to reach me is <b>Telegram</b> — I read everything and answer real messages. Usually replies within 24 hours.</p>
+    <div class="links">
+      <a href="https://t.me/CustomAnnotation" rel="noopener"><small>Telegram</small>@CustomAnnotation</a>
+      <a href="mailto:pahlavon@numonjonov.com"><small>Email</small>pahlavon@numonjonov.com</a>
+      <a href="https://github.com/numonjonov" rel="noopener"><small>GitHub</small>github.com/numonjonov</a>
+      <a href="/resume.html"><small>Résumé</small>one page →</a>
+    </div>
+  </section>
+
+</main>
+
+<script type="module" src="app.js?v=1"></script>
+</body>
+</html>
