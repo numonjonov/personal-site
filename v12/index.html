@@ -12,6 +12,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&family=Chakra+Petch:ital,wght@1,600&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="style.css?v=3" />
+<!-- Есть WebGL — сразу прячем текстовую версию и показываем LOADING, ещё до первой
+     отрисовки: модуль app.js грузится позже, и без этого текст мелькал в начале.
+     Если сцена не запустится, app.js (или onerror у его тега) снимет класс. -->
+<script>if (window.WebGLRenderingContext) document.documentElement.classList.add('gl-on');</script>
 </head>
 
 <body>
@@ -79,6 +83,6 @@
   <p class="text-back"><a href="#" id="text-back">← back to the desert</a></p>
 </main>
 
-<script type="module" src="app.js?v=6"></script>
+<script type="module" src="app.js?v=7" onerror="document.documentElement.classList.remove('gl-on')"></script>
 </body>
 </html>

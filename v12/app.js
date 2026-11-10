@@ -31,6 +31,7 @@ function canWebGL() {
   catch (e) { return false; }
 }
 if (canWebGL()) { root.classList.add('gl-on'); start().catch(err => { console.error(err); root.classList.remove('gl-on'); }); }
+else root.classList.remove('gl-on');   // класс мог поставить ранний скрипт в <head>
 
 /* ================= Рельеф (JS: позиции и нормали песчинок) ================= */
 const P = new Uint8Array(512);
