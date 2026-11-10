@@ -1,88 +1,21 @@
-/* v6 — Level 0 из Backrooms на three.js (vendor/three.module.min.js, r160).
-   Ходишь по жёлтым комнатам от первого лица, читаешь пять записок на стенах
-   (это разделы текстовой версии) и ищешь красный EXIT — за ним контакты.
-   Все текстуры рисуются на canvas здесь же, картинок и моделей нет.
-   Без WebGL, по #text или если что-то упало — текстовая версия. */
+/* v6 — сайт-портфолио поверх Backrooms (three.js r160 из vendor/).
+   Страница обычная и скроллится. Позади неё — коридор Level 0: камера идёт
+   по нему вместе со скроллом, у каждого раздела останавливается напротив
+   своей записки на стене, а свет и туман перетекают между «уровнями»
+   (0 Lobby → 1 Habitable Zone → 2 Pipe Dreams → 3 Electrical Station → !).
+   В конце — дверь EXIT, и на странице как раз контакты.
+   Все текстуры рисуются на canvas здесь же. Без WebGL сайт тот же, без фона. */
 import * as THREE from '../vendor/three.module.min.js';
 
 const doc = document, win = window, root = doc.documentElement;
 const $ = id => doc.getElementById(id);
 const reduced = win.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const touch = win.matchMedia('(hover: none), (pointer: coarse)').matches;
-const sleep = ms => new Promise(r => win.setTimeout(r, ms));
+const coarse = win.matchMedia('(hover: none), (pointer: coarse)').matches;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const smooth = t => t * t * (3 - 2 * t);
+root.classList.add('js');
 
-/* ---------- Текстовая версия ---------- */
-let stopGame = null;
-function canWebGL() {
-  try { const c = doc.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); }
-  catch (e) { return false; }
-}
-function goText() {
-  if (stopGame) { stopGame(); stopGame = null; }
-  root.classList.remove('is-3d', 'playing');
-  if (canWebGL()) $('to-3d').hidden = false;
-}
-doc.querySelectorAll('[data-text-link]').forEach(a => a.addEventListener('click', e => {
-  e.preventDefault();
-  history.replaceState(null, '', '#text');
-  goText();
-  win.scrollTo(0, 0);
-}));
-$('to-3d').addEventListener('click', () => { location.href = location.pathname; });
-win.addEventListener('hashchange', () => { if (location.hash === '#text' && root.classList.contains('is-3d')) goText(); });
-
-if (location.hash === '#text' || !canWebGL()) goText();
-else {
-  root.classList.add('is-3d');
-  boot().catch(err => { console.error(err); goText(); });
-}
-
-/* ---------- Карта уровня ----------
-   Клетка 2 м. # — стена, . — пол, S — старт, a…e — стена с запиской,
-   X — стена с дверью EXIT, o — тёмная комната (лампы мертвы), m — там же «улыбака». */
-const MAP = [
-  '##########################',
-  '#S...#......#.......#....#',
-  '#....#......a.......#....#',
-  '#....#..##......##..#....#',
-  '#.......##......##.......#',
-  '#....................##..#',
-  '###b##...######......##..#',
-  '#........#....#..........#',
-  '#........#....#...####...#',
-  '#..##....#....c...#oo#...#',
-  '#..##.............#mo....#',
-  '#.......####......####...#',
-  '#.......#..#.............#',
-  '####....#..#....##...#####',
-  '#.......d..#....##.......#',
-  '#..............e.........#',
-  '#...##.............##....#',
-  '#...##....#####....##....X',
-  '#.........#####..........#',
-  '##########################',
-];
-/* Что написано на самих записках; полный текст — в разделе с тем же id */
-const NOTES = {
-  b: { id: 'about', no: '01', title: 'WHO BUILT THIS', lines: ['backend engineer,', 'a bank in Tashkent.', 'Java · Spring · Oracle', 'talks to old systems.'] },
-  a: { id: 'work', no: '02', title: 'THINGS I SHIPPED', lines: ['uz-status — uptime', 'exchange — 0 deps', 'tgagent, tekstlybot', '+ bots, bots, bots'] },
-  c: { id: 'skills', no: '03', title: 'TOOLS I CARRY', lines: ['Java 21 / 17', 'Spring Boot, PL/SQL', 'Postgres, SQLite', 'Docker, Linux, CI'] },
-  d: { id: 'experience', no: '04', title: 'WHERE I WORK', lines: ['2025 — present', 'core banking: iABS', 'MyID, e-key / DVS', 'JavaEE on WebLogic'] },
-  e: { id: 'contact', no: '05', title: 'HOW TO REACH ME', lines: ['telegram:', '@CustomAnnotation', 'the EXIT is east,', 'under the red light.'] },
-};
-const C = 2, H = 2.7, EYE = 1.6, RAD = .28;
-const ROWS = MAP.length, COLS = MAP[0].length;
-const OPEN = new Set(['.', 'S', 'o', 'm']);
-const cell = (c, r) => (r < 0 || r >= ROWS || c < 0 || c >= COLS) ? '#' : MAP[r][c];
-const isOpen = (c, r) => OPEN.has(cell(c, r));
-const solidAt = (x, z) => !isOpen(Math.floor(x / C), Math.floor(z / C));
-const blocked = (x, z) => solidAt(x - RAD, z - RAD) || solidAt(x + RAD, z - RAD) || solidAt(x - RAD, z + RAD) || solidAt(x + RAD, z + RAD);
-const DIRS = [[0, -1], [-1, 0], [1, 0], [0, 1]]; // N, W, E, S — куда смотрит записка
-const faceOf = (c, r) => DIRS.find(([dx, dz]) => isOpen(c + dx, r + dz));
-MAP.forEach((row, i) => { if (row.length !== COLS) console.warn('v6: map row', i, 'has length', row.length); });
-
-/* Детерминированный random, чтобы уровень был одним и тем же */
+/* ---------- Текстуры на canvas (детерминированный random — уровень всегда один) ---------- */
 function rng(seed) {
   return () => {
     seed = seed + 0x6D2B79F5 | 0;
@@ -223,32 +156,207 @@ function smiler() {
   });
 }
 
-/* ---------- Сборка и игра ---------- */
-async function boot() {
-  if (touch) root.classList.add('touch');
-  if (touch) $('hint').textContent = 'Left thumb — move · right thumb — look · tap READ to open a note';
 
-  // зерно для плёнки — один раз, дальше его двигает CSS
-  const n = canvas2d(160, 160, (g, w, h) => {
-    const img = g.createImageData(w, h);
-    for (let i = 0; i < img.data.length; i += 4) { const v = Math.random() * 255; img.data[i] = img.data[i + 1] = img.data[i + 2] = v; img.data[i + 3] = 255; }
-    g.putImageData(img, 0, 0);
+/* ================= Страница ================= */
+
+/* Появление блоков */
+const items = Array.from(doc.querySelectorAll('.reveal'));
+const showAll = () => items.forEach(el => el.classList.add('in'));
+if (reduced || !('IntersectionObserver' in win)) showAll();
+else {
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  }), { threshold: .08, rootMargin: '0px 0px -6% 0px' });
+  items.forEach(el => io.observe(el));
+  win.setTimeout(showAll, 4000); // страховка
+}
+
+/* Наклон панелей за мышью: 3D-поворот и блик лампы */
+if (!coarse && !reduced) {
+  doc.querySelectorAll('[data-tilt]').forEach(el => {
+    const max = el.classList.contains('paper') ? 5 : 7;
+    el.addEventListener('pointermove', e => {
+      if (e.pointerType !== 'mouse') return;
+      const r = el.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+      el.classList.add('hot');
+      el.style.setProperty('--rx', ((.5 - y) * max).toFixed(2) + 'deg');
+      el.style.setProperty('--ry', ((x - .5) * max * 1.3).toFixed(2) + 'deg');
+      el.style.setProperty('--gx', (x * 100).toFixed(1) + '%');
+      el.style.setProperty('--gy', (y * 100).toFixed(1) + '%');
+    });
+    el.addEventListener('pointerleave', () => {
+      el.classList.remove('hot');
+      el.style.removeProperty('--rx'); el.style.removeProperty('--ry');
+    });
   });
-  root.style.setProperty('--noise', `url(${n.toDataURL()})`);
+}
 
-  // записки рисуются шрифтами — ждём их, но не дольше 3 секунд
-  if (doc.fonts && doc.fonts.load) {
-    await Promise.race([
-      Promise.all([doc.fonts.load('40px "Special Elite"'), doc.fonts.load('40px "VT323"')]),
-      sleep(3000),
-    ]).catch(() => {});
+/* Уровни: что показывает HUD и каким светом горит коридор */
+const THEMES = [
+  { lvl: 'LEVEL 0', name: 'THE LOBBY', fog: 0x8f7f44, wall: 0xffffff, lamp: 0xfffbe6, light: 0xffefc0, sky: 0xfff2c4, ground: 0x5c4a1e, hemi: 1.7, li: 5.5, density: .05, acc: [214, 196, 122] },
+  { lvl: 'LEVEL 1', name: 'HABITABLE ZONE', fog: 0x46453f, wall: 0x8e8d86, lamp: 0xf4f7ff, light: 0xe8eeff, sky: 0xe6ecf5, ground: 0x34332e, hemi: 1.5, li: 6.5, density: .055, acc: [208, 212, 216] },
+  { lvl: 'LEVEL 2', name: 'PIPE DREAMS', fog: 0x2a1b0e, wall: 0x7a5434, lamp: 0xffb366, light: 0xff9a40, sky: 0xffc890, ground: 0x2a1a0a, hemi: .62, li: 7, density: .065, acc: [255, 152, 72] },
+  { lvl: 'LEVEL 3', name: 'ELECTRICAL STATION', fog: 0x0f151c, wall: 0x56616d, lamp: 0xb4d8ff, light: 0x9cc8ff, sky: 0xbcd4ff, ground: 0x0c1018, hemi: .5, li: 7, density: .07, acc: [140, 192, 255] },
+  { lvl: 'LEVEL !', name: 'RUN FOR YOUR LIFE', fog: 0x2c0605, wall: 0xb06a5c, lamp: 0xff5444, light: 0xff3020, sky: 0xff8070, ground: 0x200404, hemi: .72, li: 7, density: .06, acc: [255, 72, 52] },
+];
+const SECTIONS = ['top', 'about', 'work', 'skills', 'experience', 'contact'].map(id => $(id));
+const SEC_LEVEL = [0, 0, 1, 2, 3, 4];
+const navLinks = Array.from(doc.querySelectorAll('.top nav a'));
+
+/* Скролл → параметр p от 0 (hero) до 5 (contact), кусочно по разделам */
+let anchors = [];
+function measure() {
+  const max = Math.max(1, root.scrollHeight - win.innerHeight);
+  anchors = SECTIONS.map((s, i) => i === 0 ? 0 : s.getBoundingClientRect().top + win.scrollY - win.innerHeight * .3);
+  anchors[anchors.length - 1] = Math.min(anchors[anchors.length - 1], max);
+  for (let i = 1; i < anchors.length; i++) anchors[i] = clamp(anchors[i], anchors[i - 1] + 1, Math.max(anchors[i - 1] + 1, max));
+}
+function scrollParam() {
+  const y = win.scrollY;
+  for (let i = 0; i < anchors.length - 1; i++) {
+    if (y < anchors[i + 1]) return i + clamp((y - anchors[i]) / (anchors[i + 1] - anchors[i]), 0, 1);
   }
+  return anchors.length - 1;
+}
+/* Уровень как дробное число: переход начинается в последней трети пути к разделу */
+function levelOf(p) {
+  const i = Math.min(Math.floor(p), SEC_LEVEL.length - 1), f = p - i;
+  const a = SEC_LEVEL[i], b = SEC_LEVEL[Math.min(i + 1, SEC_LEVEL.length - 1)];
+  return a + (b - a) * smooth(clamp((f - .55) / .45, 0, 1));
+}
+measure();
+win.addEventListener('resize', measure);
+win.addEventListener('load', measure);
+if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(measure);
+if ('ResizeObserver' in win) new ResizeObserver(measure).observe($('main'));
 
-  const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(win.devicePixelRatio || 1, 1.5));
+/* HUD: часы, уровень, глубина, акцентный цвет страницы */
+const hudClock = $('clock'), hudLvl = $('lvl'), hudName = $('lvl-name'), hudDepth = $('depth');
+const t0 = performance.now();
+let shownLevel = -1, shownSec = -1, shownAcc = '', shownClock = -1;
+let scrambleId = 0;
+function scramble(el, text) {
+  win.clearInterval(scrambleId);
+  if (reduced) { el.textContent = text; return; }
+  const glyphs = '▓▒░#%&@$01'; let n = 0;
+  const id = scrambleId = win.setInterval(() => {
+    n++;
+    el.textContent = text.split('').map((ch, i) => (ch === ' ' || i < n * 2) ? ch : glyphs[(Math.random() * glyphs.length) | 0]).join('');
+    if (n * 2 >= text.length) { win.clearInterval(id); el.textContent = text; }
+  }, 35);
+}
+function updatePage(p, L, depth) {
+  const lvl = Math.round(L);
+  if (lvl !== shownLevel) {
+    const first = shownLevel < 0;
+    shownLevel = lvl;
+    hudLvl.textContent = THEMES[lvl].lvl;
+    scramble(hudName, THEMES[lvl].name);
+    if (!first && !reduced) { root.classList.remove('glitch'); void root.offsetWidth; root.classList.add('glitch'); }
+  }
+  const sec = Math.min(SECTIONS.length - 1, Math.floor(p + .25));
+  if (sec !== shownSec) {
+    shownSec = sec;
+    const id = SECTIONS[sec].id;
+    navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
+  }
+  const i = Math.min(Math.floor(L), THEMES.length - 1), f = L - i;
+  const A = THEMES[i].acc, B = THEMES[Math.min(i + 1, THEMES.length - 1)].acc;
+  const acc = A.map((v, k) => Math.round(v + (B[k] - v) * f)).join(', ');
+  if (acc !== shownAcc) { shownAcc = acc; root.style.setProperty('--acc', acc); }
+  hudDepth.textContent = 'DEPTH ' + String(Math.round(depth)).padStart(3, '0') + ' M';
+  const s = Math.floor((performance.now() - t0) / 1000);
+  if (s !== shownClock) {
+    shownClock = s;
+    hudClock.textContent = [s / 3600, s / 60 % 60, s % 60].map(v => String(Math.floor(v)).padStart(2, '0')).join(':');
+  }
+}
+
+/* Зерно плёнки — один раз, двигает его CSS */
+{
+  const c = doc.createElement('canvas'); c.width = c.height = 160;
+  const g = c.getContext('2d'), img = g.createImageData(160, 160);
+  for (let i = 0; i < img.data.length; i += 4) { const v = Math.random() * 255; img.data[i] = img.data[i + 1] = img.data[i + 2] = v; img.data[i + 3] = 255; }
+  g.putImageData(img, 0, 0);
+  root.style.setProperty('--noise', `url(${c.toDataURL()})`);
+}
+
+/* ================= 3D-коридор ================= */
+
+/* Карта: коридор в две клетки (4 м) с северного конца на южный, по бокам
+   случайные комнаты. # стена, . пол, o тёмная комната, N стена с запиской,
+   X — дверь EXIT в северном торце. Клетка 2 м. */
+const C = 2, H = 2.7, EYE = 1.6, COLS = 12, ROWS = 66;
+const grid = Array.from({ length: ROWS }, () => Array(COLS).fill('#'));
+for (let r = 1; r < ROWS - 1; r++) grid[r][5] = grid[r][6] = '.';
+const rooms = [];
+{
+  const gr = rng(2026);
+  for (let r = ROWS - 6; r > 5;) {
+    const h = 2 + Math.floor(gr() * 3);
+    const sides = gr() < .3 ? [-1, 1] : [gr() < .5 ? -1 : 1];
+    sides.forEach(side => {
+      const depth = 2 + Math.floor(gr() * 3);
+      const c0 = side < 0 ? 5 - depth : 7, c1 = side < 0 ? 4 : 6 + depth;
+      for (let y = r - h + 1; y <= r; y++) for (let x = c0; x <= c1; x++) grid[y][x] = '.';
+      if (h >= 3 && depth >= 3) grid[r - 1][side < 0 ? c0 + 1 : c1 - 1] = '#';
+      rooms.push({ c0, c1, r0: r - h + 1, r1: r, side });
+    });
+    r -= h + 2 + Math.floor(gr() * 4);
+  }
+}
+grid[0][5] = grid[0][6] = 'X';
+
+/* Остановки камеры: по одной на раздел. Записки висят в 5 м впереди */
+const Z0 = (ROWS - 1.5) * C, Z1 = C + 2.6;
+const STOPS = SECTIONS.map((_, k) => Z0 + (Z1 - Z0) * k / (SECTIONS.length - 1));
+const WALL_NOTES = [
+  null,
+  { no: '01', title: 'WHO BUILT THIS', lines: ['backend engineer,', 'a bank in Tashkent.', 'Java · Spring · Oracle', 'talks to old systems.'] },
+  { no: '02', title: 'THINGS I SHIPPED', lines: ['uz-status — uptime', 'exchange — 0 deps', 'tgagent, tekstlybot', '+ bots, bots, bots'] },
+  { no: '03', title: 'INVENTORY', lines: ['Java 21 / 17', 'Spring Boot, PL/SQL', 'Postgres, SQLite', 'Docker, Linux, CI'] },
+  { no: '04', title: 'WHERE I WORK', lines: ['2025 — present', 'core banking: iABS', 'MyID, e-key / DVS', 'JavaEE on WebLogic'] },
+  null,
+];
+const notesAt = [];
+WALL_NOTES.forEach((note, k) => {
+  if (!note) return;
+  const side = k % 2 ? -1 : 1;             // -1 запад (слева по ходу), 1 восток
+  const r = Math.floor((STOPS[k] - 5) / C), c = side < 0 ? 4 : 7;
+  grid[r][c] = 'N'; grid[r - 1][c] = grid[r + 1][c] = '#'; // ровная стена вокруг записки
+  notesAt.push({ note, r, c, side, stop: STOPS[k] });
+});
+
+/* Тёмная комната с «улыбакой» — та, что ближе всего к уровню 2 */
+const darkRoom = rooms.filter(rm => rm.c1 - rm.c0 >= 1)
+  .sort((a, b) => Math.abs((a.r0 + a.r1) / 2 * C - STOPS[3] - 9) - Math.abs((b.r0 + b.r1) / 2 * C - STOPS[3] - 9))[0];
+if (darkRoom) for (let y = darkRoom.r0; y <= darkRoom.r1; y++) for (let x = darkRoom.c0; x <= darkRoom.c1; x++) if (grid[y][x] === '.') grid[y][x] = 'o';
+
+const cell = (c, r) => (r < 0 || r >= ROWS || c < 0 || c >= COLS) ? '#' : grid[r][c];
+const isOpen = (c, r) => { const ch = cell(c, r); return ch === '.' || ch === 'o'; };
+const DIRS = [[0, -1], [-1, 0], [1, 0], [0, 1]];
+
+function canWebGL() {
+  try { const c = doc.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); }
+  catch (e) { return false; }
+}
+
+let hasScene = false;
+if (canWebGL()) {
+  try { buildScene(); hasScene = true; } catch (err) { console.error(err); }
+}
+if (!hasScene) {
+  // без 3D страница всё равно знает уровни и красит акцент
+  const loop = () => { const p = scrollParam(); updatePage(p, levelOf(p), 0); win.requestAnimationFrame(loop); };
+  win.requestAnimationFrame(loop);
+}
+
+function buildScene() {
+  const renderer = new THREE.WebGLRenderer({ antialias: !coarse, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(win.devicePixelRatio || 1, coarse ? 1 : 1.25));
   renderer.setSize(win.innerWidth, win.innerHeight);
-  const canvas = renderer.domElement;
-  $('stage').appendChild(canvas);
+  $('stage').appendChild(renderer.domElement);
   const aniso = Math.min(8, renderer.capabilities.getMaxAnisotropy());
   const tex = (c, rx, ry) => {
     const t = new THREE.CanvasTexture(c);
@@ -257,418 +365,204 @@ async function boot() {
     return t;
   };
 
-  const FOG = 0x8f7f44;
+  const T = THEMES.map(t => ({
+    fog: new THREE.Color(t.fog), wall: new THREE.Color(t.wall), lamp: new THREE.Color(t.lamp),
+    light: new THREE.Color(t.light), sky: new THREE.Color(t.sky), ground: new THREE.Color(t.ground),
+    hemi: t.hemi, li: t.li, density: t.density,
+  }));
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(FOG);
-  scene.fog = new THREE.FogExp2(FOG, .052);
-  const camera = new THREE.PerspectiveCamera(72, win.innerWidth / win.innerHeight, .05, 80);
+  scene.background = T[0].fog.clone();
+  scene.fog = new THREE.FogExp2(T[0].fog.clone(), T[0].density);
+  const camera = new THREE.PerspectiveCamera(70, win.innerWidth / win.innerHeight, .05, 90);
   camera.rotation.order = 'YXZ';
-  scene.add(new THREE.HemisphereLight(0xfff2c4, 0x5c4a1e, 1.7));
+  const hemi = new THREE.HemisphereLight(T[0].sky, T[0].ground, T[0].hemi);
+  scene.add(hemi);
 
-  /* стены: только те клетки, что граничат с полом; три варианта обоев */
+  /* стены: только клетки, что граничат с полом */
   const wallGeo = new THREE.BoxGeometry(C, H, C);
   const wallMats = [11, 47, 83].map(s => new THREE.MeshLambertMaterial({ map: tex(wallpaper(s)) }));
-  const buckets = [[], [], []];
-  const pick = rng(5);
+  const buckets = [[], [], []], pick = rng(5);
   for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
-    if (isOpen(c, r)) continue;
-    if (!DIRS.some(([dx, dz]) => isOpen(c + dx, r + dz))) continue;
+    if (isOpen(c, r) || !DIRS.some(([dx, dz]) => isOpen(c + dx, r + dz))) continue;
     buckets[Math.floor(pick() * 3)].push([c, r]);
   }
-  const walls = [];
   const m4 = new THREE.Matrix4();
   buckets.forEach((list, i) => {
     const mesh = new THREE.InstancedMesh(wallGeo, wallMats[i], list.length);
     list.forEach(([c, r], k) => mesh.setMatrixAt(k, m4.makeTranslation((c + .5) * C, H / 2, (r + .5) * C)));
-    scene.add(mesh); walls.push(mesh);
+    scene.add(mesh);
   });
 
   const W = COLS * C, D = ROWS * C;
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(W, D), new THREE.MeshLambertMaterial({ map: tex(carpet(), W / 4, D / 4) }));
+  const floorMat = new THREE.MeshLambertMaterial({ map: tex(carpet(), W / 4, D / 4) });
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(W, D), floorMat);
   floor.rotation.x = -Math.PI / 2; floor.position.set(W / 2, 0, D / 2); scene.add(floor);
-  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(W, D), new THREE.MeshLambertMaterial({ map: tex(ceiling(), W / 2, D / 2) }));
+  const ceilMat = new THREE.MeshLambertMaterial({ map: tex(ceiling(), W / 2, D / 2) });
+  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(W, D), ceilMat);
   ceil.rotation.x = Math.PI / 2; ceil.position.set(W / 2, H, D / 2); scene.add(ceil);
+  const tinted = [...wallMats, floorMat, ceilMat];
 
-  /* лампы: сетка через клетку, часть мертва, две мерцают */
-  const lampGeo = new THREE.BoxGeometry(1.2, .05, .6);
+  /* лампы: по оси коридора каждые 4 м и в комнатах; часть мертва, три мерцают */
   const litMat = new THREE.MeshBasicMaterial({ color: 0xfffbe6 });
-  const deadMat = new THREE.MeshBasicMaterial({ color: 0x6d6754 });
-  const haloTex = tex(halo());
-  const haloMat = new THREE.SpriteMaterial({ map: haloTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: .42 });
-  const lamps = [];
-  const lr = rng(21);
-  for (let r = 1; r < ROWS; r += 2) for (let c = 1; c < COLS; c += 2) {
-    if (!isOpen(c, r)) continue;
-    const ch = cell(c, r);
-    const dead = ch === 'o' || ch === 'm' || lr() < .08;
-    const x = (c + .5) * C, z = (r + .5) * C;
-    const mesh = new THREE.Mesh(lampGeo, dead ? deadMat : litMat);
+  const deadMat = new THREE.MeshBasicMaterial({ color: 0x5d584a });
+  const haloMat = new THREE.SpriteMaterial({ map: tex(halo()), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: .42 });
+  const lamps = [], lr = rng(21);
+  const addLamp = (x, z, along, dead) => {
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(along ? .6 : 1.2, .05, along ? 1.2 : .6), dead ? deadMat : litMat);
     mesh.position.set(x, H - .025, z); scene.add(mesh);
-    if (dead) continue;
+    if (dead) return;
     const glow = new THREE.Sprite(haloMat);
-    glow.position.set(x, H - .12, z); glow.scale.set(2.4, 1.4, 1); scene.add(glow);
+    glow.position.set(x, H - .12, z); glow.scale.set(2.2, 1.3, 1); scene.add(glow);
     lamps.push({ x, z, mesh, glow, k: 1, flick: null });
+  };
+  for (let r = 1; r < ROWS - 1; r += 2) addLamp(6 * C, (r + .5) * C, true, lr() < .06);
+  for (let r = 1; r < ROWS - 1; r += 2) for (let c = 1; c < COLS - 1; c += 2) {
+    if (c === 5 || !isOpen(c, r)) continue;
+    addLamp((c + .5) * C, (r + .5) * C, false, cell(c, r) === 'o' || lr() < .1);
   }
-  // мерцают две лампы: одна видна почти со старта, вторая в глубине
-  [lamps.find(l => l.x > 10 && l.z > 6), lamps[lamps.length - 6]].filter(Boolean).forEach(l => {
-    l.mesh.material = litMat.clone(); l.glow.material = haloMat.clone();
-    l.flick = { t: 0, on: true };
+  [8, 19, 31].map(i => lamps[i]).filter(Boolean).forEach(l => {
+    l.mesh.material = litMat.clone(); l.glow.material = haloMat.clone(); l.flick = { t: 0, on: true };
   });
-
-  /* пул точечных ламп: светят только ближайшие к игроку */
-  const POOL = touch ? 4 : 7, LI = 5.5;
+  const POOL = coarse ? 4 : 7;
   const pool = Array.from({ length: POOL }, () => {
     const L = new THREE.PointLight(0xffefc0, 0, 9, 1.7);
     L.position.y = H - .35; scene.add(L); return { L, lamp: null };
   });
   let poolT = 0;
-  function assignPool(px, pz) {
+  const assignPool = (px, pz) => {
     const near = lamps.slice().sort((a, b) => ((a.x - px) ** 2 + (a.z - pz) ** 2) - ((b.x - px) ** 2 + (b.z - pz) ** 2));
-    pool.forEach((p, i) => { const l = near[i]; p.lamp = l; if (l) p.L.position.set(l.x, H - .35, l.z); });
-  }
-
-  /* записки и дверь */
-  const usables = [];
-  const noteGeo = new THREE.PlaneGeometry(.46, .61);
-  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
-    const ch = cell(c, r), note = NOTES[ch];
-    if (!note && ch !== 'X') continue;
-    const f = faceOf(c, r);
-    if (!f) { console.warn('v6: nothing faces', ch); continue; }
-    const [dx, dz] = f, off = C / 2 + .012;
-    const x = (c + .5) * C + dx * off, z = (r + .5) * C + dz * off, ry = Math.atan2(dx, dz);
-    if (note) {
-      const map = tex(paper(note));
-      const mat = new THREE.MeshLambertMaterial({ map, emissive: 0xffffff, emissiveMap: map, emissiveIntensity: .1 });
-      const mesh = new THREE.Mesh(noteGeo, mat);
-      mesh.position.set(x, 1.42, z); mesh.rotation.set(0, ry, (lr() - .5) * .1);
-      mesh.userData = { kind: 'note', note }; note.mesh = note.mesh || mesh; note.read = false;
-      scene.add(mesh); usables.push(mesh);
-    } else {
-      const dm = new THREE.Mesh(new THREE.PlaneGeometry(1.05, 2.1), new THREE.MeshLambertMaterial({ map: tex(door()) }));
-      dm.position.set(x, 1.05, z); dm.rotation.y = ry; dm.userData = { kind: 'exit' };
-      scene.add(dm); usables.push(dm);
-      const sign = new THREE.Mesh(new THREE.PlaneGeometry(.62, .23), new THREE.MeshBasicMaterial({ map: tex(exitSign()), fog: false }));
-      sign.position.set(x + dx * .01, 2.36, z + dz * .01); sign.rotation.y = ry; scene.add(sign);
-      const red = new THREE.PointLight(0xff3322, 3.2, 6, 1.6);
-      red.position.set(x + dx * .5, 2.2, z + dz * .5); scene.add(red);
-    }
-  }
-  const notes = Object.values(NOTES).filter(n => n.mesh);
-
-  /* «улыбака» в тёмной комнате: светится сквозь туман, тает, если подойти */
-  let smile = null;
-  MAP.forEach((row, r) => { const c = row.indexOf('m'); if (c >= 0) smile = { x: (c + .5) * C, z: (r + .5) * C }; });
-  const smileSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex(smiler()), transparent: true, depthWrite: false, fog: false, opacity: 0 }));
-  if (smile) { smileSprite.position.set(smile.x, 1.7, smile.z); smileSprite.scale.set(.85, .85, 1); smileSprite.renderOrder = 2; scene.add(smileSprite); }
-
-  /* тёмная комната: внутри стоит чёрный полупрозрачный объём. Видны только его
-     внутренние грани, поэтому снаружи комната тёмная, а войдёшь — темнеет всё */
-  const dark = [];
-  MAP.forEach((row, r) => [...row].forEach((ch, c) => { if (ch === 'o' || ch === 'm') dark.push([c, r]); }));
-  if (dark.length) {
-    const cs = dark.map(d => d[0]), rs = dark.map(d => d[1]);
-    const c0 = Math.min(...cs), c1 = Math.max(...cs) + 1, r0 = Math.min(...rs), r1 = Math.max(...rs) + 1;
-    const shade = new THREE.Mesh(
-      new THREE.BoxGeometry((c1 - c0) * C - .02, H - .02, (r1 - r0) * C - .02),
-      new THREE.MeshBasicMaterial({ color: 0x0b0903, transparent: true, opacity: .82, side: THREE.BackSide, depthWrite: false, fog: false }),
-    );
-    shade.position.set((c0 + c1) / 2 * C, H / 2, (r0 + r1) / 2 * C);
-    shade.renderOrder = 1; scene.add(shade);
-  }
-
-  /* ---------- Игрок ---------- */
-  let px = 0, pz = 0;
-  MAP.forEach((row, r) => { const c = row.indexOf('S'); if (c >= 0) { px = (c + .5) * C; pz = (r + .5) * C; } });
-  const first = NOTES.b.mesh.position;
-  let yaw = Math.atan2(-(first.x - px), -(first.z - pz)) + .35, pitch = -.04;
-  let vx = 0, vz = 0, bob = 0, stamina = 1, lastStep = 0, playTime = 0, idle = 0;
-  const keys = new Set();
-  const joy = { x: 0, y: 0 };
-  let state = 'menu', started = false, target = null, dragging = false;
-
-  const hud = $('hud'), prompt = $('prompt'), promptText = $('prompt-text');
-  const startScr = $('start'), escapeScr = $('escape'), enterBtn = $('enter');
-  const dialog = $('note'), noteBody = $('note-body');
-  function setState(s) {
-    state = s;
-    root.classList.toggle('playing', s === 'play' || s === 'read');
-    startScr.hidden = s !== 'menu';
-    escapeScr.hidden = s !== 'escaped';
-    if (s === 'play') audio.resume(); else if (s !== 'read') audio.pause();
-  }
-
-  let toastT = 0;
-  function toast(msg, ms = 2800) {
-    const t = $('toast'); t.textContent = msg; t.classList.add('on');
-    win.clearTimeout(toastT); toastT = win.setTimeout(() => t.classList.remove('on'), ms);
-  }
-  const found = () => notes.filter(n => n.read).length;
-  const updateCount = () => { $('count').textContent = `${found()}/${notes.length}`; };
-  updateCount();
-
-  /* ---------- Звук: гул ламп и шаги по ковролину (WebAudio, без файлов) ---------- */
-  const audio = (() => {
-    let ac = null, master = null, hum = null, buf = null, muted = false;
-    const ensure = () => {
-      if (ac) return;
-      const AC = win.AudioContext || win.webkitAudioContext; if (!AC) return;
-      ac = new AC(); master = ac.createGain(); master.gain.value = muted ? 0 : .6; master.connect(ac.destination);
-      hum = ac.createGain(); hum.gain.value = .03;
-      const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1400;
-      hum.connect(lp); lp.connect(master);
-      [[60, 'sine', .5], [120, 'sawtooth', .22], [180, 'sine', .12], [240, 'square', .025], [360, 'sawtooth', .02]].forEach(([f, type, v]) => {
-        const o = ac.createOscillator(); o.type = type; o.frequency.value = f + (Math.random() - .5) * .4;
-        const g = ac.createGain(); g.gain.value = v; o.connect(g); g.connect(hum); o.start();
-      });
-      buf = ac.createBuffer(1, ac.sampleRate * .25, ac.sampleRate);
-      const d = buf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
-    };
-    return {
-      start() { ensure(); if (ac) ac.resume(); },
-      resume() { if (ac && ac.state === 'suspended') ac.resume(); },
-      pause() { if (ac && ac.state === 'running') ac.suspend(); },
-      level(v) { if (hum) hum.gain.setTargetAtTime(v, ac.currentTime, .3); },
-      step(loud) {
-        if (!ac || muted) return;
-        const t = ac.currentTime, s = ac.createBufferSource(); s.buffer = buf;
-        const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 380 + Math.random() * 160;
-        const g = ac.createGain();
-        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.32 * loud, t + .012); g.gain.exponentialRampToValueAtTime(.001, t + .17);
-        s.connect(f); f.connect(g); g.connect(master); s.start(t); s.stop(t + .22);
-      },
-      toggle() {
-        muted = !muted; if (master) master.gain.setTargetAtTime(muted ? 0 : .6, ac.currentTime, .05);
-        $('snd').firstChild.textContent = muted ? 'SOUND OFF ' : 'SOUND ON ';
-      },
-      close() { if (ac) ac.close(); },
-    };
-  })();
-
-  /* ---------- Вход, пауза, чтение, выход ---------- */
-  const lockable = !touch && 'requestPointerLock' in canvas;
-  const locked = () => doc.pointerLockElement === canvas;
-  function lock() {
-    if (!lockable) return;
-    try { const p = canvas.requestPointerLock(); if (p && p.catch) p.catch(() => {}); } catch (e) { /* остаёмся на перетаскивании */ }
-  }
-  function play() {
-    audio.start();
-    setState('play');
-    lock();
-    if (!started) {
-      started = true;
-      toast(touch ? 'Find 5 notes. Then find the EXIT.' : 'Find 5 notes. Then find the EXIT.', 3600);
-    }
-    enterBtn.textContent = 'Resume';
-  }
-  function pause() {
-    if (state !== 'play') return;
-    $('start-tag').textContent = '❚❚ PAUSED · LEVEL 0 · THE LOBBY';
-    setState('menu');
-    enterBtn.focus({ preventScroll: true });
-  }
-  function use() {
-    if (state !== 'play' || !target) return;
-    const u = target.userData;
-    if (u.kind === 'note') openNote(u.note); else openExit();
-  }
-  function openNote(note) {
-    setState('read');
-    if (!note.read) {
-      note.read = true; note.mesh.material.emissiveIntensity = 0; updateCount();
-      const left = notes.length - found();
-      win.setTimeout(() => toast(left ? `Note ${found()}/${notes.length}` : 'All notes found. The EXIT is east, under the red light.', 3200), 50);
-    }
-    const sec = $(note.id);
-    noteBody.replaceChildren(...Array.from(sec.children).map(n => n.cloneNode(true)));
-    const h = noteBody.querySelector('h2'); if (h) h.id = 'note-title';
-    if (doc.exitPointerLock) doc.exitPointerLock();
-    keys.clear();
-    dialog.showModal();
-    dialog.querySelector('.sheet').scrollTop = 0;
-  }
-  dialog.addEventListener('close', () => { if (state === 'read') { setState('play'); lock(); } });
-  dialog.addEventListener('click', e => { if (e.target === dialog) dialog.close(); }); // клик мимо листа
-  function openExit() {
-    const s = Math.floor(playTime);
-    $('escape-stats').textContent = `Time in Level 0: ${Math.floor(s / 60)} min ${String(s % 60).padStart(2, '0')} s · notes read: ${found()} of ${notes.length}. Here is how to reach the person who built it.`;
-    if (doc.exitPointerLock) doc.exitPointerLock();
-    keys.clear();
-    setState('escaped');
-    $('stay').focus({ preventScroll: true });
-  }
-  enterBtn.addEventListener('click', play);
-  $('stay').addEventListener('click', play);
-  $('pause-btn').addEventListener('click', pause);
-  prompt.addEventListener('click', use);
-
-  doc.addEventListener('pointerlockchange', () => { if (!locked() && state === 'play') pause(); });
-  canvas.addEventListener('click', () => {
-    if (state !== 'play') return;
-    if (lockable && !locked()) lock(); else use();
-  });
-  canvas.addEventListener('mousedown', () => { if (!locked()) dragging = true; });
-  win.addEventListener('mouseup', () => { dragging = false; });
-  doc.addEventListener('mousemove', e => {
-    if (state !== 'play' || !(locked() || dragging)) return;
-    yaw -= e.movementX * .0022; pitch = clamp(pitch - e.movementY * .0022, -1.35, 1.35);
-  });
-  doc.addEventListener('keydown', e => {
-    if (state === 'menu' && (e.code === 'Enter' || e.code === 'Space') && doc.activeElement === doc.body) { e.preventDefault(); play(); return; }
-    if (state !== 'play') return;
-    if (e.code === 'KeyE' || e.code === 'Enter' || e.code === 'KeyF') { e.preventDefault(); use(); return; }
-    if (e.code === 'KeyM') { audio.toggle(); return; }
-    if (e.code === 'Escape') { pause(); return; }
-    if (/^(Key[WASD]|Arrow|Shift)/.test(e.code)) { e.preventDefault(); keys.add(e.code); }
-  });
-  doc.addEventListener('keyup', e => keys.delete(e.code));
-  win.addEventListener('blur', () => { keys.clear(); pause(); });
-  doc.addEventListener('visibilitychange', () => { if (doc.hidden) pause(); });
-
-  /* тач: левый палец — джойстик, правый — взгляд */
-  const stick = $('stick'), knob = stick.firstElementChild;
-  let stickId = null, lookId = null, sx = 0, sy = 0, lx = 0, ly = 0;
-  canvas.addEventListener('pointerdown', e => {
-    if (e.pointerType === 'mouse' || state !== 'play') return;
-    if (stickId === null && e.clientX < win.innerWidth * .45) {
-      stickId = e.pointerId; sx = e.clientX; sy = e.clientY;
-      stick.style.left = sx + 'px'; stick.style.top = sy + 'px'; stick.classList.add('on');
-    } else if (lookId === null) { lookId = e.pointerId; lx = e.clientX; ly = e.clientY; }
-    try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* синтетические события */ }
-  });
-  canvas.addEventListener('pointermove', e => {
-    if (e.pointerId === stickId) {
-      let dx = (e.clientX - sx) / 50, dy = (e.clientY - sy) / 50;
-      const m = Math.hypot(dx, dy); if (m > 1) { dx /= m; dy /= m; }
-      joy.x = dx; joy.y = dy; knob.style.transform = `translate(${dx * 36}px,${dy * 36}px)`;
-    } else if (e.pointerId === lookId) {
-      yaw -= (e.clientX - lx) * .0055; pitch = clamp(pitch - (e.clientY - ly) * .0055, -1.3, 1.3);
-      lx = e.clientX; ly = e.clientY;
-    }
-  });
-  const release = e => {
-    if (e.pointerId === stickId) { stickId = null; joy.x = joy.y = 0; stick.classList.remove('on'); knob.style.transform = ''; }
-    if (e.pointerId === lookId) lookId = null;
+    pool.forEach((p, i) => { p.lamp = near[i] || null; if (p.lamp) p.L.position.set(p.lamp.x, H - .35, p.lamp.z); });
   };
-  canvas.addEventListener('pointerup', release);
-  canvas.addEventListener('pointercancel', release);
 
-  function resize() {
+  /* записки на стенах */
+  const noteGeo = new THREE.PlaneGeometry(.46, .61);
+  notesAt.forEach(({ note, r, c, side }) => {
+    const map = tex(paper(note));
+    const mesh = new THREE.Mesh(noteGeo, new THREE.MeshLambertMaterial({ map, emissive: 0xffffff, emissiveMap: map, emissiveIntensity: .12 }));
+    const dx = -side; // записка смотрит в коридор
+    mesh.position.set((c + .5) * C + dx * (C / 2 + .012), 1.45, (r + .5) * C);
+    mesh.rotation.set(0, Math.atan2(dx, 0), (lr() - .5) * .1);
+    scene.add(mesh);
+  });
+
+  /* дверь EXIT в северном торце */
+  {
+    const x = 6 * C, z = C + .012;
+    const dm = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 2.15), new THREE.MeshLambertMaterial({ map: tex(door()) }));
+    dm.position.set(x, 1.075, z); scene.add(dm);
+    const sign = new THREE.Mesh(new THREE.PlaneGeometry(.66, .25), new THREE.MeshBasicMaterial({ map: tex(exitSign()), fog: false }));
+    sign.position.set(x, 2.4, z + .01); scene.add(sign);
+    const red = new THREE.PointLight(0xff3322, 4, 8, 1.5);
+    red.position.set(x, 2.2, z + .6); scene.add(red);
+  }
+
+  /* тёмная комната: чёрный полупрозрачный объём (видны только внутренние грани)
+     и «улыбака», которая светится сквозь туман */
+  let smile = null;
+  if (darkRoom) {
+    const { c0, c1, r0, r1, side } = darkRoom;
+    const box = new THREE.Mesh(
+      new THREE.BoxGeometry((c1 - c0 + 1) * C - .02, H - .02, (r1 - r0 + 1) * C - .02),
+      new THREE.MeshBasicMaterial({ color: 0x0b0903, transparent: true, opacity: .84, side: THREE.BackSide, depthWrite: false, fog: false }),
+    );
+    box.position.set((c0 + c1 + 1) / 2 * C, H / 2, (r0 + r1 + 1) / 2 * C); box.renderOrder = 1; scene.add(box);
+    const far = side < 0 ? c0 : c1;
+    smile = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex(smiler()), transparent: true, depthWrite: false, fog: false, opacity: 0 }));
+    smile.position.set((far + .5) * C, 1.7, (r0 + r1 + 1) / 2 * C); smile.scale.set(.8, .8, 1); smile.renderOrder = 2;
+    scene.add(smile);
+  }
+
+  /* гул ламп — только по кнопке, WebAudio без файлов */
+  const AC = win.AudioContext || win.webkitAudioContext;
+  const sndBtn = $('snd');
+  let ac = null, hum = null, humOn = false;
+  if (AC) {
+    sndBtn.hidden = false;
+    sndBtn.addEventListener('click', () => {
+      if (!ac) {
+        ac = new AC(); hum = ac.createGain(); hum.gain.value = 0;
+        const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1300;
+        hum.connect(lp); lp.connect(ac.destination);
+        [[60, 'sine', .5], [120, 'sawtooth', .2], [180, 'sine', .1], [240, 'square', .02]].forEach(([f, type, v]) => {
+          const o = ac.createOscillator(); o.type = type; o.frequency.value = f;
+          const g = ac.createGain(); g.gain.value = v; o.connect(g); g.connect(hum); o.start();
+        });
+      }
+      humOn = !humOn;
+      if (humOn) ac.resume();
+      hum.gain.setTargetAtTime(humOn ? .05 : 0, ac.currentTime, .15);
+      sndBtn.textContent = humOn ? 'Hum: on' : 'Hum: off';
+      sndBtn.setAttribute('aria-pressed', String(humOn));
+    });
+  }
+
+  /* мышь чуть поворачивает голову */
+  let mx = 0, my = 0, smx = 0, smy = 0;
+  if (!coarse) win.addEventListener('pointermove', e => { mx = e.clientX / win.innerWidth - .5; my = e.clientY / win.innerHeight - .5; }, { passive: true });
+
+  win.addEventListener('resize', () => {
     camera.aspect = win.innerWidth / win.innerHeight; camera.updateProjectionMatrix();
     renderer.setSize(win.innerWidth, win.innerHeight);
-  }
-  win.addEventListener('resize', resize);
+  });
 
-  /* ---------- Кадр ---------- */
-  const ray = new THREE.Raycaster(); ray.far = 2.7;
-  const center = new THREE.Vector2(0, 0);
-  const rayTargets = usables.concat(walls);
-  const clock = $('clock'), staminaBar = $('stamina');
-  let frame = 0, last = 0, clockShown = -1;
+  const zAt = p => {
+    const i = Math.min(Math.floor(p), STOPS.length - 2), f = clamp(p - i, 0, 1);
+    return STOPS[i] + (STOPS[i + 1] - STOPS[i]) * smooth(f);
+  };
+  let camZ = reduced ? Z0 : zAt(scrollParam()), bob = 0, last = 0;
+  const tmpA = new THREE.Color(), tmpB = new THREE.Color();
+  const mix = (key, i, f) => tmpA.copy(T[i][key]).lerp(T[Math.min(i + 1, T.length - 1)][key], f);
 
   function tick(t) {
-    frame = win.requestAnimationFrame(tick);
+    win.requestAnimationFrame(tick);
     const dt = Math.min(.05, last ? (t - last) / 1000 : .016); last = t;
+    const p = scrollParam(), L = levelOf(p);
 
-    if (state === 'play') {
-      playTime += dt;
-      const k = id => keys.has(id) ? 1 : 0;
-      let f = k('KeyW') + k('ArrowUp') - k('KeyS') - k('ArrowDown') - joy.y;
-      let s = k('KeyD') + k('ArrowRight') - k('KeyA') - k('ArrowLeft') + joy.x;
-      const m = Math.hypot(f, s); if (m > 1) { f /= m; s /= m; }
-      const wantRun = (keys.has('ShiftLeft') || keys.has('ShiftRight')) && f > 0;
-      const running = wantRun && stamina > .02;
-      stamina = clamp(stamina + (running ? -.22 : (wantRun ? .05 : .14)) * dt, 0, 1);
-      const speed = running ? 5 : 2.8;
-      const sin = Math.sin(yaw), cos = Math.cos(yaw);
-      const tx = (-sin * f + cos * s) * speed, tz = (-cos * f - sin * s) * speed;
-      const a = 1 - Math.exp(-dt * 10);
-      vx += (tx - vx) * a; vz += (tz - vz) * a;
-      const nx = px + vx * dt, nz = pz + vz * dt;
-      if (!blocked(nx, pz)) px = nx; else vx = 0;
-      if (!blocked(px, nz)) pz = nz; else vz = 0;
-      const sp = Math.hypot(vx, vz);
-      if (sp > .3) {
-        bob += dt * sp * 2.3;
-        const step = Math.floor(bob / Math.PI);
-        if (step !== lastStep) { lastStep = step; audio.step(running ? 1 : .7); }
-      } else bob += (Math.round(bob / Math.PI) * Math.PI - bob) * a;
-      staminaBar.style.transform = `scaleX(${stamina.toFixed(3)})`;
-      const sec = Math.floor(playTime);
-      if (sec !== clockShown) {
-        clockShown = sec;
-        clock.textContent = [sec / 3600, sec / 60 % 60, sec % 60].map(v => String(Math.floor(v)).padStart(2, '0')).join(':');
-      }
-    } else if (!started && !reduced) {
-      idle += dt; yaw += Math.sin(idle * .25) * dt * .06; // на стартовом экране камера чуть дышит
-    }
+    // камера: едет к точке раздела, у записки поворачивает голову к ней
+    const tz = reduced ? Z0 : zAt(p);
+    const prev = camZ;
+    camZ += (tz - camZ) * (1 - Math.exp(-dt * 3.2));
+    const speed = Math.abs(camZ - prev) / dt;
+    bob += dt * Math.min(speed, 4) * 2.4;
+    let look = 0;
+    notesAt.forEach(n => { const d = (camZ - n.stop) / 5; look += -n.side * .55 * Math.exp(-d * d); });
+    smx += (mx - smx) * (1 - Math.exp(-dt * 4)); smy += (my - smy) * (1 - Math.exp(-dt * 4));
+    const amp = reduced ? 0 : .035 * Math.min(1, speed / 2.5);
+    camera.position.set(6 * C + Math.sin(camZ * .13) * .35, EYE + Math.abs(Math.sin(bob)) * amp, camZ);
+    camera.rotation.set(-.03 - smy * .12, look - smx * .3, reduced ? 0 : Math.sin(bob) * amp * .3);
 
-    const bobAmp = reduced ? 0 : .045 * Math.min(1, Math.hypot(vx, vz) / 3);
-    camera.position.set(px, EYE + Math.abs(Math.sin(bob)) * bobAmp - bobAmp * .5, pz);
-    camera.rotation.set(pitch, yaw, reduced ? 0 : Math.sin(bob) * bobAmp * .25);
+    // уровень: туман, свет, тон стен
+    const i = Math.min(Math.floor(L), T.length - 1), f = L - i, nx = Math.min(i + 1, T.length - 1);
+    scene.fog.color.copy(mix('fog', i, f)); scene.background.copy(scene.fog.color);
+    scene.fog.density = T[i].density + (T[nx].density - T[i].density) * f;
+    hemi.color.copy(mix('sky', i, f)); hemi.groundColor.copy(mix('ground', i, f));
+    hemi.intensity = T[i].hemi + (T[nx].hemi - T[i].hemi) * f;
+    tmpB.copy(mix('wall', i, f)); tinted.forEach(m => m.color.copy(tmpB));
+    const lampCol = mix('lamp', i, f).clone();
+    litMat.color.copy(lampCol); haloMat.color.copy(lampCol);
+    const lightCol = mix('light', i, f).clone(), li = T[i].li + (T[nx].li - T[i].li) * f;
 
-    // свет: пул ламп у игрока, мерцание, гул громче под лампой
-    poolT -= dt;
-    if (poolT <= 0) { poolT = .25; assignPool(px, pz); }
+    // мерцание и пул ламп у камеры
     lamps.forEach(l => {
-      if (!l.flick || reduced) return;
+      if (!l.flick) return;
+      if (reduced) { l.mesh.material.color.copy(lampCol); l.glow.material.color.copy(lampCol); return; }
       const fl = l.flick; fl.t -= dt;
-      if (fl.t <= 0) {
-        fl.on = !fl.on;
-        fl.t = fl.on ? (Math.random() < .7 ? .04 + Math.random() * .12 : 1 + Math.random() * 3) : .03 + Math.random() * .1;
-      }
+      if (fl.t <= 0) { fl.on = !fl.on; fl.t = fl.on ? (Math.random() < .7 ? .04 + Math.random() * .12 : 1 + Math.random() * 3) : .03 + Math.random() * .1; }
       l.k = fl.on ? 1 : .08;
-      l.mesh.material.color.setScalar(fl.on ? 1 : .35);
-      l.glow.material.opacity = .42 * l.k;
+      l.mesh.material.color.copy(lampCol).multiplyScalar(fl.on ? 1 : .35);
+      l.glow.material.color.copy(lampCol); l.glow.material.opacity = .42 * l.k;
     });
-    let nearest = 99;
-    pool.forEach(p => {
-      if (!p.lamp) { p.L.intensity = 0; return; }
-      p.L.intensity = LI * p.lamp.k;
-      nearest = Math.min(nearest, Math.hypot(p.lamp.x - px, p.lamp.z - pz));
-    });
-    audio.level(.02 + .05 * clamp(1 - nearest / 6, 0, 1));
+    poolT -= dt;
+    if (poolT <= 0) { poolT = .2; assignPool(camera.position.x, camZ - 3); }
+    pool.forEach(pl => { pl.L.color.copy(lightCol); pl.L.intensity = pl.lamp ? li * pl.lamp.k : 0; });
 
     if (smile) {
-      const d = Math.hypot(smile.x - px, smile.z - pz);
-      const flick = reduced ? 1 : (Math.random() < .03 ? .3 : 1);
-      smileSprite.material.opacity = clamp((d - 3.5) / 3, 0, 1) * .9 * flick;
+      const d = Math.hypot(smile.position.x - camera.position.x, smile.position.z - camZ);
+      smile.material.opacity = clamp((d - 4) / 4, 0, 1) * clamp((24 - d) / 6, 0, 1) * (reduced || Math.random() > .03 ? .9 : .25);
     }
 
-    // на что смотрим
-    target = null;
-    if (state === 'play') {
-      ray.setFromCamera(center, camera);
-      const hit = ray.intersectObjects(rayTargets, false)[0];
-      if (hit && hit.object.userData.kind) target = hit.object;
-    }
-    hud.classList.toggle('can-use', !!target);
-    if (target) {
-      const u = target.userData;
-      promptText.textContent = u.kind === 'exit' ? 'Open EXIT' : `Read note ${u.note.no}`;
-    }
-
+    updatePage(p, L, Z0 - camZ);
     renderer.render(scene, camera);
   }
-
-  stopGame = () => {
-    state = 'off'; // обработчики клавиш остаются, но больше ничего не делают
-    win.cancelAnimationFrame(frame);
-    if (doc.exitPointerLock && locked()) doc.exitPointerLock();
-    audio.close();
-    renderer.dispose();
-    canvas.remove();
-    win.removeEventListener('resize', resize);
-  };
-
-  // отладка только на локальном сервере: __level0.goto(колонка, строка, угол)
-  if (location.hostname === 'localhost') {
-    win.__level0 = { goto(c, r, a = yaw) { px = (c + .5) * C; pz = (r + .5) * C; yaw = a; vx = vz = 0; } };
-  }
-
-  frame = win.requestAnimationFrame(tick);
-  enterBtn.disabled = false;
-  enterBtn.textContent = 'Enter Level 0';
-  setState('menu');
+  win.requestAnimationFrame(tick);
 }
