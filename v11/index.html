@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Pahlavon Numonjonov — v11</title>
+<meta name="description" content="Pahlavon Numonjonov — backend engineer in Tashkent. Java, Spring Boot, Oracle." />
+<meta name="robots" content="noindex" />
+<meta name="theme-color" content="#ffffff" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 6c22 0 36 18 36 42S70 94 48 94 12 76 14 50 28 6 50 6z' fill='%23000'/><text x='50' y='60' font-family='monospace' font-size='30' font-weight='700' fill='%23fff' text-anchor='middle'>{ }</text></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css?v=1" />
+</head>
+
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<!-- прелоадер в процентах, один раз за сессию -->
+<div class="loader" id="loader" aria-hidden="true"><span id="loader-n">0%</span></div>
+
+<!-- фиксированные элементы: квадрат-переключатель темы, меню, имя по углам, процент скролла -->
+<button class="theme-dot" id="theme-dot" type="button" aria-label="Change colour theme"></button>
+<button class="menu-pill" id="menu-pill" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
+<p class="corner left" aria-hidden="true">pahlavon</p>
+<p class="corner right" aria-hidden="true">numonjonov</p>
+<p class="progress" id="progress" aria-hidden="true">0%</p>
+
+<nav class="menu" id="menu" aria-label="Menu" hidden>
+  <ol>
+    <li><a href="#top"><i>1</i>Home</a></li>
+    <li><a href="#work"><i>2</i>Work</a></li>
+    <li><a href="#index"><i>3</i>Index</a></li>
+    <li><a href="#contact"><i>4</i>Contact</a></li>
+  </ol>
+  <p class="menu-versions">Versions: <a href="/">main</a> <a href="/v2/">v2</a> <a href="/v3/">v3</a> <a href="/v4/">v4</a> <a href="/v5/">v5</a> <a href="/v6/">v6</a> <a href="/v7/">v7</a> <a href="/v8/">v8</a> <a href="/v10/">v10</a> <a href="/v11/" aria-current="page">v11</a></p>
+</nav>
+
+<!-- SVG-фильтры «капель» создаёт app.js; здесь только контейнер -->
+<svg class="defs" aria-hidden="true" width="0" height="0"><defs id="goo-defs"></defs></svg>
+
+<main id="main">
+
+  <!-- ===== Hero ===== -->
+  <section class="hero grid" id="top">
+    <div class="hero-mark">
+      <svg viewBox="0 0 120 160" aria-hidden="true"><path class="blob" d="M58 4c30 0 52 26 50 62-1 18 8 26 6 42-3 26-26 48-52 48-30 0-54-24-56-58-1-18 8-26 6-44C14 26 32 4 58 4z" /><text x="60" y="92" text-anchor="middle">{ }</text></svg>
+    </div>
+    <p class="hero-meta">Based in Tashkent<br />Working w/ a bank</p>
+    <p class="hero-role">Backend<br />&amp; Engineer</p>
+    <h1 class="name goo"><span class="ln">Pahlavon</span><span class="ln">Numonjonov</span></h1>
+  </section>
+
+  <section class="statement grid" aria-label="What I do">
+    <h2 class="huge goo full">
+      <span class="ln">Build</span>
+      <span class="ln">Backend</span>
+      <span class="ln in1">Services,</span>
+      <span class="ln in1">Bank APIs</span>
+      <span class="ln in1">&amp; Telegram</span>
+      <span class="ln in1">bots,</span>
+      <span class="ln in2">on Java.</span>
+    </h2>
+    <p class="small-note">Builds the layer between a core banking system on Oracle and everything that needs to reach it, with a focus on clarity, reliability and memory that stays put.</p>
+  </section>
+
+  <section class="split grid" aria-label="Motto">
+    <h2 class="huge goo full split-line"><span class="ln"><span class="lft">old</span> systems</span><span class="ln in1">deserve</span><span class="ln in1">good code.</span></h2>
+    <p class="small-note">© '26</p>
+  </section>
+
+  <!-- ===== Работы: заголовок висит, карточки пролетают ===== -->
+  <section class="work" id="work">
+    <div class="work-sticky">
+      <h2 class="mid goo"><span class="ln">Work 25-26</span></h2>
+      <ul class="flyers" id="flyers">
+        <li style="--x:8%; --y:20%; --sp:1.25"><a href="/work/uz-status.html"><pre>Payme    ● 99.98%
+Click    ● 99.91%
+soliq.uz ◐ 97.40%</pre><span>uz-status</span></a></li>
+        <li style="--x:70%; --y:8%; --sp:.9"><a href="/work/exchange.html"><pre>$ pip freeze | wc -l
+0
+USD/UZS 12 740 ▲</pre><span>exchange</span></a></li>
+        <li style="--x:78%; --y:58%; --sp:1.5"><a href="/work/tgagent.html"><pre>[gemini] 429
+[groq]   200 ok
+fallback</pre><span>tgagent</span></a></li>
+        <li style="--x:4%; --y:70%; --sp:1.1"><a href="/work/tekstlybot.html"><pre>ffmpeg  → ogg
+whisper → txt
+heap 231/256</pre><span>tekstlybot</span></a></li>
+        <li style="--x:34%; --y:-6%; --sp:1.7"><a href="/work/plusline.html"><pre>/start → onboarding
+/pay   → invoice
+systemd ● running</pre><span>plusline</span></a></li>
+        <li style="--x:44%; --y:82%; --sp:.8"><a href="/work/downloader.html"><pre>→ https://…
+████████░░ 80%
+47.2 MB ok</pre><span>downloader</span></a></li>
+        <li style="--x:62%; --y:104%; --sp:1.3"><a href="/work/myid.html"><pre>myid  auth
+e-key DVS
+source closed</pre><span>myid · e-key</span></a></li>
+      </ul>
+      <a class="all-works" href="/#home">All Works</a>
+    </div>
+  </section>
+
+  <!-- ===== Реестр: как таблица наград, только проекты ===== -->
+  <section class="index grid" id="index">
+    <h2 class="huge goo full idx-title"><span class="ln in1">Shipped</span><span class="ln in1"><span class="lft">&amp;</span> In produc-</span><span class="ln in2">tion</span></h2>
+    <div class="table" role="table" aria-label="Projects">
+      <div class="row head" role="row"><span role="columnheader">Year</span><span role="columnheader">Project</span><span role="columnheader">Stack</span><span role="columnheader">What it is</span></div>
+      <div class="group">
+        <div class="row" role="row"><span role="cell">'26</span><span role="cell"><a href="/work/uz-status.html">uz-status</a></span><span role="cell">Java 21 · Spring Boot · PostgreSQL</span><span role="cell">Public uptime monitor</span></div>
+        <div class="row" role="row"><span role="cell"></span><span role="cell"><a href="/work/exchange.html">exchange</a></span><span role="cell">Python 3.11 · stdlib only</span><span role="cell">Currency tracker, zero deps</span></div>
+        <div class="row" role="row"><span role="cell"></span><span role="cell"><a href="/work/tgagent.html">tgagent</a></span><span role="cell">Java · Gemini → Groq · SQLite</span><span role="cell">Telegram Business assistant</span></div>
+        <div class="row" role="row"><span role="cell"></span><span role="cell"><a href="/work/tekstlybot.html">tekstlybot</a></span><span role="cell">Java · ffmpeg · whisper.cpp</span><span role="cell">Media worker in 256 MB</span></div>
+        <div class="row" role="row"><span role="cell"></span><span role="cell"><a href="/work/plusline.html">plusline / keyline</a></span><span role="cell">Python · aiogram 3</span><span role="cell">Bots with payments</span></div>
+        <div class="row" role="row"><span role="cell"></span><span role="cell"><a href="/work/downloader.html">downloader</a></span><span role="cell">Python · yt-dlp · gallery-dl</span><span role="cell">Media fetcher bot</span></div>
+      </div>
+      <div class="group">
+        <div class="row" role="row"><span role="cell">'25</span><span role="cell"><a href="/work/myid.html">MyID · e-key</a></span><span role="cell">Java 17 · Spring Boot · Oracle</span><span role="cell">Bank integrations, in production</span></div>
+        <div class="row" role="row"><span role="cell"></span><span role="cell">iABS services</span><span role="cell">Spring Boot · JWT · PL/SQL</span><span role="cell">Rates &amp; reference data API</span></div>
+      </div>
+      <div class="group">
+        <div class="row" role="row"><span role="cell">Tools</span><span role="cell">Languages</span><span role="cell">Java · Python · SQL · PL/SQL</span><span role="cell">JavaScript · Bash</span></div>
+        <div class="row" role="row"><span role="cell"></span><span role="cell">Data</span><span role="cell">Oracle · PostgreSQL · SQLite</span><span role="cell">Flyway · HikariCP</span></div>
+        <div class="row" role="row"><span role="cell"></span><span role="cell">Ops</span><span role="cell">Docker · Linux · systemd</span><span role="cell">Caddy · Nginx · Prometheus</span></div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule" />
+
+  <!-- ===== Фраза со счётчиком и контакты ===== -->
+  <section class="outro grid" id="contact">
+    <h2 class="huge goo full"><span class="ln">Every service</span><span class="ln">that runs</span><span class="ln in1">had first</span><span class="ln in1">existed as</span></h2>
+    <p class="counter" aria-hidden="true">( <b id="counter">00</b> )</p>
+    <h2 class="huge goo full end-lines"><span class="ln in2">nothing</span><span class="ln in2">more</span><span class="ln in3">than a</span><span class="ln in2">ticket.</span></h2>
+    <div class="contact-side">
+      <p>Open to work,<br />remote or on site</p>
+      <p class="muted">Write directly to:</p>
+      <p><a href="mailto:pahlavon@numonjonov.com">pahlavon@numonjonov.com</a></p>
+    </div>
+    <ul class="circles">
+      <li><a href="https://t.me/CustomAnnotation" rel="noopener" aria-label="Telegram">tg</a></li>
+      <li><a href="https://github.com/numonjonov" rel="noopener" aria-label="GitHub">gh</a></li>
+      <li><a href="/resume.html" aria-label="Résumé">cv</a></li>
+    </ul>
+    <p class="foot">numonjonov '26 © — made w/ patience · <a href="#menu" id="foot-menu">versions</a></p>
+  </section>
+
+</main>
+
+<script src="app.js?v=1"></script>
+</body>
+</html>
