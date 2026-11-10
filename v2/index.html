@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pahlavon Numonjonov — v2</title>
+<meta name="description" content="Liquid-glass variant of the portfolio: Java and Spring Boot services, banking integrations on Oracle, Telegram bots." />
+<meta name="robots" content="noindex" />
+<meta name="theme-color" content="#1a9bc4" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='14' fill='%230a0a0a'/><text x='50' y='70' font-family='Courier New,monospace' font-size='62' font-weight='700' fill='%2300ff41' text-anchor='middle'>&gt;_</text></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- Фильтр преломления: только Chromium читает url() в backdrop-filter,
+     остальные остаются на обычном blur — вторая строка в CSS просто отбрасывается. -->
+<svg width="0" height="0" aria-hidden="true" style="position:absolute">
+  <filter id="lg" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.008 0.012" numOctaves="2" seed="3" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="40" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+
+<!-- Сцена: небо, солнце, облака, море, песок. Всё — CSS. -->
+<div class="scene" aria-hidden="true">
+  <span class="sun"></span>
+  <span class="cloud c1"></span><span class="cloud c2"></span><span class="cloud c3"></span>
+  <span class="sea"></span>
+  <span class="wave w1"></span><span class="wave w2"></span>
+  <span class="sand"></span>
+</div>
+
+<nav class="pill glass" aria-label="Sections">
+  <a href="#top" class="brand">PN</a>
+  <a href="#about">About</a>
+  <a href="#work">Work</a>
+  <a href="#skills">Skills</a>
+  <a href="#contact">Contact</a>
+</nav>
+
+<main id="top">
+
+  <!-- Первый экран: стекло с настоящим преломлением -->
+  <header class="hero glass refract in">
+    <p class="eyebrow">Tashkent · UTC+5 · open to work</p>
+    <h1>Pahlavon<br /><em>Numonjonov</em></h1>
+    <p class="role">Backend Engineer — Java, Spring Boot, Oracle</p>
+    <p class="lead">Services around a core banking system by day; Telegram bots and small tools that run unattended by night. Most of what I write talks to something older than itself.</p>
+    <div class="actions">
+      <a class="btn solid" href="https://t.me/CustomAnnotation" rel="noopener">Message on Telegram</a>
+      <a class="btn" href="/resume.html">Résumé</a>
+    </div>
+  </header>
+
+  <!-- Цифры — четыре маленьких стекла -->
+  <section class="stats in" aria-label="Numbers">
+    <div class="glass stat"><b>02</b><span>years writing backend</span></div>
+    <div class="glass stat"><b>06</b><span>projects shipped solo</span></div>
+    <div class="glass stat"><b>03</b><span>bank integrations</span></div>
+    <div class="glass stat"><b>21</b><span>Java version in prod</span></div>
+  </section>
+
+  <section id="about" class="about in">
+    <h2>About</h2>
+    <div class="glass text">
+      <p>I'm a backend engineer at a <b>commercial bank in Tashkent</b>, working the layer between a core banking system on Oracle and everything that needs to reach it: REST services behind JWT, a wrapper around the state biometric identification provider, and digital-signature support inside a legacy JavaEE application.</p>
+      <p>The interesting problems are rarely the framework ones. They are the Oracle driver that breaks Cyrillic without the right encoding library, the vendor daemon whose annotations stopped matching its own API, the job queue that has to stay responsive on 256 MB of heap.</p>
+      <p>Outside work I ship small things end to end — a public uptime monitor, a few Telegram bots, a currency tracker with <b>deliberately zero dependencies</b>. Shipping alone teaches the parts a big codebase hides: deployment, retention, what happens at 3 a.m.</p>
+    </div>
+  </section>
+
+  <section id="work" class="work in">
+    <h2>Work <small>07 entries</small></h2>
+    <div class="cards">
+      <a class="glass card" href="/work/uz-status.html">
+        <span class="num">01</span>
+        <h3>uz-status</h3>
+        <p class="meta">Java 21 · Spring Boot · PostgreSQL</p>
+        <p>A status page for the services Uzbekistan runs on. Probes every minute, 90 days of history at flat storage cost, open JSON API.</p>
+        <pre class="art">Payme     ●  operational  99.98%
+Click     ●  operational  99.91%
+soliq.uz  ●  degraded     97.40%</pre>
+      </a>
+      <a class="glass card" href="/work/exchange.html">
+        <span class="num">02</span>
+        <h3>exchange</h3>
+        <p class="meta">Python 3.11 · standard library only</p>
+        <p>Central-bank and exchange-office rates into SQLite. CLI, Telegram bot, charts and alerts share one core — no third-party packages, by design.</p>
+        <pre class="art">$ pip freeze | wc -l
+0
+USD/UZS  12 740 ▲ 0.3%</pre>
+      </a>
+      <a class="glass card" href="/work/tgagent.html">
+        <span class="num">03</span>
+        <h3>tgagent</h3>
+        <p class="meta">Java · Gemini → Groq · SQLite</p>
+        <p>Telegram Business assistant on bare Java with a two-provider fallback chain and local conversation memory.</p>
+        <pre class="art">[gemini]  429 rate limited
+[groq]    200 ok  (fallback)
+uptime    41d 06h</pre>
+      </a>
+      <a class="glass card" href="/work/tekstlybot.html">
+        <span class="num">04</span>
+        <h3>tekstlybot</h3>
+        <p class="meta">Java · ffmpeg · whisper.cpp</p>
+        <p>Compression, audio extraction and speech-to-text through a worker queue — inside a 256 MB heap.</p>
+        <pre class="art">queue   3 jobs
+whisper → transcript.txt
+heap    231 / 256 MB</pre>
+      </a>
+      <a class="glass card" href="/work/plusline.html">
+        <span class="num">05</span>
+        <h3>plusline / keyline</h3>
+        <p class="meta">Python · aiogram 3</p>
+        <p>Two production bots: subscriptions, payments and admin tooling, deployed with systemd and watched by Prometheus.</p>
+        <pre class="art">/start   → onboarding
+/pay     → invoice
+systemd  active (running)</pre>
+      </a>
+      <a class="glass card" href="/work/downloader.html">
+        <span class="num">06</span>
+        <h3>downloader</h3>
+        <p class="meta">Python · yt-dlp · gallery-dl</p>
+        <p>Send a link, get the file. Size limits, retries and cleanup that keeps the disk from filling.</p>
+        <pre class="art">fetching  ████████░░ 80%
+47.2 MB   ok
+cleanup   -1 tmp</pre>
+      </a>
+      <a class="glass card" href="/work/myid.html">
+        <span class="num">07</span>
+        <h3>MyID · e-key</h3>
+        <p class="meta">Java 17 · Spring Boot · Oracle · closed source</p>
+        <p>State biometric identification wrapper and digital-signature support in a legacy JavaEE app. Bank work — no case study, happy to talk.</p>
+        <pre class="art">source    closed
+myid      auth · profile · export
+e-key     DVS over Styx</pre>
+      </a>
+    </div>
+  </section>
+
+  <section id="skills" class="skills in">
+    <h2>Skills</h2>
+    <p class="note">No progress bars — this is what appears in my repositories and in code shipped to production.</p>
+    <div class="cols">
+      <div class="glass col">
+        <h3>Languages</h3>
+        <ul><li>Java <i>21 / 17</i></li><li>Python <i>3.11+</i></li><li>SQL <i>Oracle / Postgres</i></li><li>PL/SQL <i>packages</i></li><li>JavaScript <i>vanilla</i></li><li>Bash <i>deploy scripts</i></li></ul>
+      </div>
+      <div class="glass col">
+        <h3>Backend</h3>
+        <ul><li>Spring Boot <i>3.x / 4.x</i></li><li>Spring Security <i>JWT</i></li><li>REST API design <i>feature packages</i></li><li>JavaEE / JSP <i>legacy</i></li><li>Maven <i>shade, failsafe</i></li><li>JUnit, Testcontainers <i>integration</i></li></ul>
+      </div>
+      <div class="glass col">
+        <h3>Data</h3>
+        <ul><li>Oracle Database <i>ojdbc, orai18n</i></li><li>PostgreSQL <i>production</i></li><li>SQLite <i>embedded</i></li><li>Flyway <i>migrations</i></li><li>HikariCP <i>pooling</i></li><li>Thymeleaf <i>server rendered</i></li></ul>
+      </div>
+      <div class="glass col">
+        <h3>Ops</h3>
+        <ul><li>Docker, Compose <i>dev + prod</i></li><li>Linux <i>systemd, deploy</i></li><li>Caddy, Nginx <i>TLS</i></li><li>Prometheus <i>Micrometer</i></li><li>Git, GitHub Actions <i>CI</i></li><li>WebLogic <i>legacy</i></li></ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="experience" class="exp in">
+    <h2>Experience</h2>
+    <div class="glass text">
+      <div class="row">
+        <div>
+          <h3>Backend Engineer</h3>
+          <p class="meta">Commercial bank · Tashkent</p>
+        </div>
+        <p class="when">2025 — present</p>
+      </div>
+      <p>Services around <b>iABS</b>, the core banking system on Oracle: REST endpoints for currency rates and reference data secured with JWT. A service wrapping <b>MyID</b>, the state biometric identification provider — authentication, profile and document export. Digital-signature support (<b>e-key</b>, DVS over Styx) inside a legacy JavaEE application on WebLogic. Plus PL/SQL packages where the logic belongs in the database.</p>
+      <ul class="chips"><li>Java 17 / 21</li><li>Spring Boot</li><li>Oracle</li><li>PL/SQL</li><li>iABS</li><li>MyID</li><li>e-key / DVS</li><li>JWT</li><li>WebLogic</li><li>HikariCP</li></ul>
+    </div>
+  </section>
+
+  <section id="contact" class="contact in">
+    <div class="glass refract big">
+      <h2>Interested in working together?</h2>
+      <p class="lead">The fastest way to reach me is Telegram — I read everything and answer real messages. Usually replies within 24 hours.</p>
+      <div class="links">
+        <a href="https://t.me/CustomAnnotation" rel="noopener"><span>Telegram</span><b>@CustomAnnotation</b></a>
+        <a href="mailto:pahlavon@numonjonov.com"><span>Email</span><b>pahlavon@numonjonov.com</b></a>
+        <a href="https://github.com/numonjonov" rel="noopener"><span>GitHub</span><b>numonjonov</b></a>
+        <a href="/resume.html"><span>Résumé</span><b>one page, printable</b></a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>© 2026 Pahlavon Numonjonov · variant v2 — lagoon</footer>
+
+<nav class="vswitch glass" aria-label="Design versions">
+  <a href="/">main</a><a href="/v2/" aria-current="page">v2</a><a href="/v3/">v3</a><a href="/v4/">v4</a><a href="/v5/">v5</a>
+</nav>
+
+</body>
+</html>

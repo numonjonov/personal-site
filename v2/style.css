@@ -1,0 +1,160 @@
+/* v2 — «лагуна». Яркая сцена из CSS (небо, море, песок) и белое стекло поверх.
+   Стеклу нужно что преломлять — поэтому фон здесь цветной и живой. */
+
+:root {
+  --ink: #0d2a3a;
+  --ink-2: rgba(13, 42, 58, .72);
+  --accent: #0b6e8f;
+  --display: 'Fraunces', Georgia, serif;
+  --body: 'Outfit', system-ui, sans-serif;
+  --maxw: 1080px;
+  --edge: 20px;
+  --r: 26px;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; font-family: var(--body); font-weight: 400; color: var(--ink); line-height: 1.55;
+  background: #9fdcf2; min-height: 100vh; overflow-x: hidden;
+}
+h1, h2, h3 { font-family: var(--display); font-weight: 500; letter-spacing: -.02em; margin: 0; line-height: 1.05; }
+p { margin: 0; }
+a { color: inherit; text-decoration: none; }
+b { font-weight: 600; }
+
+/* ---------- Сцена ---------- */
+.scene { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+  background: linear-gradient(180deg, #5fb8e6 0%, #a9e0f6 38%, #eaf7fc 52%); }
+.sun { position: absolute; left: 62%; top: 16%; width: 26vmin; height: 26vmin; border-radius: 50%;
+  background: radial-gradient(circle, #fff6d6 0%, #ffe39a 35%, rgba(255, 210, 120, 0) 70%); filter: blur(6px); }
+.cloud { position: absolute; border-radius: 50%; background: #fff; filter: blur(28px); opacity: .85; }
+.c1 { width: 42vw; height: 14vh; left: -6vw; top: 14vh; }
+.c2 { width: 30vw; height: 10vh; left: 50vw; top: 30vh; opacity: .7; }
+.c3 { width: 24vw; height: 8vh; left: 20vw; top: 40vh; opacity: .6; }
+.sea { position: absolute; left: 0; right: 0; top: 52%; bottom: 0;
+  background: linear-gradient(180deg, #1c9bc9 0%, #0f7fae 30%, #0b6e8f 55%, #3ab6c9 80%, #9fe3d7 100%); }
+.wave { position: absolute; left: -20%; right: -20%; height: 40px; opacity: .35;
+  background: repeating-linear-gradient(90deg, rgba(255,255,255,0) 0 60px, rgba(255,255,255,.55) 60px 80px, rgba(255,255,255,0) 80px 160px);
+  filter: blur(6px); border-radius: 50%; }
+.w1 { top: 57%; animation: drift 14s linear infinite; }
+.w2 { top: 66%; height: 60px; opacity: .22; animation: drift 22s linear infinite reverse; }
+.sand { position: absolute; left: -10%; right: -10%; bottom: -8vh; height: 26vh; border-radius: 50% 50% 0 0;
+  background: linear-gradient(180deg, #f6e7bf, #e9d39f); filter: blur(2px); }
+@keyframes drift { from { transform: translateX(0); } to { transform: translateX(160px); } }
+
+/* ---------- Стекло ---------- */
+.glass {
+  position: relative; border-radius: var(--r);
+  background: rgba(255, 255, 255, .34);
+  border: 1px solid rgba(255, 255, 255, .7);
+  -webkit-backdrop-filter: blur(22px) saturate(180%); backdrop-filter: blur(22px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .95), inset 0 -1px 0 rgba(13, 42, 58, .08), 0 24px 60px rgba(8, 60, 90, .18);
+}
+.glass::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(135deg, rgba(255,255,255,.6), transparent 40%, transparent 60%, rgba(255,255,255,.28)); }
+.glass > * { position: relative; z-index: 1; }
+/* Настоящее преломление — только там, где браузер умеет url() в backdrop-filter */
+.refract { -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: blur(18px) saturate(180%); }
+.refract { backdrop-filter: url(#lg) blur(18px) saturate(180%); }
+
+/* ---------- Навигация-пилюля ---------- */
+.pill { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 20;
+  display: flex; gap: 2px; padding: 6px; border-radius: 999px; font-size: 14px; font-weight: 500; }
+.pill a { padding: 8px 14px; border-radius: 999px; transition: background .2s; white-space: nowrap; }
+.pill a:hover { background: rgba(255, 255, 255, .55); }
+.pill .brand { font-family: var(--display); font-weight: 600; color: var(--accent); }
+
+/* ---------- Макет ---------- */
+main { position: relative; z-index: 1; max-width: var(--maxw); margin: 0 auto; padding: 110px var(--edge) 60px; display: grid; gap: 56px; }
+section > h2 { font-size: clamp(30px, 4.4vw, 46px); margin-bottom: 18px; }
+section > h2 small { font-family: var(--body); font-size: 14px; font-weight: 500; color: var(--ink-2); margin-left: 12px; letter-spacing: 0; }
+
+.hero { padding: clamp(28px, 5vw, 56px); max-width: 760px; }
+.eyebrow { font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 18px; }
+.hero h1 { font-size: clamp(44px, 8.5vw, 96px); }
+.hero h1 em { font-style: italic; font-weight: 300; color: var(--accent); }
+.role { font-size: clamp(16px, 2vw, 20px); font-weight: 500; margin: 18px 0 10px; }
+.lead { font-size: 17px; color: var(--ink-2); max-width: 52ch; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+.btn { display: inline-block; padding: 12px 20px; border-radius: 999px; font-weight: 500; font-size: 15px;
+  border: 1px solid rgba(255,255,255,.8); background: rgba(255,255,255,.4); transition: transform .2s, background .2s; }
+.btn:hover { transform: translateY(-2px); background: rgba(255,255,255,.65); }
+.btn.solid { background: var(--ink); color: #fff; border-color: var(--ink); }
+.btn.solid:hover { background: #163f55; }
+
+.stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.stat { padding: 20px 22px; display: grid; gap: 4px; }
+.stat b { font-family: var(--display); font-size: 44px; font-weight: 500; line-height: 1; }
+.stat span { font-size: 13px; color: var(--ink-2); }
+@media (min-width: 700px) { .stats { grid-template-columns: repeat(4, 1fr); } }
+
+.text { padding: clamp(24px, 4vw, 40px); display: grid; gap: 16px; font-size: 17px; }
+.text p { color: var(--ink-2); max-width: 70ch; }
+.text p b { color: var(--ink); }
+
+.cards { display: grid; grid-template-columns: 1fr; gap: 16px; }
+@media (min-width: 640px) { .cards { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 980px) { .cards { grid-template-columns: repeat(3, 1fr); } }
+.card { padding: 22px; display: grid; gap: 8px; align-content: start; transition: transform .25s, box-shadow .25s; }
+.card:hover { transform: translateY(-4px); box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 30px 70px rgba(8,60,90,.26); }
+.card .num { font-size: 12px; letter-spacing: .14em; color: var(--accent); font-weight: 600; }
+.card h3 { font-size: 26px; }
+.card .meta, .meta { font-size: 13px; color: var(--ink-2); font-weight: 500; }
+.card p:not(.meta) { font-size: 15px; color: var(--ink-2); }
+.art { margin: 8px 0 0; padding: 12px 14px; border-radius: 14px; font: 12px/1.5 ui-monospace, Menlo, Consolas, monospace;
+  color: #e6f7ff; background: rgba(10, 40, 60, .78); white-space: pre; overflow: hidden; }
+
+.note { color: var(--ink-2); max-width: 60ch; margin: -6px 0 18px; }
+.cols { display: grid; grid-template-columns: 1fr; gap: 14px; }
+@media (min-width: 640px) { .cols { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 980px) { .cols { grid-template-columns: repeat(4, 1fr); } }
+.col { padding: 22px; }
+.col h3 { font-size: 22px; margin-bottom: 12px; }
+.col ul { list-style: none; margin: 0; padding: 0; font-size: 14px; }
+.col li { display: flex; justify-content: space-between; gap: 10px; padding: 7px 0; border-top: 1px solid rgba(13, 42, 58, .12); }
+.col li i { font-style: normal; color: var(--ink-2); text-align: right; }
+
+.row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 20px; align-items: baseline; }
+.row h3 { font-size: 26px; }
+.when { font-weight: 500; color: var(--accent); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 4px 0 0; padding: 0; }
+.chips li { font-size: 13px; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,.55); border: 1px solid rgba(255,255,255,.9); }
+
+.big { padding: clamp(28px, 5vw, 56px); }
+.big h2 { font-size: clamp(30px, 4.4vw, 48px); margin-bottom: 14px; }
+.links { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 26px; }
+@media (min-width: 640px) { .links { grid-template-columns: repeat(2, 1fr); } }
+.links a { display: grid; gap: 2px; padding: 16px 18px; border-radius: 18px; background: rgba(255,255,255,.45); border: 1px solid rgba(255,255,255,.85); transition: background .2s, transform .2s; }
+.links a:hover { background: rgba(255,255,255,.7); transform: translateY(-2px); }
+.links span { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+.links b { font-weight: 500; overflow-wrap: anywhere; }
+
+footer { position: relative; z-index: 1; text-align: center; padding: 20px var(--edge) 90px; font-size: 13px; color: var(--ink-2); }
+
+/* Переключатель версий */
+.vswitch { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 20;
+  display: flex; gap: 2px; padding: 5px; border-radius: 999px; font-size: 13px; font-weight: 500; }
+.vswitch a { padding: 7px 12px; border-radius: 999px; }
+.vswitch a[aria-current] { background: var(--ink); color: #fff; }
+.vswitch a:not([aria-current]):hover { background: rgba(255,255,255,.55); }
+
+/* ---------- Появление ---------- */
+.in { animation: rise .9s cubic-bezier(.2,.7,.2,1) both; }
+.in:nth-child(2) { animation-delay: .1s; } .in:nth-child(3) { animation-delay: .2s; }
+.in:nth-child(4) { animation-delay: .28s; } .in:nth-child(5) { animation-delay: .34s; }
+.in:nth-child(6) { animation-delay: .4s; } .in:nth-child(7) { animation-delay: .46s; }
+/* Без filter: blur() в кадрах — на стекле с backdrop-filter Chrome
+   на телефоне оставлял размытие и после конца анимации. */
+@keyframes rise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 560px) {
+  .pill { gap: 0; padding: 5px; font-size: 13px; }
+  .pill a { padding: 7px 10px; }
+  main { padding-top: 90px; gap: 40px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .in, .wave { animation: none; }
+  .card, .btn, .links a { transition: none; }
+}

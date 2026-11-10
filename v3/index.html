@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pahlavon Numonjonov — v3</title>
+<meta name="description" content="Backend engineer portfolio — Java, Spring Boot, Oracle. Version 3: dark glass dashboard." />
+<meta name="robots" content="noindex" />
+<meta name="theme-color" content="#0b1020" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='14' fill='%230a0a0a'/><text x='50' y='70' font-family='Courier New,monospace' font-size='62' font-weight='700' fill='%2300ff41' text-anchor='middle'>&gt;_</text></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- Фон: градиент и три пятна -->
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+
+<!-- Фильтр преломления для hero. Работает только в Chromium, остальные видят blur. -->
+<svg width="0" height="0" aria-hidden="true" style="position:absolute">
+  <filter id="lg">
+    <feTurbulence type="fractalNoise" baseFrequency="0.008 0.012" numOctaves="2" seed="3" />
+    <feDisplacementMap in="SourceGraphic" scale="40" xChannelSelector="R" yChannelSelector="G" />
+  </filter>
+</svg>
+
+<div class="shell">
+
+  <!-- ===== Боковая панель / нижний таб-бар ===== -->
+  <aside class="side glass">
+    <a class="brand" href="/">
+      <span class="mark">&gt;_</span>
+      <span>Numonjonov<small>backend · UTC+5</small></span>
+    </a>
+    <nav aria-label="Sections">
+      <a href="#home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8v9a2 2 0 0 1-2 2h-4v-6H9v6H5a2 2 0 0 1-2-2z"/></svg>Home</a>
+      <a href="#about"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>About</a>
+      <a href="#work"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18"/></svg>Work</a>
+      <a href="#skills"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>Skills</a>
+      <a href="#contact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 7L2 7"/></svg>Contact</a>
+    </nav>
+    <div class="foot">status <b>online</b><br />Tashkent · UTC+5<br />v3 · pane</div>
+  </aside>
+
+  <!-- ===== Bento ===== -->
+  <main class="main" id="home">
+
+    <section class="hero glass" aria-label="Intro">
+      <div>
+        <p class="eyebrow">$ whoami</p>
+        <h1>Pahlavon<br />Numonjonov</h1>
+        <p class="role">Backend Engineer — Java, Spring Boot, Oracle. Services around a core banking system by day, Telegram bots and small tools that run unattended after hours.</p>
+      </div>
+      <div class="cta">
+        <a class="btn solid" href="https://t.me/CustomAnnotation" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.6 18.7 19.7c-.2 1.1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.4-5 9.1-8.2c.4-.4-.1-.5-.6-.2L6.2 13.4 1.4 11.9c-1-.3-1.1-1 .2-1.5L20.5 3c.9-.3 1.6.2 1.4 1.6z"/></svg>Telegram</a>
+        <a class="btn" href="/resume.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Résumé</a>
+      </div>
+    </section>
+
+    <div class="stats">
+      <div class="stat glass"><div class="n">02</div><div class="c">years writing backend</div></div>
+      <div class="stat glass"><div class="n">06</div><div class="c">projects shipped solo</div></div>
+      <div class="stat glass"><div class="n">03</div><div class="c">bank integrations</div></div>
+      <div class="stat glass"><div class="n">21</div><div class="c">Java version in prod</div></div>
+    </div>
+
+    <section class="panel about glass" id="about" aria-labelledby="about-h">
+      <h2 id="about-h">About</h2>
+      <p>I'm a backend engineer at a <b>commercial bank in Tashkent</b>, working the layer between a core banking system on Oracle and everything that needs to reach it: REST services behind JWT, a wrapper around the state biometric identification provider, and digital-signature support inside a legacy JavaEE application.</p>
+      <p>The interesting problems are rarely the framework ones. They are the Oracle driver that breaks Cyrillic without the right encoding library, the vendor daemon whose annotations stopped matching its own API, the job queue that has to stay responsive on 256 MB of heap.</p>
+      <p>Outside work I ship small things end to end — a public uptime monitor, a few Telegram bots, a currency tracker with <b>deliberately zero dependencies</b>. Shipping alone teaches the parts a big codebase hides: deployment, retention, what happens at 3 a.m.</p>
+    </section>
+
+    <section class="panel exp glass" aria-labelledby="exp-h">
+      <h2 id="exp-h">Experience</h2>
+      <div class="row"><h3>Backend Engineer</h3><span class="when">2025 — present</span></div>
+      <p class="org">Commercial bank · Tashkent, Uzbekistan</p>
+      <p>Services around <b>iABS</b>, the core banking system on Oracle: REST endpoints for currency rates and reference data secured with JWT. A service wrapping <b>MyID</b>, the state biometric identification provider. Digital-signature support (<b>e-key</b>, DVS over Styx) inside a legacy JavaEE application on WebLogic. Plus PL/SQL packages where the logic belongs in the database.</p>
+      <ul class="chips"><li>Java 17 / 21</li><li>Spring Boot</li><li>Oracle</li><li>PL/SQL</li><li>iABS</li><li>MyID</li><li>e-key / DVS</li><li>JWT</li><li>WebLogic</li><li>HikariCP</li></ul>
+    </section>
+
+    <section class="panel work glass" id="work" aria-labelledby="work-h">
+      <div class="head"><h2 id="work-h">Work · 7 entries</h2><a href="/">terminal version →</a></div>
+      <div class="grid">
+        <a class="card glass wide" href="/work/uz-status.html">
+          <div class="art" data-art="Payme     ●  operational  99.98%
+Click     ●  operational  99.91%
+Uzum      ●  operational  99.97%
+soliq.uz  ●  degraded     97.40%
+
+GET /api/v1/status → 200"></div>
+          <div class="body"><h3>uz-status — public uptime monitor</h3><span class="meta">Java 21 · Spring Boot · PostgreSQL · 2026</span><p>A status page for the services Uzbekistan runs on — payments, the tax portal, marketplaces, banks. Probes every minute, 90 days of history at flat storage cost, open JSON API.</p></div>
+        </a>
+        <a class="card glass" href="/work/exchange.html">
+          <div class="art" data-art="$ pip freeze | wc -l
+0
+
+USD/UZS  12 740 ▲ 0.3%
+EUR/UZS  13 905 ▼ 0.1%"></div>
+          <div class="body"><h3>exchange — zero dependencies</h3><span class="meta">Python 3.11 · stdlib only · 2026</span><p>Central-bank and exchange-office rates into SQLite. CLI, Telegram bot, charts and alerts share one core, all on the standard library.</p></div>
+        </a>
+        <a class="card glass" href="/work/tgagent.html">
+          <div class="art" data-art="[gemini]  429 rate limited
+[groq]    200 ok  (fallback)
+memory    sqlite://chat.db
+uptime    41d 06h"></div>
+          <div class="body"><h3>tgagent — Telegram Business assistant</h3><span class="meta">Java · Gemini → Groq · SQLite · 2026</span><p>An assistant on bare Java with a two-provider model fallback chain and local conversation memory.</p></div>
+        </a>
+        <a class="card glass" href="/work/tekstlybot.html">
+          <div class="art" data-art="queue   3 jobs
+ffmpeg  → audio.ogg
+whisper → transcript.txt
+heap    231 / 256 MB"></div>
+          <div class="body"><h3>tekstlybot — media worker in 256 MB</h3><span class="meta">Java · ffmpeg · whisper.cpp · 2026</span><p>Compression, audio extraction and speech-to-text through a worker queue — all inside a 256 MB heap.</p></div>
+        </a>
+        <a class="card glass" href="/work/plusline.html">
+          <div class="art" data-art="/start   → onboarding
+/pay     → invoice
+/admin   → stats
+systemd  active (running)"></div>
+          <div class="body"><h3>plusline / keyline — Telegram bots</h3><span class="meta">Python · aiogram 3 · 2026</span><p>Two production bots: subscriptions, payments and admin tooling, deployed with systemd and watched by Prometheus.</p></div>
+        </a>
+        <a class="card glass" href="/work/downloader.html">
+          <div class="art" data-art="→ https://…/video
+  fetching  ████████░░ 80%
+  47.2 MB   ok
+  cleanup   -1 tmp"></div>
+          <div class="body"><h3>downloader — media fetcher bot</h3><span class="meta">Python · yt-dlp · gallery-dl · 2026</span><p>Send a link, get the file. Size limits, retries and cleanup that keeps the disk from filling.</p></div>
+        </a>
+        <a class="card glass" href="/work/myid.html">
+          <div class="art" data-art="source    closed
+myid      auth · profile · export
+e-key     DVS over Styx
+status    in production"></div>
+          <div class="body"><h3>MyID · e-key — bank integrations</h3><span class="meta">Java 17 · Spring Boot · Oracle · closed source</span><p>State biometric identification wrapper and digital-signature support in a legacy JavaEE app. No case study — happy to talk about it.</p></div>
+        </a>
+      </div>
+    </section>
+
+    <section class="panel skills glass" id="skills" aria-labelledby="skills-h">
+      <h2 id="skills-h">Skills</h2>
+      <div class="group"><h3>Languages</h3><ul class="chips"><li><b>Java</b>21 / 17</li><li><b>Python</b>3.11+</li><li><b>SQL</b>Oracle / Postgres</li><li><b>PL/SQL</b>packages</li><li><b>JavaScript</b>vanilla</li><li><b>Bash</b>deploy scripts</li></ul></div>
+      <div class="group"><h3>Backend</h3><ul class="chips"><li><b>Spring Boot</b>3.x / 4.x</li><li><b>Spring Security</b>JWT</li><li><b>REST API design</b>feature packages</li><li><b>JavaEE / JSP</b>legacy</li><li><b>Maven</b>shade, failsafe</li><li><b>JUnit, Testcontainers</b>integration</li></ul></div>
+      <div class="group"><h3>Data</h3><ul class="chips"><li><b>Oracle Database</b>ojdbc, orai18n</li><li><b>PostgreSQL</b>production</li><li><b>SQLite</b>embedded</li><li><b>Flyway</b>migrations</li><li><b>HikariCP</b>pooling</li><li><b>Thymeleaf</b>server rendered</li></ul></div>
+      <div class="group"><h3>Ops</h3><ul class="chips"><li><b>Docker, Compose</b>dev + prod</li><li><b>Linux</b>systemd, deploy</li><li><b>Caddy, Nginx</b>TLS</li><li><b>Prometheus</b>Micrometer</li><li><b>Git, GitHub Actions</b>CI</li><li><b>WebLogic</b>legacy</li></ul></div>
+    </section>
+
+    <section class="panel contact glass" id="contact" aria-labelledby="contact-h">
+      <h2 id="contact-h">Contact</h2>
+      <p>The fastest way to reach me is Telegram — I read everything and answer real messages. Usually replies within 24 hours.</p>
+      <div class="list">
+        <a href="https://t.me/CustomAnnotation" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.6 18.7 19.7c-.2 1.1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.4-5 9.1-8.2c.4-.4-.1-.5-.6-.2L6.2 13.4 1.4 11.9c-1-.3-1.1-1 .2-1.5L20.5 3c.9-.3 1.6.2 1.4 1.6z"/></svg><span><span class="l">Telegram</span><span class="v">@CustomAnnotation</span></span></a>
+        <a href="mailto:pahlavon@numonjonov.com"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 7L2 7"/></svg><span><span class="l">Email</span><span class="v">pahlavon@numonjonov.com</span></span></a>
+        <a href="https://github.com/numonjonov" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.4-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg><span><span class="l">GitHub</span><span class="v">numonjonov</span></span></a>
+        <a href="/resume.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span><span class="l">Résumé</span><span class="v">one page, printable</span></span></a>
+      </div>
+    </section>
+
+    <p class="copy">© 2026 Pahlavon Numonjonov</p>
+  </main>
+</div>
+
+<!-- Переключатель версий -->
+<nav class="switch glass" aria-label="Site versions">
+  <a href="/">main</a><a href="/v2/">v2</a><a href="/v3/" aria-current="page">v3</a><a href="/v4/">v4</a><a href="/v5/">v5</a>
+</nav>
+
+</body>
+</html>
