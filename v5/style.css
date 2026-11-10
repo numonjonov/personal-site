@@ -80,20 +80,45 @@ pre { margin: 0; font: 12.5px/1.45 ui-monospace, 'Cascadia Mono', Consolas, mono
 }
 
 /* ---------- Линза ---------- */
-/* Первая строка backdrop-filter — для всех, вторая — только Chromium (SVG в backdrop-filter) */
+/* Размер 180px зашит и в SVG-фильтре (#lg), и в app.js — меняйте во всех трёх.
+   Первая строка backdrop-filter — для всех, вторая — только Chromium:
+   там фон проходит через карту смещения и хроматическую аберрацию. */
 .lens {
   position: fixed; left: 0; top: 0; z-index: 60; width: 180px; height: 180px; margin: -90px 0 0 -90px;
-  border-radius: 50%; pointer-events: none; opacity: 0; transition: opacity .25s;
-  border: 1px solid rgba(255, 255, 255, .35);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08), inset 12px 12px 40px rgba(255, 255, 255, .08), inset -16px -16px 40px rgba(0, 0, 0, .25), 0 30px 60px rgba(0, 0, 0, .45);
-  -webkit-backdrop-filter: blur(1px) saturate(200%) brightness(1.15);
-  backdrop-filter: blur(1px) saturate(200%) brightness(1.15);
-  backdrop-filter: url(#lg) blur(1px) saturate(200%) brightness(1.15);
+  border-radius: 50%; pointer-events: none; opacity: 0; transition: opacity .3s;
+  -webkit-backdrop-filter: blur(2px) saturate(180%) brightness(1.12);
+  backdrop-filter: blur(2px) saturate(180%) brightness(1.12);
+  backdrop-filter: url(#lg) saturate(160%) brightness(1.1);
+  background: rgba(255, 255, 255, .02);
+  /* Толщина стекла: светлая кромка сверху-слева, тёмная снизу-справа, тень под линзой */
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, .16),
+    inset 2px 3px 1px -1px rgba(255, 255, 255, .7),
+    inset -2px -3px 2px -1px rgba(255, 255, 255, .22),
+    inset 0 -14px 24px -12px rgba(0, 0, 0, .35),
+    inset 0 0 26px rgba(255, 255, 255, .06),
+    0 22px 44px rgba(0, 0, 0, .45), 0 3px 8px rgba(0, 0, 0, .3);
   will-change: transform;
 }
+/* Блик: мягкий полумесяц сверху слева */
 .lens::before {
-  content: ''; position: absolute; inset: 0; border-radius: 50%;
-  background: radial-gradient(circle at 30% 25%, rgba(255, 255, 255, .35), transparent 38%);
+  content: ''; position: absolute; inset: 6px; border-radius: 50%;
+  background: radial-gradient(120% 90% at 30% 12%, rgba(255, 255, 255, .42), rgba(255, 255, 255, 0) 42%);
+  mask: radial-gradient(circle at 50% 62%, transparent 58%, #000 72%);
+  -webkit-mask: radial-gradient(circle at 50% 62%, transparent 58%, #000 72%);
+}
+/* Радужная кромка — как преломление на ребре стекла */
+.lens::after {
+  content: ''; position: absolute; inset: 0; border-radius: 50%; padding: 1.5px;
+  background: conic-gradient(from 200deg, rgba(255,255,255,.75), rgba(120,220,255,.35), rgba(190,140,255,.25), rgba(255,255,255,.05), rgba(255,200,140,.3), rgba(255,255,255,.75));
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude; -webkit-mask-composite: xor;
+}
+/* Маленький блик снизу справа */
+.lens .glint {
+  position: absolute; right: 26px; bottom: 22px; width: 22px; height: 10px; border-radius: 50%;
+  background: rgba(255, 255, 255, .35); filter: blur(3px); transform: rotate(-35deg);
 }
 .lens[data-visible] { opacity: 1; }
 @media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) { .lens { display: none; } }
