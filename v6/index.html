@@ -4,71 +4,61 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Pahlavon Numonjonov — v6</title>
-<meta name="description" content="Backend engineer portfolio — Java, Spring Boot, Oracle. Version 6: a walk through the Backrooms behind the page." />
+<meta name="description" content="Backend engineer portfolio — Java, Spring Boot, Oracle. Version 6: a 3D backdrop behind a plain personal site." />
 <meta name="robots" content="noindex" />
-<meta name="theme-color" content="#1a1606" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='14' fill='%23d6c47a'/><text x='50' y='72' font-family='Courier New,monospace' font-size='66' font-weight='700' fill='%231d1a10' text-anchor='middle'>0</text></svg>" />
+<meta name="theme-color" content="#14110a" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23e3cf7e'/><text x='50' y='68' font-family='Arial,sans-serif' font-size='48' font-weight='800' fill='%2314110a' text-anchor='middle'>PN</text></svg>" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=VT323&family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="style.css" />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css?v=3" />
 </head>
 
 <body>
 <a class="skip" href="#main">Skip to content</a>
 
-<!-- 3D-фон: коридор Backrooms, камера идёт по нему вместе со скроллом.
-     Без WebGL остаётся тёмный «обойный» фон, сайт читается так же -->
+<!-- 3D-фон: коридор, камера плавно едет по нему при скролле и смотрит за мышью.
+     Без WebGL остаётся тёплый градиент, сайт читается так же -->
 <div class="stage" id="stage" aria-hidden="true"></div>
-<div class="fx" aria-hidden="true"><div class="grain"></div><div class="scan"></div><div class="vignette"></div><div class="flash"></div></div>
+<div class="shade" aria-hidden="true"></div>
 
 <header class="top">
-  <a class="brand" href="#top"><i></i>P.&nbsp;Numonjonov</a>
+  <a class="brand" href="#top">Pahlavon Numonjonov</a>
   <nav aria-label="Sections">
     <a href="#about">About</a>
     <a href="#work">Work</a>
     <a href="#skills">Skills</a>
     <a href="#experience">Experience</a>
-    <a class="exit" href="#contact">Exit</a>
+    <a href="#contact">Contact</a>
   </nav>
-  <button class="snd" id="snd" type="button" aria-pressed="false" hidden>Hum: off</button>
 </header>
-
-<!-- HUD камеры: время на странице, текущий «уровень», глубина -->
-<div class="hud" aria-hidden="true">
-  <p class="hud-l"><span class="rec"><i></i>REC</span> <span id="clock">00:00:00</span></p>
-  <p class="hud-r"><b id="lvl">LEVEL 0</b> · <span id="lvl-name">THE LOBBY</span><br /><span id="depth">DEPTH 000 M</span></p>
-</div>
 
 <main id="main">
 
   <!-- ===== Hero ===== -->
-  <section class="hero" id="top" data-level="0">
-    <p class="tag reveal">▶ PLAY · Tashkent · UTC+5 · open to work</p>
-    <h1 class="reveal" data-text="Pahlavon Numonjonov"><span>Pahlavon</span><span>Numonjonov</span></h1>
+  <section class="hero" id="top">
+    <p class="eyebrow reveal">Tashkent · UTC+5 · open to work</p>
+    <h1 class="reveal">Pahlavon<br />Numonjonov</h1>
     <p class="role reveal">Backend Engineer — Java, Spring Boot, Oracle</p>
     <p class="lede reveal">Most of what I write talks to something older than itself: a core banking system on Oracle, a legacy JavaEE app on WebLogic, a state identity provider without an SDK.</p>
     <div class="actions reveal">
       <a class="btn" href="#work">See the work</a>
       <a class="btn ghost" href="https://t.me/CustomAnnotation" rel="noopener">Telegram</a>
     </div>
-    <p class="cue" aria-hidden="true">Scroll to walk deeper <i>↓</i></p>
   </section>
 
   <!-- ===== About ===== -->
-  <section class="sec" id="about" data-level="0">
+  <section class="sec" id="about">
     <div class="sec-head reveal">
-      <span class="chip">Level 0 · The Lobby</span>
-      <h2>Who built this place</h2>
+      <span class="num">01</span>
+      <h2>About</h2>
     </div>
     <div class="about">
-      <article class="paper tilt reveal" data-tilt>
-        <span class="no">No. 01</span>
+      <div class="panel prose tilt reveal" data-tilt>
         <p>I'm a backend engineer at a <b>commercial bank in Tashkent</b>, working the layer between a core banking system on Oracle and everything that needs to reach it: REST services behind JWT, a wrapper around the state biometric identification provider, and digital-signature support inside a legacy JavaEE application.</p>
         <p>The interesting problems are rarely the framework ones. They are the Oracle driver that breaks Cyrillic without the right encoding library, the vendor daemon whose annotations stopped matching its own API, the job queue that has to stay responsive on 256 MB of heap.</p>
         <p>Outside work I ship small things end to end — a public uptime monitor, a few Telegram bots, a currency tracker with <b>deliberately zero dependencies</b>. Shipping alone teaches the parts a big codebase hides: deployment, retention, what happens at 3 a.m.</p>
-        <span class="sign">— P.N.</span>
-      </article>
+      </div>
       <ul class="stats reveal">
         <li class="panel tilt" data-tilt><b>02</b><span>years writing backend</span></li>
         <li class="panel tilt" data-tilt><b>06</b><span>projects shipped solo</span></li>
@@ -79,100 +69,92 @@
   </section>
 
   <!-- ===== Work ===== -->
-  <section class="sec" id="work" data-level="1">
+  <section class="sec" id="work">
     <div class="sec-head reveal">
-      <span class="chip">Level 1 · Habitable Zone</span>
-      <h2>Things I shipped</h2>
-      <p class="sub">Seven files recovered from the warehouse. Each one ran in production.</p>
+      <span class="num">02</span>
+      <h2>Work</h2>
     </div>
     <ol class="cards">
       <li class="reveal"><a class="card panel tilt" data-tilt href="/work/uz-status.html">
-        <span class="file">FILE 01 · 2026</span>
+        <span class="meta">Java 21 · Spring Boot · PostgreSQL · 2026</span>
         <h3>uz-status <small>public uptime monitor</small></h3>
         <p>A status page for the services Uzbekistan runs on — payments, the tax portal, marketplaces, banks. Probes every minute, 90 days of history at flat storage cost, open JSON API.</p>
         <pre class="art" aria-hidden="true">Payme     ●  operational  99.98%
 Click     ●  operational  99.91%
 soliq.uz  ●  degraded     97.40%</pre>
-        <span class="meta">Java 21 · Spring Boot · PostgreSQL</span>
       </a></li>
       <li class="reveal"><a class="card panel tilt" data-tilt href="/work/exchange.html">
-        <span class="file">FILE 02 · 2026</span>
+        <span class="meta">Python 3.11 · standard library only · 2026</span>
         <h3>exchange <small>currency tracker, zero dependencies</small></h3>
         <p>Central-bank and exchange-office rates into SQLite. CLI, Telegram bot, charts and threshold alerts share one core — HTTP, the Telegram client and the chart renderer are all hand-written against the standard library.</p>
         <pre class="art" aria-hidden="true">$ pip freeze | wc -l
 0
 USD/UZS  12 740 ▲ 0.3%</pre>
-        <span class="meta">Python 3.11 · standard library only</span>
       </a></li>
       <li class="reveal"><a class="card panel tilt" data-tilt href="/work/tgagent.html">
-        <span class="file">FILE 03 · 2026</span>
+        <span class="meta">Java · Gemini → Groq · SQLite · 2026</span>
         <h3>tgagent <small>Telegram Business assistant</small></h3>
         <p>An assistant on bare Java with a two-provider model fallback chain and local conversation memory. When the first provider is down or rate-limited, the second one answers.</p>
         <pre class="art" aria-hidden="true">[gemini]  429 rate limited
 [groq]    200 ok  (fallback)
 uptime    41d 06h</pre>
-        <span class="meta">Java · Gemini → Groq · SQLite</span>
       </a></li>
       <li class="reveal"><a class="card panel tilt" data-tilt href="/work/tekstlybot.html">
-        <span class="file">FILE 04 · 2026</span>
+        <span class="meta">Java · ffmpeg · whisper.cpp · 2026</span>
         <h3>tekstlybot <small>media worker in 256 MB</small></h3>
         <p>Compression, audio extraction and speech-to-text through a worker queue — all held inside a 256 MB heap on a small VPS.</p>
         <pre class="art" aria-hidden="true">ffmpeg  → audio.ogg
 whisper → transcript.txt
 heap    231 / 256 MB</pre>
-        <span class="meta">Java · ffmpeg · whisper.cpp</span>
       </a></li>
       <li class="reveal"><a class="card panel tilt" data-tilt href="/work/plusline.html">
-        <span class="file">FILE 05 · 2026</span>
+        <span class="meta">Python · aiogram 3 · 2026</span>
         <h3>plusline / keyline <small>Telegram bots</small></h3>
         <p>Two production bots on aiogram 3: subscriptions, payments and admin tooling, deployed with systemd and watched by Prometheus.</p>
         <pre class="art" aria-hidden="true">/start   → onboarding
 /pay     → invoice
 systemd  active (running)</pre>
-        <span class="meta">Python · aiogram 3</span>
       </a></li>
       <li class="reveal"><a class="card panel tilt" data-tilt href="/work/downloader.html">
-        <span class="file">FILE 06 · 2026</span>
+        <span class="meta">Python · yt-dlp · gallery-dl · 2026</span>
         <h3>downloader <small>media fetcher bot</small></h3>
         <p>Send a link, get the file. yt-dlp and gallery-dl behind one Telegram interface, with size limits, retries and cleanup that keeps the disk from filling.</p>
         <pre class="art" aria-hidden="true">fetching  ████████░░ 80%
 47.2 MB   ok
 cleanup   -1 tmp</pre>
-        <span class="meta">Python · yt-dlp · gallery-dl</span>
       </a></li>
       <li class="reveal wide"><a class="card panel tilt" data-tilt href="/work/myid.html">
-        <span class="file">FILE 07 · CLOSED SOURCE</span>
+        <span class="meta">Java 17 · Spring Boot · Oracle · JavaEE · closed source</span>
         <h3>MyID · e-key <small>bank integrations</small></h3>
         <p>A service wrapping the state biometric identification provider, and digital-signature support inside a legacy JavaEE application on WebLogic. Work inside a bank — no case study, but happy to talk about it.</p>
         <pre class="art" aria-hidden="true">myid      auth · profile · export
 e-key     DVS over Styx
 status    in production</pre>
-        <span class="meta">Java 17 · Spring Boot · Oracle · JavaEE</span>
       </a></li>
     </ol>
   </section>
 
   <!-- ===== Skills ===== -->
-  <section class="sec" id="skills" data-level="2">
+  <section class="sec" id="skills">
     <div class="sec-head reveal">
-      <span class="chip">Level 2 · Pipe Dreams</span>
-      <h2>Inventory</h2>
+      <span class="num">03</span>
+      <h2>Skills</h2>
       <p class="sub">No progress bars — a percentage next to a language name means nothing. This is what appears in my repositories and in code shipped to production.</p>
     </div>
-    <div class="inv">
-      <div class="slotset panel reveal">
+    <div class="skills">
+      <div class="panel group reveal">
         <h3>Languages</h3>
         <ul><li>Java<em>21 / 17</em></li><li>Python<em>3.11+</em></li><li>SQL<em>Oracle / Postgres</em></li><li>PL/SQL<em>packages</em></li><li>JavaScript<em>vanilla</em></li><li>Bash<em>deploy scripts</em></li></ul>
       </div>
-      <div class="slotset panel reveal">
+      <div class="panel group reveal">
         <h3>Backend</h3>
         <ul><li>Spring Boot<em>3.x / 4.x</em></li><li>Spring Security<em>JWT</em></li><li>REST API design<em>feature packages</em></li><li>JavaEE / JSP<em>legacy</em></li><li>Maven<em>shade, failsafe</em></li><li>JUnit, Testcontainers<em>integration</em></li></ul>
       </div>
-      <div class="slotset panel reveal">
+      <div class="panel group reveal">
         <h3>Data</h3>
         <ul><li>Oracle Database<em>ojdbc, orai18n</em></li><li>PostgreSQL<em>production</em></li><li>SQLite<em>embedded</em></li><li>Flyway<em>migrations</em></li><li>HikariCP<em>pooling</em></li><li>Thymeleaf<em>server rendered</em></li></ul>
       </div>
-      <div class="slotset panel reveal">
+      <div class="panel group reveal">
         <h3>Ops</h3>
         <ul><li>Docker, Compose<em>dev + prod</em></li><li>Linux<em>systemd, deploy</em></li><li>Caddy, Nginx<em>TLS</em></li><li>Prometheus<em>Micrometer</em></li><li>Git, GitHub Actions<em>CI</em></li><li>WebLogic<em>legacy</em></li></ul>
       </div>
@@ -180,12 +162,12 @@ status    in production</pre>
   </section>
 
   <!-- ===== Experience ===== -->
-  <section class="sec" id="experience" data-level="3">
+  <section class="sec" id="experience">
     <div class="sec-head reveal">
-      <span class="chip">Level 3 · Electrical Station</span>
-      <h2>Where I work</h2>
+      <span class="num">04</span>
+      <h2>Experience</h2>
     </div>
-    <article class="log panel tilt reveal" data-tilt>
+    <article class="exp panel tilt reveal" data-tilt>
       <p class="when">2025 — present</p>
       <div>
         <h3>Backend Engineer</h3>
@@ -197,11 +179,10 @@ status    in production</pre>
   </section>
 
   <!-- ===== Contact ===== -->
-  <section class="sec contact" id="contact" data-level="4">
+  <section class="sec contact" id="contact">
     <div class="sec-head reveal">
-      <span class="chip">Level ! · Run for your life</span>
-      <div class="exit-sign" aria-hidden="true">EXIT</div>
-      <h2>Way out</h2>
+      <span class="num">05</span>
+      <h2>Contact</h2>
       <p class="sub">The fastest way to reach me is <b>Telegram</b> — I read everything and answer real messages. Usually replies within 24 hours.</p>
     </div>
     <div class="links reveal">
@@ -221,6 +202,6 @@ status    in production</pre>
   </nav>
 </footer>
 
-<script type="module" src="app.js"></script>
+<script type="module" src="app.js?v=3"></script>
 </body>
 </html>
