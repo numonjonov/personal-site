@@ -127,6 +127,14 @@ figcaption { margin-top: 10px; font-size: 12px; color: var(--dim); }
 .kv dt { color: var(--dim); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; padding-top: 2px; }
 .kv dd { margin: 0; color: var(--body); }
 
+/* ---------- 404 ---------- */
+.lost { max-width: var(--wrap); margin: 0 auto; min-height: 62vh; display: flex; flex-direction: column; justify-content: center; padding: 6vh 0; }
+.lost-k { margin: 0 0 10px; font-size: 11px; letter-spacing: .25em; color: var(--dim); text-transform: uppercase; }
+.lost h1 { font-size: clamp(90px, 22vw, 220px); line-height: .9; letter-spacing: .04em; }
+.lost-t { margin: 22px 0 0; font-size: 16px; color: var(--body); max-width: 46ch; }
+.lost-path { margin: 12px 0 0; font-size: 12px; color: var(--dim); word-break: break-all; }
+.lost .case-links { margin-top: 30px; }
+
 /* ---------- низ ---------- */
 .foot { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; max-width: calc(var(--wrap) + 48px); margin: 40px auto 0; padding: 22px 24px 40px; font-size: 12px; color: var(--dim); }
 .foot p { margin: 0; }

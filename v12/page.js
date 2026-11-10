@@ -148,6 +148,10 @@
   }), { rootMargin: '0px 0px -8% 0px' });
   targets.forEach(el => io.observe(el));
 
+  /* 404: показать, какой адрес не нашёлся (textContent — без разметки) */
+  const lost = doc.getElementById('lost-path');
+  if (lost) { let p = location.pathname; try { p = decodeURI(p); } catch (e) { /* битый адрес — как есть */ } lost.textContent = p; }
+
   /* ================= прогресс чтения ================= */
   const bar = doc.getElementById('progress');
   if (bar) {
