@@ -104,7 +104,9 @@ a { color: inherit; }
   -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
   animation: outroIn .9s cubic-bezier(.2, .7, .2, 1) both;
 }
-@keyframes outroIn { from { opacity: 0; translate: -50% -46%; filter: blur(6px); } }
+/* без filter: blur в кадрах — анимация размытия поверх живого WebGL-холста
+   с backdrop-filter давала провал кадра на 80 мс при появлении панели */
+@keyframes outroIn { from { opacity: 0; translate: -50% -46%; } }
 .outro-k { margin: 0 0 10px; font-size: 11px; letter-spacing: .25em; color: var(--dim); }
 .outro-t { margin: 0 0 20px; font-size: 14px; }
 .outro ul { list-style: none; margin: 0; padding: 0; }

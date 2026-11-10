@@ -384,16 +384,21 @@ async function start() {
   const curve = new THREE.CatmullRomCurve3(pts, false, 'centripetal');
   // кадр камеры в точке пути t: позиция над песком с запасом + точка взгляда
   const probe = new THREE.Vector3();
+  const curveLen = curve.getLength();
   function camAt(t, pos, lk) {
-    t = clamp(t, 0, .985);
+    // весь скролл 0…1 растянут на путь 0…0.985 — без упора: раньше камера
+    // на скорости врезалась в clamp(.985) и вставала за один кадр (рывок в
+    // конце перехода к LET'S TALK)
+    t = clamp(t, 0, 1) * .985;
     curve.getPointAt(t, pos);
-    curve.getPointAt(Math.min(t + .03, 1), lk);
-    let ground = -1e9;
-    for (let s = 0; s <= 5; s++) {
-      curve.getPointAt(Math.min(t + s * .006, 1), probe);
-      for (let ox = -1.5; ox <= 1.5; ox += 1.5) ground = Math.max(ground, terrain(probe.x + ox, probe.z));
-    }
-    pos.y = Math.max(pos.y, ground + 1.05);
+    // точка взгляда за концом пути продлевается по касательной, а не упирается
+    const ta = t + .03;
+    if (ta <= 1) curve.getPointAt(ta, lk);
+    else { curve.getPointAt(1, lk); curve.getTangentAt(1, probe); lk.addScaledVector(probe, (ta - 1) * curveLen); }
+    // Покадровой «страховки над песком» больше нет: пробы рельефа попадали на
+    // острые гребни, и высота на отдельных кадрах подскакивала на 2–9 см, а
+    // взгляд — на 1–1.4° (мелкая тряска). Запас высоты заложен в сам путь
+    // (hmax вокруг точки + сглаживание вверх); проверка — выборкой __v12.camAt (CLAUDE.md).
     // наклон взгляда держим в пределах −9°…+3°: камера плывёт, а не кивает
     const h = Math.hypot(lk.x - pos.x, lk.z - pos.z);
     lk.y = pos.y + clamp(lk.y - pos.y, -.16 * h, .05 * h) - .12;
@@ -635,10 +640,20 @@ async function start() {
     if (doc.hidden || root.classList.contains('text-mode')) { last = 0; return; }
     const dt = Math.min(.05, last ? (t - last) / 1000 : .016); last = t; time += dt;
 
-    // скролл с инерцией
-    const prev = cur;
-    cur += (target - cur) * (reduced ? 1 : 1 - Math.exp(-dt * 2.4));
-    vel += ((cur - prev) / Math.max(dt, .001) - vel) * (1 - Math.exp(-dt * 6));
+    // скролл с инерцией — критически демпфированная пружина, а не простое
+    // догоняние: у догоняния скорость скачет на каждом щелчке колеса, и полёт
+    // идёт толчками (особенно заметно на длинном пустом участке LOG → LET'S TALK).
+    // У пружины скорость непрерывна; шаг дробится до 1/120 с для устойчивости.
+    if (reduced) { cur = target; vel = 0; }
+    else {
+      const W = 4.2;
+      for (let left = dt; left > 1e-6; left -= 1 / 120) {
+        const h = Math.min(left, 1 / 120);
+        vel += (W * W * (target - cur) - 2 * W * vel) * h;
+        cur += vel * h;
+      }
+      if (Math.abs(target - cur) < 1e-5 && Math.abs(vel) < 1e-5) { cur = target; vel = 0; }
+    }
 
     // вход: песок поднимается, камера опускается, сцена проявляется
     const intro = introStart < 0 ? 0 : (reduced ? 1 : clamp((t - introStart) / 3600, 0, 1));
@@ -647,7 +662,7 @@ async function start() {
     compM.uniforms.uFade.value = reduced ? 1 : smooth(0, .35, intro);
 
     // камера по пути + взгляд вперёд + лёгкий параллакс от мыши
-    const ct = clamp(cur, 0, .985);
+    const ct = clamp(cur, 0, 1);
     camAt(ct, camPos, look);
     camPos.y += (1 - ie) * 3.2;
     camera.position.copy(camPos);
