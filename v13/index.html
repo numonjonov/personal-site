@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Pahlavon Numonjonov — v13</title>
+<meta name="description" content="Pahlavon Numonjonov — backend engineer in Tashkent. Java, Spring Boot, Oracle, PL/SQL." />
+<meta name="robots" content="noindex" />
+<meta name="theme-color" content="#121212" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23121212'/><circle cx='50' cy='50' r='14' fill='%235a3cff'/></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Hanken+Grotesk:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css?v=1" />
+<script>document.documentElement.classList.replace('no-js', 'js');</script>
+</head>
+
+<body>
+<!-- загрузка: линия растёт, на ней отметки процентов -->
+<div class="loader" id="loader" aria-hidden="true">
+  <div class="loader-track"><i class="loader-line" id="loader-line"></i></div>
+  <div class="loader-marks" id="loader-marks"></div>
+</div>
+
+<!-- верх: пять колонок справочной информации -->
+<header class="cols" id="cols">
+  <div class="col">
+    <div class="me">
+      <span class="avatar" aria-hidden="true">PN</span>
+      <p><b>Pahlavon Numonjonov</b><br />Backend Engineer<br />Tashkent</p>
+    </div>
+    <p>🇺🇿 Uzbekistan — local time [<span id="clock">--:--</span>].<br />🌍 Open to remote work.</p>
+    <p><span class="chip">Focus</span><br />Services around a core banking system.<br />Integrations that keep running at 3 a.m.<br /><span class="dim">Bank work stays private; the projects below are my own.</span></p>
+  </div>
+  <div class="col">
+    <p>Commercial bank, Tashkent<br />Backend Engineer<br />2025—now</p>
+    <p><span class="chip">Systems</span><br />iABS (core banking)<br />MyID wrapper<br />e-key signatures on WebLogic</p>
+    <p><span class="chip">Where logic lives</span><br />PL/SQL, next to the data</p>
+  </div>
+  <div class="col">
+    <p><span class="chip">Stack</span><br />Java 21/17 · Spring Boot · Spring Security<br />Oracle · PL/SQL · PostgreSQL · SQLite<br />Python · Docker · Linux · Prometheus</p>
+    <p><span class="chip">Habits</span><br />Zero-dependency where it is enough<br />Logs before guesses<br />Small heaps, honest timeouts</p>
+  </div>
+  <div class="col">
+    <p class="list">
+      <a href="/work/uz-status.html">uz-status</a><br />
+      <a href="/work/exchange.html">exchange</a><br />
+      <a href="/work/tgagent.html">tgagent</a><br />
+      <a href="/work/tekstlybot.html">tekstlybot</a><br />
+      <a href="/work/plusline.html">plusline / keyline</a><br />
+      <a href="/work/downloader.html">downloader</a><br />
+      <a href="/work/myid.html">MyID · e-key</a>
+    </p>
+  </div>
+  <div class="col">
+    <p class="list">
+      <a href="https://t.me/CustomAnnotation" rel="noopener">Telegram</a><br />
+      <a href="mailto:pahlavon@numonjonov.com">Email</a><br />
+      <a href="https://github.com/numonjonov" rel="noopener">GitHub</a><br />
+      <a href="/resume.html">Résumé</a>
+    </p>
+    <p>Open to work from now<br />Reply within 24 hours</p>
+    <p><a class="bracket" href="https://t.me/CustomAnnotation" rel="noopener">Write on Telegram</a></p>
+    <p class="versions">versions: <a href="/">main</a> <a href="/v2/">v2</a> <a href="/v3/">v3</a> <a href="/v4/">v4</a> <a href="/v5/">v5</a> <a href="/v6/">v6</a> <a href="/v7/">v7</a> <a href="/v8/">v8</a> <a href="/v10/">v10</a> <a href="/v11/">v11</a> <a href="/v12/">v12</a> <a href="/v13/" aria-current="page">v13</a></p>
+  </div>
+</header>
+
+<!-- крупные абзацы: по колесу сменяют друг друга, каждый в своём месте -->
+<main class="stage" id="stage">
+  <p class="para" data-at="left">I don't build websites. I build the layer underneath — services that talk to a core banking system on Oracle and keep talking at 3 a.m.</p>
+  <p class="para" data-at="mid">Most of what I write talks to something older than itself: a JavaEE app on WebLogic, a state identity provider without an SDK, <span class="note" tabindex="0">projects<sup>7</sup><span class="note-list" role="tooltip">uz-status · exchange · tgagent · tekstlybot · plusline · downloader · MyID</span></span> of my own on the side.</p>
+  <p class="para" data-at="right">Java 21, Spring Boot, PL/SQL where the logic belongs in the database. Based in Tashkent, open to work — the fastest way is Telegram.</p>
+</main>
+
+<!-- низ: прогресс, вкладки, подсказка -->
+<div class="bar">
+  <div class="meter"><span>Scroll</span><i><b id="meter"></b></i></div>
+  <div class="tabs" role="tablist">
+    <button type="button" role="tab" aria-selected="true" data-tab="projects">Projects <em>7</em></button>
+    <button type="button" role="tab" aria-selected="false" data-tab="log">Log <em>5</em></button>
+  </div>
+  <div class="hint" id="hint" aria-hidden="true"><span>Open case ↗</span><b>Return key [Enter] ↵</b></div>
+</div>
+
+<!-- лента: карточки проектов с мини-макетами (рисует app.js) и записи лога -->
+<section class="strip" id="strip" aria-label="Projects">
+  <div class="track" id="track-projects" data-tab="projects"></div>
+  <div class="track" id="track-log" data-tab="log" hidden></div>
+</section>
+
+<!-- большой предпросмотр проекта при наведении -->
+<div class="preview" id="preview" aria-hidden="true">
+  <div class="preview-screen" id="preview-screen"></div>
+  <i class="preview-spin"></i>
+  <p class="preview-cap" id="preview-cap"></p>
+</div>
+<div class="pill" id="pill" aria-hidden="true"></div>
+<div class="dot" id="dot" aria-hidden="true"></div>
+
+<script src="app.js?v=1"></script>
+</body>
+</html>
