@@ -1,0 +1,223 @@
+/* v9 — по мотивам hancore.dev: тёмный экран, моноширинный шрифт, терминал fish.
+   Без JS: разделы (article.item) идут друг под другом как вывод терминала.
+   С JS (класс js на <html>): вход с печатающимся кодом → рабочий стол:
+   колесо проектов слева, терминал в центре, ASCII-глаз справа, статус-строка,
+   клавиатура с руками внизу. Разделы показываются внутри терминала. */
+
+:root {
+  --bg: #0c0c0c;
+  --ink: #d8d4b4;
+  --dim: #8a8670;
+  --faint: #3a3830;
+  --line: #2a2924;
+  --hot: #e2735f;
+  --green: #8fb39a;
+  --mono: "IBM Plex Mono", ui-monospace, "Courier New", monospace;
+  --sans: "Archivo", system-ui, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; font: 13px/1.5 var(--mono); color: var(--ink); background: var(--bg); }
+a { color: inherit; }
+::selection { background: var(--ink); color: var(--bg); }
+.skip { position: absolute; left: 12px; top: -60px; z-index: 50; padding: 6px 12px; background: var(--ink); color: var(--bg); }
+.skip:focus { top: 12px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+:focus-visible { outline: 1px solid var(--ink); outline-offset: 2px; }
+
+.top {
+  display: flex; justify-content: space-between; align-items: center;
+  width: min(100% - 32px, 1080px); margin: 0 auto; padding: 22px 0 10px;
+  position: relative; z-index: 5;
+}
+.top a { text-decoration: none; }
+.logo b { display: inline-block; padding: 0 3px; margin-right: 6px; font-weight: 700; color: var(--bg); background: var(--ink); }
+
+/* ---------- Терминальный текст (общий) ---------- */
+.item { width: min(100% - 32px, 760px); margin: 0 auto 48px; }
+.step { margin: 0 0 14px; }
+.cmd { margin: 0; color: var(--ink); }
+.cmd::before { content: "› "; color: var(--dim); }
+.pr { margin: 14px 0 0; color: var(--ink); }
+.pr i { font-style: normal; color: var(--green); }
+.pr em { font-style: normal; color: var(--dim); }
+.out { margin: 2px 0 0; color: var(--ink); }
+.out p { margin: 0 0 4px; max-width: 64ch; }
+.out b { font-weight: 600; color: var(--ink); }
+.out em, .kv em { font-style: normal; color: var(--hot); }
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 0 2ch; margin: 4px 0 0; }
+.kv dt { color: var(--dim); }
+.kv dd { margin: 0; }
+.kv dt.group { color: var(--green); }
+.kv.small { font-size: 11px; }
+.links a, .go { color: var(--green); text-decoration: underline; text-underline-offset: 3px; margin-right: 2ch; }
+.links.big { display: grid; gap: 2px; }
+.links.big a { white-space: pre; margin: 0; }
+.links a:hover, .go:hover { color: var(--ink); }
+.cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 4ch; }
+.tags span { color: var(--dim); }
+.tags span::before { content: "#"; color: var(--faint); }
+.shots { display: grid; gap: 10px; }
+.shots figure { margin: 0; border: 1px solid var(--line); }
+.shots figcaption { padding: 3px 8px; color: var(--dim); border-bottom: 1px solid var(--line); }
+.shots pre { margin: 0; padding: 14px 16px; font: inherit; color: var(--ink); overflow-x: auto; }
+.plot { display: none; }
+.items-foot { width: min(100% - 32px, 760px); margin: 0 auto; padding: 0 0 40px; }
+.versions { display: flex; flex-wrap: wrap; gap: 2px 12px; color: var(--dim); }
+.versions a { text-decoration: none; }
+.versions a:hover, .versions a[aria-current] { color: var(--ink); }
+
+/* ---------- С JS: вход и рабочий стол ---------- */
+.intro, .desk { display: none; }
+.js body { overflow: hidden; height: 100vh; height: 100svh; }
+.js .items > .item { display: none; }
+.js .items { position: fixed; right: 16px; bottom: 10px; z-index: 6; }
+.js:not(.desk-on) .items { display: none; }
+.js .items-foot { width: auto; padding: 0; font-size: 11px; }
+
+/* вход */
+.js .intro {
+  display: flex; flex-direction: column;
+  width: min(100% - 32px, 1080px); height: calc(100vh - 64px); height: calc(100svh - 64px); margin: 0 auto;
+  transition: opacity .5s ease;
+}
+.js.desk-on .intro { display: none; }
+.code-file { margin: 28px 0 10px; color: var(--dim); }
+.code {
+  margin: 0; font: inherit; line-height: 1.45; color: var(--ink);
+  height: 34vh; overflow: hidden; white-space: pre;
+}
+.code .n { display: inline-block; width: 4ch; margin-left: -4ch; color: var(--faint); text-align: right; padding-right: 1ch; }
+.code .k { color: var(--ink); font-weight: 500; }
+.code .t { color: var(--green); }
+.code .s, .code .c { color: var(--dim); }
+.code .caret { display: inline-block; width: .6em; height: 1.1em; vertical-align: -2px; background: var(--ink); animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.vim { margin: 8px 0 0; color: var(--dim); font-size: 11px; }
+.vim b { padding: 0 6px; margin-right: 1ch; color: var(--bg); background: var(--green); font-weight: 600; }
+.vim i { float: right; font-style: normal; }
+.intro-foot { margin-top: auto; display: flex; justify-content: space-between; align-items: center; padding: 14px 0 6px; position: relative; z-index: 3; }
+.intro-foot p { margin: 0; }
+.intro-cta span { color: var(--dim); margin-right: 1.5ch; }
+.enter {
+  font: inherit; padding: 1px 10px; cursor: pointer;
+  color: var(--bg); background: var(--ink); border: 0;
+}
+.enter:hover { background: #f1edd0; }
+
+/* рабочий стол */
+.js.desk-on .desk {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 190px;
+  grid-template-rows: minmax(0, 1fr) auto 24vh;
+  grid-template-areas: "wheel term eye" "status status status" "keys keys keys";
+  padding-bottom: 0;
+  column-gap: 22px;
+  width: min(100% - 32px, 1120px); height: calc(100vh - 64px); height: calc(100svh - 64px); margin: 0 auto;
+  animation: deskIn .6s ease;
+}
+@keyframes deskIn { from { opacity: 0; } }
+
+.wheel { grid-area: wheel; position: relative; min-height: 0; overflow: hidden; border-right: 1px solid var(--line); touch-action: none; cursor: grab; }
+.wheel.drag { cursor: grabbing; }
+.wheel-fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.wheel ol { list-style: none; margin: 0; padding: 0; }
+.wheel li { position: absolute; left: 0; top: 0; will-change: transform; }
+.wheel li a {
+  display: block; width: 118px; padding: 6px 7px 4px;
+  text-decoration: none; background: var(--bg);
+  border: 1px solid var(--faint);
+  transition: border-color .2s ease, background .2s ease;
+}
+.wheel li pre { margin: 0 0 4px; font: 7.5px/1.25 var(--mono); color: var(--dim); overflow: hidden; white-space: pre; height: 30px; }
+.wheel li span { font-size: 11px; color: var(--dim); }
+.wheel li.on a { border-color: var(--ink); background: color-mix(in srgb, var(--ink) 7%, var(--bg)); }
+.wheel li.on pre, .wheel li.on span { color: var(--ink); }
+.wheel li.on a::after { content: "▶"; position: absolute; right: -16px; top: 50%; translate: 0 -50%; font-size: 10px; color: var(--ink); }
+.wheel .hint { position: absolute; left: 6px; bottom: 4px; margin: 0; font-size: 11px; color: var(--dim); pointer-events: none; }
+
+.term { grid-area: term; position: relative; min-height: 0; display: flex; flex-direction: column; padding-top: 6px; }
+.term-title { margin: 0 0 6px; padding-left: 24px; color: var(--dim); }
+.term-body { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--faint) transparent; padding-right: 8px; }
+.term-body .item { width: auto; margin: 0; }
+.term-body .pr:first-child { margin-top: 0; }
+.term-body .typing::after { content: ""; display: inline-block; width: .6em; height: 1.1em; vertical-align: -2px; margin-left: 1px; background: var(--ink); animation: blink 1s steps(1) infinite; }
+.term-body .hide { display: none; }
+.term-body .shots figure:not(.on) { display: none; }
+.shot-nav { display: flex; gap: 4px; margin-top: 6px; color: var(--dim); }
+.shot-nav button { font: inherit; width: 20px; padding: 0; cursor: pointer; color: var(--dim); background: none; border: 1px solid var(--faint); }
+.shot-nav button.on { color: var(--bg); background: var(--ink); border-color: var(--ink); }
+.shot-nav span { margin-left: auto; }
+
+.term-body .plot { display: grid; grid-template-columns: minmax(0, 1fr) 160px; gap: 14px; padding: 10px 12px; margin-bottom: 12px; border: 1px solid var(--faint); }
+.plot-h { display: flex; justify-content: space-between; gap: 8px; margin: 0 0 6px; font-size: 11px; color: var(--dim); }
+.plot-h b { color: var(--ink); }
+.plot canvas { display: block; width: 100%; }
+.plot .ridge { height: 190px; }
+.plot .section { height: 48px; border: 1px solid var(--faint); margin-bottom: 8px; }
+.plot .kv dd { text-align: right; }
+
+.cmdline[hidden] { display: none; }
+.cmdline { display: flex; gap: 1ch; padding: 4px 0; border-top: 1px solid var(--line); }
+.cmdline label { color: var(--hot); }
+.cmdline input { flex: 1; font: inherit; color: var(--ink); background: none; border: 0; outline: none; }
+
+.eye { grid-area: eye; position: relative; min-height: 0; }
+.eye canvas { display: block; width: 100%; height: 150px; margin-top: 14px; }
+.eye p { margin: 6px 0 0 30px; font-size: 10px; line-height: 1.35; color: var(--dim); white-space: pre; }
+
+.status {
+  grid-area: status;
+  display: grid; grid-template-columns: 1.2fr 2fr 1fr; gap: 16px; align-items: end;
+  padding: 8px 0 6px; border-top: 1px solid var(--line);
+}
+.status-name b { display: block; font: 600 12px var(--sans); letter-spacing: .08em; }
+.status-name span { font-size: 10px; color: var(--dim); }
+.status-stats { display: flex; gap: 26px; margin: 0; }
+.status-stats div { display: grid; }
+.status-stats dt { font-size: 9px; letter-spacing: .08em; color: var(--dim); }
+.status-stats dd { margin: 0; font-size: 12px; }
+.status-stats dd.hot { color: var(--hot); }
+.status-time { text-align: right; }
+.status-time span { display: block; font-size: 9px; letter-spacing: .08em; color: var(--dim); }
+.status-time b { font-weight: 400; color: var(--hot); }
+
+.keys { display: none; }
+.js .keys {
+  display: block; position: fixed; z-index: 2; pointer-events: none;
+  left: 50%; bottom: 40px; translate: -50% 0;
+  width: min(620px, 92vw); height: 22vh;
+}
+.js.desk-on .keys { bottom: 6px; }
+.light { --bg: #ecebe4; --ink: #1b1a16; --dim: #6a6758; --faint: #c9c6b6; --line: #d6d3c4; --hot: #c4482f; --green: #3d6b4c; }
+
+/* узкий экран: лента проектов сверху, терминал, без глаза и клавиатуры */
+@media (max-width: 820px) {
+  .js body { overflow: auto; height: auto; }
+  .js.desk-on .desk {
+    grid-template-columns: 1fr; grid-template-rows: auto auto auto;
+    grid-template-areas: "wheel" "term" "status"; height: auto;
+  }
+  .wheel { height: 112px; border-right: 0; border-bottom: 1px solid var(--line); cursor: auto; touch-action: pan-x; overflow-x: auto; scrollbar-width: none; }
+  .wheel::-webkit-scrollbar { display: none; }
+  .wheel-fx, .wheel .hint { display: none; }
+  .wheel ol { display: flex; gap: 8px; padding: 10px 0; width: max-content; }
+  .wheel li { position: static; transform: none !important; opacity: 1 !important; }
+  .wheel li.on a::after { display: none; }
+  .term-body { overflow: visible; }
+  .term-body .plot { grid-template-columns: 1fr; }
+  .cols { grid-template-columns: 1fr; }
+  .eye, .js .keys { display: none; }
+  .status { grid-template-columns: 1fr; gap: 6px; padding-bottom: 70px; }
+  .status-time { text-align: left; }
+  .js .items { position: static; }
+  .js .items-foot { padding: 0 16px 24px; }
+  .code { height: 46vh; font-size: 11px; }
+  .intro-foot { flex-direction: column; align-items: flex-start; gap: 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .code .caret, .term-body .typing::after { animation: none; }
+  .js.desk-on .desk { animation: none; }
+}

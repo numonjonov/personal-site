@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>numonjonov.com — v9</title>
+<meta name="description" content="Pahlavon Numonjonov — backend engineer. Java, Spring Boot, Oracle. Projects, stack and the log." />
+<meta name="robots" content="noindex" />
+<meta name="theme-color" content="#0c0c0c" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230c0c0c'/><text x='50' y='66' font-family='monospace' font-size='46' font-weight='700' fill='%23d8d4b4' text-anchor='middle'>PN</text></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Archivo:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css?v=1" />
+</head>
+
+<body>
+<a class="skip" href="#items">Skip to content</a>
+
+<header class="top">
+  <a class="logo" href="#about"><b>PN</b> numonjonov.com</a>
+  <a href="https://github.com/numonjonov" rel="noopener">github</a>
+</header>
+
+<!-- ===== Вход: печатается настоящий код этого сайта, руки печатают ===== -->
+<section class="intro" id="intro" aria-label="Intro">
+  <p class="code-file" id="code-file">// —— personal-site/main.js ——</p>
+  <pre class="code" id="code" aria-hidden="true"></pre>
+  <p class="vim" aria-hidden="true"><b>NORMAL</b> <span id="vim-path">~/personal-site/main.js</span> <i id="vim-pos">1:1 Top</i></p>
+  <div class="intro-foot">
+    <p>// backend that talks to old systems.</p>
+    <p class="intro-cta"><span>›_ :help</span> <button class="enter" id="enter" type="button">enter ↩</button></p>
+  </div>
+</section>
+
+<!-- ===== Рабочий стол: колесо проектов, терминал, глаз, статус, клавиатура ===== -->
+<div class="desk" id="desk" aria-label="Projects">
+  <nav class="wheel" id="wheel" aria-label="Projects">
+    <canvas class="wheel-fx" id="wheel-fx" aria-hidden="true"></canvas>
+    <ol id="wheel-list">
+      <li><a href="#about"><pre aria-hidden="true">█▀█ █▄ █
+█▀▀ █ ▀█</pre><span>whoami</span></a></li>
+      <li><a href="#uz-status"><pre aria-hidden="true">Payme  ● 99.98
+Click  ● 99.91
+soliq  ◐ 97.40</pre><span>uz-status</span></a></li>
+      <li><a href="#exchange"><pre aria-hidden="true">$ pip freeze
+0
+USD 12 740 ▲</pre><span>exchange</span></a></li>
+      <li><a href="#tgagent"><pre aria-hidden="true">[gemini] 429
+[groq]   200
+fallback ok</pre><span>tgagent</span></a></li>
+      <li><a href="#tekstlybot"><pre aria-hidden="true">ffmpeg  → ogg
+whisper → txt
+heap 231/256</pre><span>tekstlybot</span></a></li>
+      <li><a href="#plusline"><pre aria-hidden="true">/start  →
+/pay    →
+systemd ●</pre><span>plusline</span></a></li>
+      <li><a href="#downloader"><pre aria-hidden="true">→ https://…
+████████░░
+47.2 MB ok</pre><span>downloader</span></a></li>
+      <li><a href="#myid"><pre aria-hidden="true">myid  auth
+e-key DVS
+src   closed</pre><span>myid · e-key</span></a></li>
+      <li><a href="#stack"><pre aria-hidden="true">java  spring
+oracle plsql
+docker linux</pre><span>stack/</span></a></li>
+      <li><a href="#log"><pre aria-hidden="true">2025 ── now
+iABS · MyID
+e-key · DVS</pre><span>log/</span></a></li>
+      <li><a href="#links"><pre aria-hidden="true">telegram
+github
+mail</pre><span>links/</span></a></li>
+    </ol>
+    <p class="hint" aria-hidden="true">scroll · drag the wheel</p>
+  </nav>
+
+  <section class="term" aria-label="Terminal">
+    <p class="term-title" id="term-title">fish — ~ · numonjonov</p>
+    <div class="term-body" id="term-body" aria-live="polite"></div>
+    <form class="cmdline" id="cmdline" hidden>
+      <label for="cmd-input">:</label><input id="cmd-input" autocomplete="off" spellcheck="false" />
+    </form>
+  </section>
+
+  <div class="eye" aria-hidden="true">
+    <canvas id="eye"></canvas>
+    <p id="eye-read"></p>
+  </div>
+
+  <footer class="status" aria-hidden="true">
+    <div class="status-name"><b>NUMONJONOV</b><span>↑↓ project · ←→ shot · ↩ open · : cmd</span></div>
+    <dl class="status-stats" id="status-stats"></dl>
+    <div class="status-time"><span>TASHKENT · UTC+5</span><b id="clock">--:--:--</b></div>
+  </footer>
+</div>
+
+<!-- клавиатура и руки: печатают всё, что печатается на экране -->
+<canvas class="keys" id="keys" aria-hidden="true"></canvas>
+
+<!-- ===== Содержимое: каждый раздел — шаги терминала. Без JS читается как страница ===== -->
+<main class="items" id="items">
+
+  <article class="item" id="about" data-name="whoami" data-path="~" data-stats="REPOS:gh-repos|SINCE:gh-since|STATUS:open">
+    <h2 class="sr">whoami</h2>
+    <div class="plot" aria-hidden="true">
+      <div class="plot-main">
+        <p class="plot-h"><b>PN</b> <span data-gh="repos">21</span> public repos · 1 ridge per scanline · 2026</p>
+        <canvas class="ridge"></canvas>
+      </div>
+      <div class="plot-side">
+        <p class="plot-h"><span>section A-A</span><span>echo at rest</span></p>
+        <canvas class="section"></canvas>
+        <dl class="kv small">
+          <dt>numeric twin</dt><dd>as counts</dd>
+          <dt>projects</dt><dd>7</dd>
+          <dt>shipped solo</dt><dd>6</dd>
+          <dt>bank integrations</dt><dd>3</dd>
+          <dt>java in prod</dt><dd>21</dd>
+          <dt>years backend</dt><dd>2</dd>
+        </dl>
+      </div>
+    </div>
+    <div class="step"><p class="cmd">whoami</p>
+      <div class="out"><p>Backend engineer at a commercial bank in Tashkent. Most of what I write talks to something older than itself: a core banking system on Oracle, a legacy JavaEE app on WebLogic, a state identity provider without an SDK.</p></div>
+    </div>
+    <div class="step"><p class="cmd">fetch numonjonov</p>
+      <div class="out"><dl class="kv">
+        <dt>repos</dt><dd><em data-gh="repos">21</em> public</dd>
+        <dt>since</dt><dd data-gh="since">2022</dd>
+        <dt>last push</dt><dd data-gh="push">personal-site</dd>
+        <dt>based</dt><dd>Tashkent · UTC+5</dd>
+        <dt>status</dt><dd><em>open to work</em></dd>
+      </dl></div>
+    </div>
+    <div class="step"><p class="cmd">ls links/</p>
+      <div class="out links"><a href="https://t.me/CustomAnnotation" rel="noopener">telegram</a> <a href="https://github.com/numonjonov" rel="noopener">github</a> <a href="mailto:pahlavon@numonjonov.com">email</a> <a href="/resume.html">resume</a></div>
+    </div>
+  </article>
+
+  <article class="item" id="uz-status" data-name="uz-status" data-path="~/w/uz-status" data-branch="main" data-stats="STACK:Java 21|YEAR:2026|CASE:open">
+    <h2 class="sr">uz-status</h2>
+    <div class="step"><p class="cmd">fetch uz-status</p>
+      <div class="out"><p><b>uz-status</b></p><p>A public status page for the services Uzbekistan runs on — payments, the tax portal, marketplaces, banks.</p>
+        <dl class="kv"><dt>stack</dt><dd>Java 21 · Spring Boot · PostgreSQL</dd><dt>probes</dt><dd>every minute</dd><dt>history</dt><dd>90 days at flat storage cost</dd><dt>api</dt><dd>open JSON</dd><dt>year</dt><dd>2026</dd></dl></div>
+    </div>
+    <div class="step"><p class="cmd">ls shots/</p>
+      <div class="out shots">
+        <figure><figcaption>status.txt</figcaption><pre>Payme     ●  operational  99.98%
+Click     ●  operational  99.91%
+Uzum      ●  operational  99.97%
+soliq.uz  ●  degraded     97.40%</pre></figure>
+        <figure><figcaption>api.txt</figcaption><pre>GET /api/v1/status → 200
+
+probe    every 60 s
+retain   90 days
+storage  flat</pre></figure>
+      </div>
+    </div>
+    <div class="step"><p class="cmd">open /work/uz-status.html</p>
+      <div class="out"><a class="go" href="/work/uz-status.html">→ read the case study</a></div>
+    </div>
+  </article>
+
+  <article class="item" id="exchange" data-name="exchange" data-path="~/w/exchange" data-branch="main" data-stats="STACK:Python 3.11|DEPS:0|CASE:open">
+    <h2 class="sr">exchange</h2>
+    <div class="step"><p class="cmd">fetch exchange</p>
+      <div class="out"><p><b>exchange</b></p><p>Central-bank and exchange-office rates into SQLite. CLI, Telegram bot, charts and threshold alerts share one core.</p>
+        <dl class="kv"><dt>stack</dt><dd>Python 3.11 · standard library only</dd><dt>deps</dt><dd><em>0</em> — HTTP, Telegram client and charts hand-written</dd><dt>store</dt><dd>SQLite</dd><dt>year</dt><dd>2026</dd></dl></div>
+    </div>
+    <div class="step"><p class="cmd">ls shots/</p>
+      <div class="out shots">
+        <figure><figcaption>deps.txt</figcaption><pre>$ pip freeze | wc -l
+0</pre></figure>
+        <figure><figcaption>rates.txt</figcaption><pre>USD/UZS  12 740 ▲ 0.3%
+EUR/UZS  13 905 ▼ 0.1%</pre></figure>
+      </div>
+    </div>
+    <div class="step"><p class="cmd">open /work/exchange.html</p>
+      <div class="out"><a class="go" href="/work/exchange.html">→ read the case study</a></div>
+    </div>
+  </article>
+
+  <article class="item" id="tgagent" data-name="tgagent" data-path="~/w/tgagent" data-branch="main" data-stats="STACK:Java|MODELS:2|CASE:open">
+    <h2 class="sr">tgagent</h2>
+    <div class="step"><p class="cmd">fetch tgagent</p>
+      <div class="out"><p><b>tgagent</b></p><p>A Telegram Business assistant on bare Java with a two-provider model fallback chain and local conversation memory.</p>
+        <dl class="kv"><dt>stack</dt><dd>Java · SQLite</dd><dt>models</dt><dd>Gemini → Groq</dd><dt>fallback</dt><dd>second provider answers when the first is down or rate-limited</dd><dt>year</dt><dd>2026</dd></dl></div>
+    </div>
+    <div class="step"><p class="cmd">ls shots/</p>
+      <div class="out shots">
+        <figure><figcaption>chain.log</figcaption><pre>[gemini]  429 rate limited
+[groq]    200 ok  (fallback)
+memory    sqlite://chat.db
+uptime    41d 06h</pre></figure>
+      </div>
+    </div>
+    <div class="step"><p class="cmd">open /work/tgagent.html</p>
+      <div class="out"><a class="go" href="/work/tgagent.html">→ read the case study</a></div>
+    </div>
+  </article>
+
+  <article class="item" id="tekstlybot" data-name="tekstlybot" data-path="~/w/tekstlybot" data-branch="main" data-stats="STACK:Java|HEAP:256 MB|CASE:open">
+    <h2 class="sr">tekstlybot</h2>
+    <div class="step"><p class="cmd">fetch tekstlybot</p>
+      <div class="out"><p><b>tekstlybot</b></p><p>Compression, audio extraction and speech-to-text through a worker queue — all held inside a 256 MB heap on a small VPS.</p>
+        <dl class="kv"><dt>stack</dt><dd>Java · ffmpeg · whisper.cpp</dd><dt>heap</dt><dd><em>256 MB</em></dd><dt>year</dt><dd>2026</dd></dl></div>
+    </div>
+    <div class="step"><p class="cmd">ls shots/</p>
+      <div class="out shots">
+        <figure><figcaption>queue.log</figcaption><pre>queue   3 jobs
+ffmpeg  → audio.ogg
+whisper → transcript.txt
+heap    231 / 256 MB</pre></figure>
+      </div>
+    </div>
+    <div class="step"><p class="cmd">open /work/tekstlybot.html</p>
+      <div class="out"><a class="go" href="/work/tekstlybot.html">→ read the case study</a></div>
+    </div>
+  </article>
+
+  <article class="item" id="plusline" data-name="plusline" data-path="~/w/plusline" data-branch="main" data-stats="STACK:aiogram 3|BOTS:2|CASE:open">
+    <h2 class="sr">plusline / keyline</h2>
+    <div class="step"><p class="cmd">fetch plusline keyline</p>
+      <div class="out"><p><b>plusline / keyline</b></p><p>Two production Telegram bots: subscriptions, payments and admin tooling.</p>
+        <dl class="kv"><dt>stack</dt><dd>Python · aiogram 3</dd><dt>deploy</dt><dd>systemd</dd><dt>watch</dt><dd>Prometheus</dd><dt>year</dt><dd>2026</dd></dl></div>
+    </div>
+    <div class="step"><p class="cmd">ls shots/</p>
+      <div class="out shots">
+        <figure><figcaption>commands.txt</figcaption><pre>/start   → onboarding
+/pay     → invoice
+/admin   → stats
+systemd  active (running)</pre></figure>
+      </div>
+    </div>
+    <div class="step"><p class="cmd">open /work/plusline.html</p>
+      <div class="out"><a class="go" href="/work/plusline.html">→ read the case study</a></div>
+    </div>
+  </article>
+
+  <article class="item" id="downloader" data-name="downloader" data-path="~/w/downloader" data-branch="main" data-stats="STACK:Python|TOOLS:yt-dlp|CASE:open">
+    <h2 class="sr">downloader</h2>
+    <div class="step"><p class="cmd">fetch downloader</p>
+      <div class="out"><p><b>downloader</b></p><p>Send a link, get the file. yt-dlp and gallery-dl behind one Telegram interface, with size limits, retries and cleanup that keeps the disk from filling.</p>
+        <dl class="kv"><dt>stack</dt><dd>Python · yt-dlp · gallery-dl</dd><dt>guards</dt><dd>size limits · retries · cleanup</dd><dt>year</dt><dd>2026</dd></dl></div>
+    </div>
+    <div class="step"><p class="cmd">ls shots/</p>
+      <div class="out shots">
+        <figure><figcaption>fetch.log</figcaption><pre>→ https://…/video
+  fetching  ████████░░ 80%
+  47.2 MB   ok
+  cleanup   -1 tmp</pre></figure>
+      </div>
+    </div>
+    <div class="step"><p class="cmd">open /work/downloader.html</p>
+      <div class="out"><a class="go" href="/work/downloader.html">→ read the case study</a></div>
+    </div>
+  </article>
+
+  <article class="item" id="myid" data-name="myid" data-path="~/bank/myid" data-branch="prod" data-stats="STACK:Java 17|SOURCE:closed|STATUS:prod">
+    <h2 class="sr">MyID · e-key</h2>
+    <div class="step"><p class="cmd">fetch myid e-key</p>
+      <div class="out"><p><b>MyID · e-key</b></p><p>A service wrapping the state biometric identification provider, and digital-signature support inside a legacy JavaEE application on WebLogic.</p>
+        <dl class="kv"><dt>stack</dt><dd>Java 17 · Spring Boot · Oracle · JavaEE</dd><dt>myid</dt><dd>auth · profile · document export</dd><dt>e-key</dt><dd>DVS over Styx</dd><dt>source</dt><dd>closed — work inside a bank, happy to talk about it</dd></dl></div>
+    </div>
+    <div class="step"><p class="cmd">open /work/myid.html</p>
+      <div class="out"><a class="go" href="/work/myid.html">→ what I can say about it</a></div>
+    </div>
+  </article>
+
+  <article class="item" id="stack" data-name="stack/" data-path="~/stack" data-stats="LANGS:6|DATA:3 dbs|OPS:linux">
+    <h2 class="sr">Stack</h2>
+    <div class="step"><p class="cmd">ls stack/</p>
+      <div class="out cols">
+        <dl class="kv"><dt class="group">languages/</dt><dd></dd><dt>java</dt><dd>21 / 17</dd><dt>python</dt><dd>3.11+</dd><dt>sql</dt><dd>oracle / postgres</dd><dt>pl/sql</dt><dd>packages</dd><dt>javascript</dt><dd>vanilla</dd><dt>bash</dt><dd>deploy scripts</dd></dl>
+        <dl class="kv"><dt class="group">backend/</dt><dd></dd><dt>spring boot</dt><dd>3.x / 4.x</dd><dt>spring security</dt><dd>jwt</dd><dt>rest</dt><dd>feature packages</dd><dt>javaee / jsp</dt><dd>legacy</dd><dt>maven</dt><dd>shade, failsafe</dd><dt>junit</dt><dd>testcontainers</dd></dl>
+        <dl class="kv"><dt class="group">data/</dt><dd></dd><dt>oracle</dt><dd>ojdbc, orai18n</dd><dt>postgresql</dt><dd>production</dd><dt>sqlite</dt><dd>embedded</dd><dt>flyway</dt><dd>migrations</dd><dt>hikaricp</dt><dd>pooling</dd></dl>
+        <dl class="kv"><dt class="group">ops/</dt><dd></dd><dt>docker</dt><dd>compose</dd><dt>linux</dt><dd>systemd</dd><dt>caddy, nginx</dt><dd>tls</dd><dt>prometheus</dt><dd>micrometer</dd><dt>github actions</dt><dd>ci</dd></dl>
+      </div>
+    </div>
+    <div class="step"><p class="cmd">echo $NOTE</p>
+      <div class="out"><p>No progress bars — a percentage next to a language name means nothing. This is what appears in my repositories and in code shipped to production.</p></div>
+    </div>
+  </article>
+
+  <article class="item" id="log" data-name="log/" data-path="~/log" data-stats="SINCE:2025|ROLE:backend|AT:bank">
+    <h2 class="sr">Experience</h2>
+    <div class="step"><p class="cmd">cat experience.log</p>
+      <div class="out">
+        <p><em>2025 — present</em> · Backend Engineer · commercial bank, Tashkent</p>
+        <p>Services around <b>iABS</b>, the core banking system on Oracle: REST endpoints for currency rates and reference data secured with JWT. A service wrapping <b>MyID</b>, the state biometric identification provider — authentication, profile and document export. Digital-signature support (<b>e-key</b>, DVS over Styx) inside a legacy JavaEE application on WebLogic. Plus PL/SQL packages where the logic belongs in the database.</p>
+      </div>
+    </div>
+    <div class="step"><p class="cmd">grep -o tags experience.log</p>
+      <div class="out tags"><span>java 17/21</span> <span>spring boot</span> <span>oracle</span> <span>pl/sql</span> <span>iabs</span> <span>myid</span> <span>e-key / dvs</span> <span>jwt</span> <span>weblogic</span> <span>hikaricp</span></div>
+    </div>
+  </article>
+
+  <article class="item" id="links" data-name="links/" data-path="~/links" data-stats="REPLY:< 24h|BEST:telegram|TZ:UTC+5">
+    <h2 class="sr">Contact</h2>
+    <div class="step"><p class="cmd">ls links/</p>
+      <div class="out links big"><a href="https://t.me/CustomAnnotation" rel="noopener">telegram  @CustomAnnotation</a> <a href="mailto:pahlavon@numonjonov.com">mail      pahlavon@numonjonov.com</a> <a href="https://github.com/numonjonov" rel="noopener">github    github.com/numonjonov</a> <a href="/resume.html">resume    one page</a></div>
+    </div>
+    <div class="step"><p class="cmd">echo $REPLY</p>
+      <div class="out"><p>The fastest way to reach me is <b>Telegram</b> — I read everything and answer real messages. Usually within 24 hours.</p></div>
+    </div>
+  </article>
+
+  <footer class="items-foot">
+    <nav class="versions" aria-label="Site versions">
+      <a href="/">main</a><a href="/v2/">v2</a><a href="/v3/">v3</a><a href="/v4/">v4</a><a href="/v5/">v5</a><a href="/v6/">v6</a><a href="/v7/">v7</a><a href="/v8/">v8</a><a href="/v9/" aria-current="page">v9</a>
+    </nav>
+  </footer>
+</main>
+
+<script type="module" src="app.js?v=1"></script>
+</body>
+</html>
