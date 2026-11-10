@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Archivo:wght@400;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="style.css?v=1" />
+<link rel="stylesheet" href="style.css?v=2" />
 </head>
 
 <body>
@@ -21,6 +21,14 @@
   <a class="logo" href="#about"><b>PN</b> numonjonov.com</a>
   <a href="https://github.com/numonjonov" rel="noopener">github</a>
 </header>
+
+<!-- ASCII-глаз: следит за курсором (пунктир — линия взгляда), моргает,
+     без мыши сам поглядывает по сторонам. Виден на входе и на столе -->
+<div class="eye" id="eye-box" aria-hidden="true">
+  <canvas id="eye"></canvas>
+  <p id="eye-read"></p>
+</div>
+<svg class="gaze" id="gaze" aria-hidden="true"><line id="gaze-line" x1="0" y1="0" x2="0" y2="0" /></svg>
 
 <!-- ===== Вход: печатается настоящий код этого сайта, руки печатают ===== -->
 <section class="intro" id="intro" aria-label="Intro">
@@ -81,11 +89,6 @@ mail</pre><span>links/</span></a></li>
       <label for="cmd-input">:</label><input id="cmd-input" autocomplete="off" spellcheck="false" />
     </form>
   </section>
-
-  <div class="eye" aria-hidden="true">
-    <canvas id="eye"></canvas>
-    <p id="eye-read"></p>
-  </div>
 
   <footer class="status" aria-hidden="true">
     <div class="status-name"><b>NUMONJONOV</b><span>↑↓ project · ←→ shot · ↩ open · : cmd</span></div>
@@ -312,6 +315,6 @@ systemd  active (running)</pre></figure>
   </footer>
 </main>
 
-<script type="module" src="app.js?v=1"></script>
+<script type="module" src="app.js?v=2"></script>
 </body>
 </html>

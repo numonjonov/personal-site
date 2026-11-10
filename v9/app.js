@@ -493,50 +493,146 @@ wheelLis.forEach((li, i) => li.querySelector('a').addEventListener('click', e =>
 }));
 function select(i) { wheelTarget = i; show(ids[i]); }
 
-/* --- ASCII-глаз --- */
+/* --- Глаз ---
+   Устройство подсмотрено у глаза из HANCORE-linux/rumb (MIT): веки — две дуги
+   окружностей, белок в редких точках (гуще к уголкам), по белку идёт «дождь»
+   из символов кода, крупная радужка с радиальными волокнами и волнистым
+   кольцом, в зрачке — строки кода. Код свой, на canvas 2D. Взгляд — на
+   пружине: за курсором (пунктир — линия взгляда), без мыши глаз сам
+   поглядывает по сторонам. Моргает. */
 const eye = (() => {
-  const c = $('eye'), read = $('eye-read');
-  let src = 'public static void main(String[] args) { return repository.findAll(); } SELECT * FROM accounts WHERE status = 1; ';
+  const box = $('eye-box'), c = $('eye'), read = $('eye-read'), gaze = $('gaze'), gl = $('gaze-line');
+  let src = 'public ResponseEntity<Rates> rates() { return service.today(); } select * from accounts where status = 1; ';
   fetch('/v8/app.js').then(r => r.text()).then(t => { src = t.replace(/[^\x21-\x7e]+/g, ' '); }).catch(() => {});
-  let px = 0, py = 0, open = 1, blinkAt = performance.now() + 2500, blinkT = -1, acc = 0;
+  const noise = i => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+  const dots = Array.from({ length: 220 }, (_, i) => [noise(i * 3 + 1) * 2 - 1, noise(i * 3 + 2) * 2 - 1, .4 + noise(i * 3 + 3) * .7]);
+  const fibers = Array.from({ length: 110 }, (_, k) => [k / 110 * Math.PI * 2 + (noise(k * 5) - .5) * .03, (noise(k * 5 + 1) - .5) * .12, .86 + .12 * noise(k * 5 + 2), Math.floor(noise(k * 5 + 3) * 4)]);
+  let gx = 0, gy = 0, vx = 0, vy = 0, open = 1, blinkAt = 2500, blinkT = -1, acc = 0, clock = 0;
+  let wanderAt = 0, wx = 0, wy = 0;
+
+  function almond(g, cx, cy, hw, ud, ld) {
+    const arc = d => { const b = Math.max(.01, Math.abs(d)); const R = (hw * hw + b * b) / (2 * b); return { R, half: Math.asin(Math.min(1, hw / R)) }; };
+    const u = arc(ud), l = arc(ld);
+    const p = new Path2D();
+    p.arc(cx, cy - Math.max(.01, ud) + u.R, u.R, -Math.PI / 2 - u.half, -Math.PI / 2 + u.half);
+    p.arc(cx, cy + Math.max(.01, ld) - l.R, l.R, Math.PI / 2 - l.half, Math.PI / 2 + l.half);
+    p.closePath();
+    const upper = new Path2D(); upper.arc(cx, cy - Math.max(.01, ud) + u.R, u.R, -Math.PI / 2 - u.half, -Math.PI / 2 + u.half);
+    const lower = new Path2D(); lower.arc(cx, cy + Math.max(.01, ld) - l.R, l.R, Math.PI / 2 - l.half, Math.PI / 2 + l.half);
+    return { p, upper, lower };
+  }
+
   return {
     draw(dt, t) {
-      if (narrow()) return;
-      acc += dt; if (acc < 1 / 24) return; acc = 0;
+      if (getComputedStyle(box).display === 'none') return;
+      acc += dt; clock += dt;
+      if (acc < 1 / 30) return;
+      const step = acc; acc = 0;
       const { g, w, h } = fit(c);
-      const r = c.getBoundingClientRect(), ex = r.left + w / 2, ey = r.top + h / 2;
-      const dx = mx - ex, dy = my - ey, dist = Math.hypot(dx, dy) + 160;
-      px += (dx / dist - px) * .25; py += (dy / dist - py) * .25;
-      if (t > blinkAt && blinkT < 0) blinkT = 0;
-      if (blinkT >= 0) { blinkT += 1 / 24; open = Math.abs(Math.cos(Math.min(1, blinkT / .22) * Math.PI)); if (blinkT > .22) { blinkT = -1; open = 1; blinkAt = t + 2500 + Math.random() * 4500; } }
-      g.clearRect(0, 0, w, h);
-      g.font = '7px "IBM Plex Mono", monospace'; g.textBaseline = 'top';
-      // миндалина: резкий контур, бледный белок, плотная радужка с прожилками, пустой зрачок
-      const cw = 4.2, chh = 6, a = w * .47, b = h * .4 * Math.max(.04, open);
-      const icx = w / 2 + px * a * .36, icy = h / 2 + py * b * .28;
-      const ri = h * .26, rp = h * (.09 + .015 * Math.sin(t / 900));
-      let k = Math.floor(t / 120) % Math.max(1, src.length - 400);
-      for (let y = 0; y < h; y += chh) for (let x = 0; x < w; x += cw) {
-        const nx = (x + cw / 2 - w / 2) / a, ny = (y + chh / 2 - h / 2);
-        const lim = b * (1 - nx * nx) * (1 - .15 * nx * nx);
-        if (Math.abs(nx) > 1 || Math.abs(ny) > lim) continue;
-        const ch = src[k++ % src.length];
-        const ex = x + cw / 2 - icx, ey = y + chh / 2 - icy, d = Math.hypot(ex, ey);
-        if (d < rp) continue;
-        const edge = 1 - Math.abs(ny) / Math.max(1, lim);
-        if (d < ri) {
-          const streak = .55 + .45 * Math.abs(Math.sin(Math.atan2(ey, ex) * 7));
-          g.globalAlpha = (d < rp + 4 || d > ri - 4) ? 1 : .55 + .4 * streak;
-          g.fillStyle = colors.ink;
-        } else {
-          g.globalAlpha = edge < .2 ? .85 : .16 + .12 * (1 - edge);
-          g.fillStyle = edge < .2 ? colors.ink : colors.dim;
-        }
-        g.fillText(ch, x, y);
+      const r = c.getBoundingClientRect();
+      const hw = Math.min(w * .47, h * .47 / .608) * .96, ud0 = hw * .608, ld0 = hw * .5;
+      const cx = w / 2, cy = h / 2 + (ud0 - ld0) / 2;
+      const ex = r.left + cx, ey = r.top + cy;
+
+      // куда смотреть: на курсор, а без мыши — сам по сторонам
+      const tracking = performance.now() - lastMouse < 1800 && !narrow();
+      let tx, ty;
+      if (tracking) { tx = mx; ty = my; }
+      else {
+        if (t > wanderAt) { wanderAt = t + 900 + Math.random() * 1800; wx = (Math.random() - .5) * 1.6; wy = (Math.random() - .5) * 1.2; }
+        tx = ex + wx * 400; ty = ey + wy * 300;
       }
-      if (open > .3) { g.globalAlpha = .9; g.fillStyle = colors.ink; g.fillRect(icx - rp * .45, icy - rp * .55, 2.2, 2.2); }
+      const ax = clamp((tx - ex) / 420, -1, 1), ay = clamp((ty - ey) / 260, -1, 1);
+      // пружина: быстрые саккады, мягкая остановка
+      vx += ((ax - gx) * 120 - vx * 18) * step; vy += ((ay - gy) * 120 - vy * 18) * step;
+      gx += vx * step; gy += vy * step;
+      if (reduced) { gx = ax; gy = ay; }
+
+      if (!reduced && t > blinkAt && blinkT < 0) blinkT = 0;
+      if (blinkT >= 0) { blinkT += step; open = Math.abs(Math.cos(Math.min(1, blinkT / .2) * Math.PI)); if (blinkT > .2) { blinkT = -1; open = 1; blinkAt = t + 2200 + Math.random() * 5000; } }
+
+      const ud = ud0 * Math.max(.02, open), ld = ld0 * Math.max(.02, open);
+      const { p, upper, lower } = almond(g, cx, cy, hw, ud, ld);
+      const ri = hw * .5, rp = ri * (.46 + .06 * Math.sin(t / 1300));
+      const icx = cx + gx * hw * .3, icy = cy + gy * hw * .1;
+
+      g.clearRect(0, 0, w, h);
+      g.save(); g.clip(p);
+      // белок и точки
+      g.fillStyle = colors.ink; g.globalAlpha = .045; g.fill(p);
+      dots.forEach(([nx, ny, s]) => {
+        const edge = nx * nx;
+        g.globalAlpha = .06 + .3 * edge; g.fillRect(cx + nx * hw, cy + ny * ud0, s, s);
+      });
+      // дождь из символов кода, радужку обходит
+      g.font = '8px "IBM Plex Mono", monospace'; g.textBaseline = 'alphabetic';
+      const px = 6.2, pyc = 8.5, cols = Math.floor(2 * hw / px), rows = Math.ceil((ud0 + ld0) / pyc);
+      const left = cx - cols * px / 2, top = cy - ud0;
+      for (let col = 0; col < cols; col++) {
+        const speed = 4 + 3.5 * noise(col * 17 + 5), period = 12 + 12 * noise(col * 17 + 7), phase = noise(col * 17 + 11) * period;
+        const run = (reduced ? 30 : clock) * speed + phase, x = left + col * px;
+        for (let row = 0; row < rows; row++) {
+          const behind = run - row; if (behind < 0) continue;
+          const drop = Math.floor(behind / period), dist = behind - drop * period;
+          const len = Math.min(period - 2, 5 + 8 * noise(col * 31 + drop * 7));
+          if (dist > len) continue;
+          const y = top + (row + 1) * pyc;
+          if (Math.hypot(x + 2 - icx, y - 3 - icy) < ri + 3) continue;
+          const ch = src[(Math.floor(noise(col * 13 + drop) * src.length) + row) % src.length];
+          if (!ch || ch === ' ') continue;
+          const trail = Math.pow(Math.max(0, 1 - dist / len), 1.6), spark = Math.exp(-Math.max(0, dist - .4) * 2.2);
+          g.globalAlpha = Math.min(1, .3 * trail + .55 * spark); g.fillText(ch, x, y);
+        }
+      }
+      // радужка: тон, волокна, волнистое кольцо, контуры
+      g.globalAlpha = 1; g.fillStyle = colors.bg;
+      g.beginPath(); g.arc(icx, icy, ri, 0, Math.PI * 2); g.fill();
+      g.fillStyle = colors.ink; g.globalAlpha = .08; g.fill();
+      g.strokeStyle = colors.ink; g.lineWidth = .6;
+      for (let b = 0; b < 4; b++) {
+        g.globalAlpha = .14 + .18 * (b + .5) / 4; g.beginPath();
+        fibers.forEach(([a, bend, outer, bucket]) => {
+          if (bucket !== b) return;
+          const r0 = rp * 1.12, r1 = ri * outer, mid = (r0 + r1) / 2, an = a + clock * .02;
+          g.moveTo(icx + Math.cos(an) * r0, icy + Math.sin(an) * r0);
+          g.quadraticCurveTo(icx + Math.cos(an + bend) * mid, icy + Math.sin(an + bend) * mid, icx + Math.cos(an) * r1, icy + Math.sin(an) * r1);
+        });
+        g.stroke();
+      }
+      g.globalAlpha = .45; g.beginPath();
+      for (let s = 0; s <= 120; s++) {
+        const an = s / 120 * Math.PI * 2, rr = rp + (ri - rp) * .34 + Math.sin(an * 11 + .7) * ri * .025;
+        s ? g.lineTo(icx + Math.cos(an) * rr, icy + Math.sin(an) * rr) : g.moveTo(icx + Math.cos(an) * rr, icy + Math.sin(an) * rr);
+      }
+      g.stroke();
+      g.globalAlpha = .9; g.lineWidth = 1.4; g.beginPath(); g.arc(icx, icy, ri, 0, Math.PI * 2); g.stroke();
+      g.globalAlpha = .25; g.lineWidth = .6; g.beginPath(); g.arc(icx, icy, ri * 1.03, 0, Math.PI * 2); g.stroke();
+      // зрачок со строками кода
+      g.globalAlpha = 1; g.fillStyle = colors.ink; g.beginPath(); g.arc(icx, icy, rp, 0, Math.PI * 2); g.fill();
+      g.save(); g.beginPath(); g.arc(icx, icy, rp - 2, 0, Math.PI * 2); g.clip();
+      g.fillStyle = colors.bg; g.font = '6px "IBM Plex Mono", monospace'; g.globalAlpha = .9;
+      const off = Math.floor(clock * 3) % Math.max(1, src.length - 200);
+      for (let i = 0; i < 6; i++) {
+        const ly = icy - rp + 6 + i * 6.5, chord = Math.sqrt(Math.max(0, rp * rp - (ly - 2 - icy) ** 2));
+        const n = Math.max(0, Math.floor((chord * 2 - 6) / 3.6));
+        g.fillText(src.substr(off + i * 37, n), icx - n * 1.8, ly);
+      }
+      g.restore();
+      g.globalAlpha = .55; g.strokeStyle = colors.ink; g.lineWidth = .6; g.beginPath(); g.arc(icx, icy, rp * 1.14, 0, Math.PI * 2); g.stroke();
+      g.restore();
+      // веки
+      g.strokeStyle = colors.ink; g.globalAlpha = .95; g.lineWidth = 1.3; g.stroke(upper);
+      g.globalAlpha = .55; g.lineWidth = .9; g.stroke(lower);
       g.globalAlpha = 1;
-      if (read) read.textContent = `['pupil:u'] ${(rp / ri).toFixed(7)}\n${(.5 + px / 2).toFixed(7)}\n${(.5 + py / 2).toFixed(7)}\n${open < 1 ? 'blink' : 'None'}`;
+
+      if (read) read.textContent = `['pupil:u'] ${(rp / ri).toFixed(7)}\n${(.5 + gx / 2).toFixed(7)}\n${(.5 + gy / 2).toFixed(7)}\n${open < 1 ? 'blink' : tracking ? 'tracking' : 'None'}`;
+      // линия взгляда к курсору
+      const on = tracking && open > .5;
+      gaze.classList.toggle('on', on);
+      if (on) {
+        gl.setAttribute('x1', (r.left + icx).toFixed(1)); gl.setAttribute('y1', (r.top + icy).toFixed(1));
+        gl.setAttribute('x2', mx.toFixed(1)); gl.setAttribute('y2', my.toFixed(1));
+      }
     },
   };
 })();
@@ -604,11 +700,12 @@ function loop(t) {
   win.requestAnimationFrame(loop);
   const dt = Math.min(.05, last ? (t - last) / 1000 : .016); last = t;
   keys.draw(dt);
+  eye.draw(dt, t);
   if (root.classList.contains('desk-on')) {
     const before = wheelPos;
     if (dragY === null) wheelPos += (wheelTarget - wheelPos) * (reduced ? 1 : 1 - Math.exp(-dt * 9));
     if (Math.abs(before - wheelPos) > .0005 || !drawWheel.done) { drawWheel(); drawWheel.done = true; }
-    eye.draw(dt, t);
+
     clockAcc += dt;
     if (clockAcc >= .5) {
       clockAcc = 0;
