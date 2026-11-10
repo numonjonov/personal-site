@@ -215,7 +215,7 @@ void main() { vec2 p = gl_PointCoord - 0.5; float a = exp(-dot(p, p) * 18.0) * v
 const TEXT_VS = `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
 const TEXT_FS = `
 uniform sampler2D uTex;
-uniform float uReveal, uTime, uBright;
+uniform float uReveal, uTime, uBright, uVis;
 uniform vec2 uGrid;
 varying vec2 vUv;
 float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -256,7 +256,7 @@ void main() {
   }
   halo = smoothstep(0.0, 0.3, halo / 24.0) * 0.62 * smoothstep(0.0, 0.5, uReveal);
   vec3 col = vec3(r, gc, b) * uBright;
-  gl_FragColor = vec4(col * a, a + halo * (1.0 - a));
+  gl_FragColor = vec4(col * a, a + halo * (1.0 - a)) * uVis;   // uVis: gone before the camera reaches the plane
 }`;
 
 const ORB_FS = `
@@ -363,6 +363,14 @@ async function start() {
     for (let ox = -3; ox <= 3; ox += 1) for (let oz = -6; oz <= 6; oz += 1) hmax = Math.max(hmax, terrain(x + ox, z + oz));
     pts.push(new THREE.Vector3(x, hmax + 1.2, z));
   }
+  // высоты сглаживаются только вверх: ложбины между дюнами заполняются, вершины
+  // скругляются за счёт соседей. Иначе камера ныряет в ложбину и взгляд
+  // дёргается на ±25° за пару шагов скролла (так было между LOG и LET'S TALK)
+  const raw = pts.map(p => p.y), ys = raw.slice();
+  for (let it = 0; it < 24; it++) {
+    for (let i = 1; i < ys.length - 1; i++) ys[i] = Math.max(raw[i], ys[i], (ys[i - 1] + ys[i] * 2 + ys[i + 1]) / 4);
+  }
+  pts.forEach((p, i) => { p.y = ys[i]; });
   const curve = new THREE.CatmullRomCurve3(pts, false, 'centripetal');
   // кадр камеры в точке пути t: позиция над песком с запасом + точка взгляда
   const probe = new THREE.Vector3();
@@ -376,7 +384,9 @@ async function start() {
       for (let ox = -1.5; ox <= 1.5; ox += 1.5) ground = Math.max(ground, terrain(probe.x + ox, probe.z));
     }
     pos.y = Math.max(pos.y, ground + 1.05);
-    lk.y = Math.max(lk.y, pos.y - 1.4) - .12;
+    // наклон взгляда держим в пределах −9°…+3°: камера плывёт, а не кивает
+    const h = Math.hypot(lk.x - pos.x, lk.z - pos.z);
+    lk.y = pos.y + clamp(lk.y - pos.y, -.16 * h, .05 * h) - .12;
   }
 
   /* ---- песок ---- */
@@ -412,7 +422,7 @@ async function start() {
     transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
   }));
   sand.frustumCulled = false;
-  if (location.hostname === "localhost") win.__v12 = { sandU, met: () => met };
+  if (location.hostname === "localhost") win.__v12 = { sandU, met: () => met, camAt, terrain, curve };
   scene.add(sand);
 
   /* ---- звёзды ---- */
@@ -480,7 +490,7 @@ async function start() {
     const tex = new THREE.CanvasTexture(tc.canvas);
     tex.minFilter = THREE.LinearFilter; tex.generateMipmaps = false;
     const w = worldW, h = worldW * tc.canvas.height / tc.canvas.width;
-    const u = { uTex: { value: tex }, uReveal: { value: 0 }, uTime: sandU.uTime, uBright: { value: bright },
+    const u = { uTex: { value: tex }, uReveal: { value: 0 }, uTime: sandU.uTime, uBright: { value: bright }, uVis: { value: 1 },
       uGrid: { value: new THREE.Vector2(tc.canvas.width / tc.cellW, tc.canvas.height / tc.lineH) } };
     // premultiplied: цвет букв плюс тёмный ореол, который приглушает песок за строкой
     const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.ShaderMaterial({ vertexShader: TEXT_VS, fragmentShader: TEXT_FS, uniforms: u, transparent: true, depthWrite: false, depthTest: false, blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor, blendSrcAlpha: THREE.OneFactor, blendDstAlpha: THREE.OneMinusSrcAlphaFactor }));
@@ -602,7 +612,7 @@ async function start() {
   gateBtn.addEventListener('click', enter);
 
   /* ---- кадр ---- */
-  const camPos = new THREE.Vector3(), look = new THREE.Vector3(), tmp = new THREE.Vector3(), ray = new THREE.Vector3();
+  const camPos = new THREE.Vector3(), look = new THREE.Vector3(), tmp = new THREE.Vector3(), ray = new THREE.Vector3(), camFwd = new THREE.Vector3(), tmpV = new THREE.Vector3();
   let last = 0, time = 0, wavePh = 0;
   function frame(t) {
     win.requestAnimationFrame(frame);
@@ -643,11 +653,18 @@ async function start() {
     if (!reduced) stepMeteor(time, ie);
 
     // тексты: проявляются на подлёте, глитчем уходят, когда проехали
+    // при быстром скролле глитч не успевает отыграть, поэтому надпись ещё и гаснет
+    // по глубине: к 5 м перед камерой её уже нет, сквозь буквы камера не пролетает
+    const ce = camera.matrixWorld.elements;
+    camFwd.set(-ce[8], -ce[9], -ce[10]);
     texts.forEach(x => {
       const d = x.at - cur;
       const want = (d < .065 && d > -.03 && intro > .35) ? 1 : 0;
       const u = x.u.uReveal;
       u.value = reduced ? want : clamp(u.value + Math.sign(want - u.value) * dt * (want ? .85 : 1.4), 0, 1);
+      const depth = tmpV.copy(x.mesh.position).sub(camera.position).dot(camFwd);
+      x.u.uVis.value = smooth(5, 7.4, depth);
+      x.mesh.visible = u.value > 0 && depth > 5;
     });
 
     // постобработка: сцена → яркое → размытие ×2 масштаба → сложение
