@@ -86,12 +86,14 @@ uniform vec2 uMouse;
 uniform vec3 uCam;
 attribute vec3 aNormal;
 attribute float aRnd, aRnd2, aSize;
-varying float vAlpha, vRnd, vRnd2, vBlur, vLight, vDust;
-varying vec3 vN;
+uniform vec3 uLightDir;
+varying float vAlpha, vBlur, vLight, vDust, vGrey;
+varying vec2 vRot;
+varying vec4 vLA, vLB, vLR;
 ${SNOISE}
+float hash12(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * .1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 void main() {
   vec3 p = position;
-  vRnd = aRnd; vRnd2 = aRnd2;
 
   // intro: grains rise from under the dunes, near ones first
   float dCam = length(p.xz - uCam.xz);
@@ -143,39 +145,47 @@ void main() {
   // the orb lights sand near the cursor
   vec2 sd = gl_Position.xy / gl_Position.w - uMouse; sd.x *= uAspect;
   vLight = max(vLight, exp(-dot(sd, sd) * 10.0) * uMouseF);
-  vN = normalize(normalMatrix * aNormal);
+
+  // invisible grains (fog, behind the lens) cost no pixels at all
+  if (vAlpha < 0.003) { gl_PointSize = 0.0; gl_Position = vec4(2.0, 2.0, 2.0, 1.0); return; }
+
+  // everything that is the same for every pixel of a grain is done here once:
+  // matte grey light and the layout of the four soft lobes
+  vec3 N = normalize(normalMatrix * aNormal), L = normalize(uLightDir);
+  float diff = clamp((dot(N, L) + 0.4) / 1.4, 0.0, 1.0);
+  vGrey = mix(0.56, 0.82, aRnd2) * (0.62 + 0.38 * diff);
+  vRot = vec2(cos(aRnd * 6.2831853), sin(aRnd * 6.2831853));
+  vLA = (vec4(hash12(vec2(aRnd * 53.0, 0.0)), hash12(vec2(aRnd2 * 71.0, 7.0)), hash12(vec2(aRnd * 53.0, 1.0)), hash12(vec2(aRnd2 * 71.0, 8.0))) - 0.5) * 0.2;
+  vLB = (vec4(hash12(vec2(aRnd * 53.0, 2.0)), hash12(vec2(aRnd2 * 71.0, 9.0)), hash12(vec2(aRnd * 53.0, 3.0)), hash12(vec2(aRnd2 * 71.0, 10.0))) - 0.5) * 0.2;
+  vec4 r = mix(vec4(0.1), vec4(0.17), vec4(hash12(vec2(0.0, aRnd * 13.0)), hash12(vec2(3.1, aRnd * 13.0)), hash12(vec2(6.2, aRnd * 13.0)), hash12(vec2(9.3, aRnd * 13.0))));
+  vLR = 1.0 / (r * r);
 }`;
 
 const SAND_FS = `
-uniform float uTime, uExposure;
-uniform vec3 uLightDir;
-varying float vAlpha, vRnd, vRnd2, vBlur, vLight, vDust;
-varying vec3 vN;
-float hash12(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * .1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
-mat2 rot(float a){ float s = sin(a), c = cos(a); return mat2(c, -s, s, c); }
+uniform float uExposure;
+varying float vAlpha, vBlur, vLight, vDust, vGrey;
+varying vec2 vRot;
+varying vec4 vLA, vLB, vLR;
 void main() {
-  // fluffy grain: a clump of 4 soft lobes, each grain with its own layout,
+  // fluffy grain: a clump of 4 soft lobes (layout comes from the vertex shader),
   // plus a faint halo; near the lens it melts into a flat soft disc
-  vec2 pp = rot(vRnd * 6.2831853) * (gl_PointCoord - 0.5);
-  float d = length(pp);
-  float lobes = 0.0;
-  for (int i = 0; i < 4; i++) {
-    float fi = float(i);
-    vec2 o = (vec2(hash12(vec2(vRnd * 53.0, fi)), hash12(vec2(vRnd2 * 71.0, fi + 7.0))) - 0.5) * 0.2;
-    float r = mix(0.1, 0.17, hash12(vec2(fi * 3.1, vRnd * 13.0)));
-    vec2 q = pp - o;
-    lobes = max(lobes, exp(-dot(q, q) / (r * r)));
+  vec2 pc = gl_PointCoord - 0.5;
+  vec2 pp = vec2(vRot.x * pc.x - vRot.y * pc.y, vRot.y * pc.x + vRot.x * pc.y);
+  float d2 = dot(pp, pp);
+  float a;
+  if (vBlur > 0.98) {
+    a = (1.0 - smoothstep(0.18, 0.5, sqrt(d2))) * 0.42;
+  } else {
+    vec2 q0 = pp - vLA.xy, q1 = pp - vLA.zw, q2 = pp - vLB.xy, q3 = pp - vLB.zw;
+    vec4 e = exp(-vec4(dot(q0, q0), dot(q1, q1), dot(q2, q2), dot(q3, q3)) * vLR);
+    float lobes = max(max(e.x, e.y), max(e.z, e.w));
+    float halo = exp(-d2 * 16.0) * 0.32;
+    a = max(lobes, halo) * (1.0 - smoothstep(0.16, 0.25, d2));
+    a = mix(a, (1.0 - smoothstep(0.18, 0.5, sqrt(d2))) * 0.42, vBlur);
   }
-  float halo = exp(-d * d * 16.0) * 0.32;
-  float a = max(lobes, halo) * (1.0 - smoothstep(0.4, 0.5, d));
-  a = mix(a, (1.0 - smoothstep(0.18, 0.5, d)) * 0.42, vBlur);
   if (a * vAlpha < 0.01) discard;
 
-  // matte grey light: the lit side of a dune is only a little brighter
-  vec3 N = normalize(vN), L = normalize(uLightDir);
-  float diff = clamp((dot(N, L) + 0.4) / 1.4, 0.0, 1.0);
-  float g = mix(0.56, 0.82, vRnd2) * (0.62 + 0.38 * diff);
-  vec3 col = vec3(g, g * 0.995, g * 0.985);
+  vec3 col = vec3(vGrey, vGrey * 0.995, vGrey * 0.985);
   col += vLight * 0.7;
   col += vDust * 0.35;
   gl_FragColor = vec4(col * uExposure, a * vAlpha * 0.9 * (1.0 - 0.45 * vBlur));
@@ -529,7 +539,7 @@ async function start() {
     texts.push(mkText(hc, headW, 1.25, ch.t, 9, sx, -ch.side * .3, ch.lines ? 1.05 : .55, ch.side * -.2, blk));
     if (lc) texts.push(mkText(lc, lw, 1, ch.t + .004, 8.4, sx, ch.side * (lw / 2 - headW / 2) * .5, -.05, ch.side * -.28, blk));
   });
-  if (win.__v12) Object.assign(win.__v12, { texts, camera, getCur: () => cur });
+  if (win.__v12) Object.assign(win.__v12, { texts, camera, renderer, scene, getCur: () => cur });
 
   /* ---- постобработка ---- */
   const half = renderer.capabilities.isWebGL2 ? THREE.HalfFloatType : THREE.UnsignedByteType;
@@ -550,6 +560,7 @@ async function start() {
 
   function resize() {
     const w = win.innerWidth, h = win.innerHeight;
+    renderer.setPixelRatio(dpr);
     renderer.setSize(w, h, false);
     camera.aspect = w / h; camera.updateProjectionMatrix();
     const W = Math.floor(w * dpr), H = Math.floor(h * dpr);
@@ -563,6 +574,11 @@ async function start() {
   }
   resize();
   win.addEventListener('resize', resize);
+  // всё, что нужно видеокарте, — заранее: текстуры глав и шейдеры. Иначе каждая
+  // глава грузит свою текстуру в момент появления, и переход между главами
+  // дёргается (5–16 мс на кадр — как раз перед LET'S TALK)
+  texts.forEach(x => renderer.initTexture(x.u.uTex.value));
+  renderer.compile(scene, camera);
 
   /* ---- ввод: виртуальный скролл с инерцией, мышь ---- */
   let target = 0, cur = 0, vel = 0, entered = false;
