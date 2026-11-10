@@ -1,0 +1,126 @@
+/* v12 — по мотивам aboutluca.com. Сцена целиком в WebGL (app.js),
+   здесь только интерфейс поверх неё, вход и текстовая версия. */
+
+:root {
+  --bg: #151515;
+  --ink: #e9e7e2;
+  --dim: rgba(233, 231, 226, .45);
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font: 400 13px/1.5 var(--mono); -webkit-font-smoothing: antialiased; }
+a { color: inherit; }
+:focus-visible { outline: 1px solid var(--ink); outline-offset: 3px; }
+
+/* по умолчанию (без JS/WebGL) — текстовая версия */
+.gl, .gate, .ui-top, .ui-bottom, .ruler, .wave, .text-link, .outro { display: none; }
+.text { max-width: 640px; margin: 0 auto; padding: 60px 20px 80px; }
+.text h1 { font: italic 600 40px/1.1 "Chakra Petch", var(--mono); letter-spacing: .04em; text-transform: uppercase; margin: 0 0 10px; }
+.text h2 { font: 500 12px var(--mono); letter-spacing: .2em; text-transform: uppercase; color: var(--dim); margin: 40px 0 10px; }
+.text ul { padding-left: 18px; }
+.text li { margin-bottom: 6px; }
+.text-back { margin-top: 40px; display: none; }
+
+/* с WebGL: всё на одном экране, скролл виртуальный */
+.gl-on body { overflow: hidden; }
+.gl-on .text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.gl-on.text-mode body { overflow: auto; }
+.gl-on.text-mode .text { position: static; width: auto; height: auto; clip: auto; overflow: visible; }
+.gl-on.text-mode .text-back { display: block; }
+.gl-on:not(.text-mode) .gl { display: block; position: fixed; inset: 0; width: 100%; height: 100%; }
+.gl-on:not(.text-mode) .gate { display: flex; }
+.gl-on.entered:not(.text-mode) .ui-top,
+.gl-on.entered:not(.text-mode) .ui-bottom,
+.gl-on.entered:not(.text-mode) .ruler,
+.gl-on.entered:not(.text-mode) .wave,
+.gl-on.entered:not(.text-mode) .text-link { display: flex; }
+.gl-on.entered:not(.text-mode) .outro:not([hidden]) { display: block; }
+
+/* ---------- вход ---------- */
+.gate {
+  position: fixed; inset: 0; z-index: 20;
+  align-items: center; justify-content: center; gap: 14px;
+  background: var(--bg);
+  transition: opacity 1.4s ease, visibility 0s linear 1.4s;
+}
+.gate.out { opacity: 0; visibility: hidden; }
+.gate-line { display: block; height: 1px; width: 0; transition: width .5s ease; }
+.gate-line.l { background: linear-gradient(90deg, transparent, rgba(233, 231, 226, .35)); }
+.gate-line.r { background: linear-gradient(90deg, rgba(233, 231, 226, .35), transparent); }
+.gate-btn {
+  font: italic 400 12px var(--mono); letter-spacing: .45em; padding: 6px 0 6px .45em;
+  color: var(--dim); background: none; border: 0; cursor: default;
+  transition: color .4s ease, letter-spacing .6s ease;
+}
+.gate-btn.ready { font-style: normal; font-weight: 500; color: var(--ink); cursor: pointer; }
+.gate-btn.ready:hover { letter-spacing: .6em; }
+
+/* ---------- интерфейс ---------- */
+.ui-top, .ui-bottom { position: fixed; left: 30px; right: 30px; z-index: 10; align-items: center; justify-content: space-between; pointer-events: none; animation: uiIn 1.6s ease both .6s; }
+.ui-top { top: 24px; }
+.ui-top > * , .ui-bottom > * { pointer-events: auto; }
+.name { font-size: 17px; text-decoration: none; letter-spacing: .02em; }
+.talk {
+  font: 500 14px var(--mono); letter-spacing: .04em; color: var(--ink);
+  background: rgba(21, 21, 21, .35); border: 1px solid rgba(233, 231, 226, .8);
+  border-radius: 999px; padding: 10px 40px; cursor: pointer;
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  transition: background .3s ease, color .3s ease;
+}
+.talk:hover { background: var(--ink); color: var(--bg); }
+.ui-bottom { bottom: 34px; justify-content: flex-start; gap: 44px; }
+.ui-bottom a { font: 500 12.5px var(--mono); letter-spacing: .04em; text-decoration: none; opacity: .9; }
+.ui-bottom a:hover { opacity: 1; text-decoration: underline; text-underline-offset: 4px; }
+@keyframes uiIn { from { opacity: 0; } }
+
+.ruler {
+  position: fixed; right: 34px; top: 50%; z-index: 10; translate: 0 -50%;
+  flex-direction: column; justify-content: space-between; align-items: flex-end;
+  height: 46vh; width: 40px;
+  animation: uiIn 1.6s ease both 1s;
+}
+.ruler::before { content: ""; position: absolute; right: 0; top: 0; bottom: 0; width: 1px; background: rgba(233, 231, 226, .15); }
+.ruler-fill { position: absolute; right: 0; top: 0; width: 1px; height: 0; background: var(--ink); }
+.ruler button {
+  position: relative; display: flex; align-items: center; gap: 10px;
+  font: 400 10px var(--mono); color: var(--dim); background: none; border: 0; padding: 0 0 0 10px; cursor: pointer;
+}
+.ruler button::after { content: ""; width: 6px; height: 1px; background: currentColor; }
+.ruler button.on, .ruler button:hover { color: var(--ink); }
+.ruler button span { opacity: 0; translate: 6px 0; transition: opacity .3s ease, translate .3s ease; white-space: nowrap; letter-spacing: .12em; }
+.ruler button:hover span, .ruler button.on span { opacity: 1; translate: 0 0; }
+
+.wave { position: fixed; right: 30px; bottom: 32px; z-index: 10; width: 26px; height: 14px; animation: uiIn 1.6s ease both .9s; }
+.wave path { fill: none; stroke: var(--ink); stroke-width: 1.2; stroke-linecap: round; }
+.text-link { position: fixed; left: 50%; bottom: 34px; z-index: 10; translate: -50% 0; font-size: 11px; color: var(--dim); text-decoration: none; letter-spacing: .08em; animation: uiIn 1.6s ease both 1.2s; }
+.text-link:hover { color: var(--ink); }
+
+/* ---------- финальная панель ---------- */
+.outro {
+  position: fixed; left: 50%; top: 50%; z-index: 12; translate: -50% -50%;
+  width: min(92vw, 520px); padding: 30px 32px 26px;
+  border: 1px solid rgba(233, 231, 226, .22); border-radius: 4px;
+  background: rgba(21, 21, 21, .55);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  animation: outroIn .9s cubic-bezier(.2, .7, .2, 1) both;
+}
+@keyframes outroIn { from { opacity: 0; translate: -50% -46%; filter: blur(6px); } }
+.outro-k { margin: 0 0 10px; font-size: 11px; letter-spacing: .25em; color: var(--dim); }
+.outro-t { margin: 0 0 20px; font-size: 14px; }
+.outro ul { list-style: none; margin: 0; padding: 0; }
+.outro li a { display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; border-top: 1px solid rgba(233, 231, 226, .14); text-decoration: none; font-size: 14px; }
+.outro li a i { font-style: normal; color: var(--dim); }
+.outro li a:hover i { color: var(--ink); }
+.outro-v { margin: 18px 0 0; font-size: 11px; color: var(--dim); }
+.outro-v a { text-decoration: none; margin-right: 4px; }
+.outro-v a:hover, .outro-v a[aria-current] { color: var(--ink); text-decoration: underline; }
+
+@media (max-width: 700px) {
+  .ui-top, .ui-bottom { left: 18px; right: 18px; }
+  .name { font-size: 14px; }
+  .talk { padding: 8px 18px; font-size: 12px; }
+  .ui-bottom { gap: 20px; bottom: 22px; }
+  .ruler { right: 16px; height: 34vh; }
+  .text-link { bottom: auto; top: 70px; }
+  .wave { bottom: 20px; right: 18px; }
+}

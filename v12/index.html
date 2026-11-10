@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Pahlavon Numonjonov — v12</title>
+<meta name="description" content="Pahlavon Numonjonov — backend engineer in Tashkent. Java, Spring Boot, Oracle." />
+<meta name="robots" content="noindex" />
+<meta name="theme-color" content="#151515" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23151515'/><circle cx='50' cy='50' r='9' fill='%23fff'/></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&family=Chakra+Petch:ital,wght@1,600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css?v=1" />
+</head>
+
+<body>
+<!-- 3D: пустыня из песчинок, путь камеры по скроллу, тексты в пространстве -->
+<canvas class="gl" id="gl" aria-hidden="true"></canvas>
+
+<!-- вход: LOADING → ENTER -->
+<div class="gate" id="gate">
+  <i class="gate-line l" id="gate-l"></i>
+  <button class="gate-btn" id="gate-btn" type="button" disabled>LOADING</button>
+  <i class="gate-line r" id="gate-r"></i>
+</div>
+
+<!-- интерфейс поверх сцены -->
+<header class="ui-top">
+  <a class="name" href="#" id="home">Pahlavon Numonjonov</a>
+  <button class="talk" id="talk" type="button">LET'S TALK</button>
+</header>
+<nav class="ui-bottom" aria-label="Links">
+  <a href="https://t.me/CustomAnnotation" rel="noopener">TELEGRAM</a>
+  <a href="https://github.com/numonjonov" rel="noopener">GITHUB</a>
+  <a href="mailto:pahlavon@numonjonov.com">EMAIL</a>
+</nav>
+<div class="ruler" id="ruler" aria-label="Chapters">
+  <span class="ruler-fill" id="ruler-fill"></span>
+</div>
+<svg class="wave" id="wave" viewBox="0 0 24 12" aria-hidden="true"><path id="wave-path" d="M1 6 Q 6.5 6 12 6 T 23 6" /></svg>
+<a class="text-link" href="#text" id="text-link">text version</a>
+
+<!-- финальная панель: живые ссылки -->
+<section class="outro" id="outro" aria-label="Contact" hidden>
+  <p class="outro-k">// LET'S TALK</p>
+  <p class="outro-t">Open to work — remote or on site. The fastest way to reach me is Telegram; I reply within 24 hours.</p>
+  <ul>
+    <li><a href="https://t.me/CustomAnnotation" rel="noopener">telegram <i>@CustomAnnotation</i></a></li>
+    <li><a href="mailto:pahlavon@numonjonov.com">email <i>pahlavon@numonjonov.com</i></a></li>
+    <li><a href="https://github.com/numonjonov" rel="noopener">github <i>numonjonov</i></a></li>
+    <li><a href="/resume.html">résumé <i>one page</i></a></li>
+  </ul>
+  <p class="outro-v">versions: <a href="/">main</a> <a href="/v2/">v2</a> <a href="/v3/">v3</a> <a href="/v4/">v4</a> <a href="/v5/">v5</a> <a href="/v6/">v6</a> <a href="/v7/">v7</a> <a href="/v8/">v8</a> <a href="/v10/">v10</a> <a href="/v11/">v11</a> <a href="/v12/" aria-current="page">v12</a></p>
+</section>
+
+<!-- текстовая версия: для читалок, без WebGL и по ссылке «text version» -->
+<main class="text" id="text">
+  <h1>Pahlavon Numonjonov</h1>
+  <p>Backend engineer in Tashkent — Java, Spring Boot, Oracle. Open to work.</p>
+  <h2>About</h2>
+  <p>I don't build websites. I build the layer underneath them. Most of what I write talks to something older than itself: a core banking system on Oracle, a legacy JavaEE app on WebLogic, a state identity provider without an SDK.</p>
+  <h2>Work</h2>
+  <ul>
+    <li><a href="/work/uz-status.html">uz-status</a> — public uptime monitor for the services Uzbekistan runs on. Java 21, Spring Boot, PostgreSQL.</li>
+    <li><a href="/work/exchange.html">exchange</a> — currency tracker with zero dependencies. Python standard library only.</li>
+    <li><a href="/work/tgagent.html">tgagent</a> — Telegram Business assistant with a Gemini → Groq fallback chain.</li>
+    <li><a href="/work/tekstlybot.html">tekstlybot</a> — compression and speech-to-text inside a 256 MB heap.</li>
+    <li><a href="/work/plusline.html">plusline / keyline</a> — production Telegram bots with payments.</li>
+    <li><a href="/work/downloader.html">downloader</a> — send a link, get the file.</li>
+    <li><a href="/work/myid.html">MyID · e-key</a> — bank integrations, in production.</li>
+  </ul>
+  <h2>Stack</h2>
+  <p>Java 21/17, Spring Boot, Spring Security, PL/SQL, Oracle, PostgreSQL, SQLite, Python, Docker, Linux, Prometheus.</p>
+  <h2>Experience</h2>
+  <p>2025 — present. Backend engineer at a commercial bank in Tashkent: services around iABS, a wrapper for MyID, digital signatures with e-key on WebLogic, PL/SQL where the logic belongs in the database.</p>
+  <h2>Contact</h2>
+  <p><a href="https://t.me/CustomAnnotation" rel="noopener">Telegram @CustomAnnotation</a> · <a href="mailto:pahlavon@numonjonov.com">pahlavon@numonjonov.com</a> · <a href="https://github.com/numonjonov" rel="noopener">GitHub</a> · <a href="/resume.html">Résumé</a></p>
+  <p class="text-back"><a href="#" id="text-back">← back to the desert</a></p>
+</main>
+
+<script type="module" src="app.js?v=1"></script>
+</body>
+</html>
