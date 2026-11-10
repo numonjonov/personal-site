@@ -17,22 +17,15 @@
 <body>
 <a class="skip" href="#main">Skip to content</a>
 
-<!-- Оптика линзы: карта смещения (#lg-map) рисует app.js — выпуклое стекло,
-     центр слегка увеличивает, кромка сильно загибает фон внутрь.
-     Три смещения с разной силой для R, G, B — хроматическая аберрация на краю.
+<!-- Оптика линзы: карту смещения (#lg-map) рисует app.js. Как на liquidglass.dev:
+     стекло почти прозрачное, внутри фон 1:1 с лёгким увеличением, а вся
+     рефракция сидит в узком скосе у кромки. Без радуги и без перекраски.
      Работает только в Chromium; Safari и Firefox берут обычный blur из CSS. -->
 <svg width="0" height="0" aria-hidden="true" style="position:absolute">
   <filter id="lg" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse"
-          x="0" y="0" width="180" height="180" color-interpolation-filters="sRGB">
-    <feImage id="lg-map" x="0" y="0" width="180" height="180" preserveAspectRatio="none" result="map" />
-    <feDisplacementMap in="SourceGraphic" in2="map" scale="74" xChannelSelector="R" yChannelSelector="G" result="dr" />
-    <feColorMatrix in="dr" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="r" />
-    <feDisplacementMap in="SourceGraphic" in2="map" scale="68" xChannelSelector="R" yChannelSelector="G" result="dg" />
-    <feColorMatrix in="dg" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="g" />
-    <feDisplacementMap in="SourceGraphic" in2="map" scale="62" xChannelSelector="R" yChannelSelector="G" result="db" />
-    <feColorMatrix in="db" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="b" />
-    <feBlend in="r" in2="g" mode="screen" result="rg" />
-    <feBlend in="rg" in2="b" mode="screen" />
+          x="0" y="0" width="164" height="164" color-interpolation-filters="sRGB">
+    <feImage id="lg-map" x="0" y="0" width="164" height="164" preserveAspectRatio="none" result="map" />
+    <feDisplacementMap in="SourceGraphic" in2="map" scale="64" xChannelSelector="R" yChannelSelector="G" />
   </filter>
 </svg>
 
@@ -43,7 +36,7 @@
 <div class="grain" aria-hidden="true"></div>
 
 <!-- Линза следует за курсором с инерцией -->
-<div class="lens" id="lens" aria-hidden="true"><span class="glint"></span></div>
+<div class="lens" id="lens" aria-hidden="true"></div>
 
 <header class="bar glass" id="bar">
   <a class="brand" href="#top">Pahlavon <span>Numonjonov</span></a>

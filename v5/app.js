@@ -30,32 +30,32 @@
   }
 
   /* ---------- Линза ---------- */
-  /* Цель — положение мыши, линза догоняет с инерцией и на ходу
-     вытягивается по направлению движения, как капля. Над ссылками
-     и кнопками чуть раздувается. Только мышь: на тач, при
+  /* Как на liquidglass.dev: линза лениво плывёт за мышью с большой
+     инерцией и на ходу чуть вытягивается. Только мышь: на тач, при
      reduced-motion и после Tab линза прячется. */
   const lens = doc.getElementById('lens');
   if (!lens) return;
-  const SIZE = 180; // тот же размер, что в .lens и в фильтре #lg
+  const SIZE = 164; // тот же размер, что в .lens и в фильтре #lg
 
   /* Карта смещения для feDisplacementMap: R — сдвиг по x, G — по y,
-     128 — «не двигать». Внутри круга фон тянется к центру: в середине
-     слабо (лёгкое увеличение), к кромке всё сильнее — так ведёт себя
-     выпуклое стекло. За кругом карта нейтральна. */
+     128 — «не двигать». Почти вся линза — плоское стекло с еле заметным
+     увеличением; рефракция живёт в узком скосе у кромки и растёт по
+     дуге окружности, как на ребре толстого стекла. За кругом — ноль. */
   const map = doc.getElementById('lg-map');
   if (map) {
     const c = doc.createElement('canvas');
     c.width = c.height = SIZE;
     const g = c.getContext('2d');
     const img = g.createImageData(SIZE, SIZE), d = img.data;
-    const R = SIZE / 2, BEZEL = .62; // доля радиуса, где начинается загиб кромки
+    const R = SIZE / 2, BEZEL = .78; // доля радиуса, где начинается скос
     for (let py = 0; py < SIZE; py++) {
       for (let px = 0; px < SIZE; px++) {
         const dx = px + .5 - R, dy = py + .5 - R, dist = Math.hypot(dx, dy), r = dist / R;
         let ox = 0, oy = 0;
         if (r < 1 && dist > 0) {
-          const edge = r > BEZEL ? Math.pow((r - BEZEL) / (1 - BEZEL), 2) : 0;
-          const f = .4 * r + .6 * edge; // 0 в центре, 1 на самой кромке
+          const t = r > BEZEL ? (r - BEZEL) / (1 - BEZEL) : 0;
+          const edge = 1 - Math.sqrt(1 - t * t); // профиль скоса: круто у самого края
+          const f = .08 * r + .92 * edge;        // 0 в центре, 1 на самой кромке
           ox = -dx / dist * f; oy = -dy / dist * f;
           // последний пиксель кромки плавно гасим, чтобы не было ступеньки
           const fade = Math.min(1, (1 - r) * R / 1.5);
@@ -72,7 +72,7 @@
   const fine = win.matchMedia('(hover: hover) and (pointer: fine)');
   const allowed = () => fine.matches && !reduced.matches;
   let x = 0, y = 0, tx = 0, ty = 0, frame = 0, active = false, last = 0;
-  let stretch = 0, angle = 0, grow = 1, growTo = 1;
+  let stretch = 0, angle = 0;
 
   const hide = () => {
     active = false; last = 0; stretch = 0;
@@ -82,42 +82,34 @@
   const draw = t => {
     const dt = Math.min(64, last ? t - last : 16.67) / 16.67;
     last = t;
-    const k = 1 - Math.pow(.8, dt);
+    const k = 1 - Math.pow(.93, dt); // большая инерция: линза догоняет примерно за секунду
     const px = x, py = y;
     x += (tx - x) * k; y += (ty - y) * k;
 
-    // скорость → растяжение вдоль направления движения
+    // скорость → лёгкое растяжение вдоль направления движения
     const vx = (x - px) / dt, vy = (y - py) / dt, speed = Math.hypot(vx, vy);
     if (speed > .3) angle = Math.atan2(vy, vx);
-    const target = Math.min(.22, speed * .012);
-    stretch += (target - stretch) * (1 - Math.pow(.75, dt));
-    grow += (growTo - grow) * (1 - Math.pow(.8, dt));
+    const target = Math.min(.07, speed * .006);
+    stretch += (target - stretch) * (1 - Math.pow(.8, dt));
 
     const a = angle * 180 / Math.PI;
     lens.style.transform =
       'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0)' +
       ' rotate(' + a.toFixed(1) + 'deg)' +
-      ' scale(' + (grow * (1 + stretch)).toFixed(3) + ',' + (grow * (1 - stretch * .6)).toFixed(3) + ')' +
+      ' scale(' + (1 + stretch).toFixed(3) + ',' + (1 - stretch * .6).toFixed(3) + ')' +
       ' rotate(' + (-a).toFixed(1) + 'deg)';
 
-    const settled = Math.hypot(tx - x, ty - y) < .2 && stretch < .002 && Math.abs(growTo - grow) < .002;
+    const settled = Math.hypot(tx - x, ty - y) < .2 && stretch < .001;
     if (active && !settled) frame = win.requestAnimationFrame(draw);
     else { frame = 0; last = 0; }
   };
-  const kick = () => { if (active && !frame) frame = win.requestAnimationFrame(draw); };
   const move = e => {
     if (!allowed() || e.pointerType !== 'mouse') { hide(); return; }
     tx = e.clientX; ty = e.clientY;
     if (!active) { x = tx; y = ty; active = true; lens.setAttribute('data-visible', ''); }
-    kick();
-  };
-  const over = e => {
-    const hot = e.target instanceof Element && e.target.closest('a, button');
-    growTo = hot ? 1.18 : 1;
-    kick();
+    if (!frame) frame = win.requestAnimationFrame(draw);
   };
   doc.addEventListener('pointermove', move, { passive: true });
-  doc.addEventListener('pointerover', over, { passive: true });
   doc.addEventListener('pointerout', e => { if (!e.relatedTarget) hide(); });
   doc.addEventListener('keydown', e => { if (e.key === 'Tab') hide(); });
   doc.addEventListener('visibilitychange', () => { if (doc.hidden) hide(); });
