@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Pahlavon Numonjonov — v10</title>
+<meta name="description" content="Backend engineer in Tashkent. Java, Spring Boot, Oracle. Backend that talks to old systems." />
+<meta name="robots" content="noindex" />
+<meta name="theme-color" content="#ffffff" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000'/><text x='50' y='70' font-family='Arial Black,Arial,sans-serif' font-size='56' font-weight='900' fill='%23fff' text-anchor='middle'>N</text></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Instrument+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css?v=1" />
+</head>
+
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<!-- прелоадер: счётчик 000 → 100, один раз за сессию -->
+<div class="loader" id="loader" aria-hidden="true"><span id="loader-n">000</span></div>
+
+<!-- шапка поверх всего, инвертируется по фону (mix-blend-mode: difference) -->
+<header class="head">
+  <a class="logo" href="#top">NUMONJONOV</a>
+  <nav class="menu" id="menu" aria-label="Sections">
+    <button class="menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="menu-list">MENU <i>::</i></button>
+    <ul id="menu-list">
+      <li><a href="#works">WORKS</a></li>
+      <li><a href="#about">ABOUT</a></li>
+      <li><a href="#stack">STACK</a></li>
+      <li><a href="#log">LOG</a></li>
+      <li><a href="#contact">CONTACT</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="main">
+
+  <!-- ===== Hero: белый лист, слоган, кнопка, гигантский вордмарк ===== -->
+  <section class="hero" id="top">
+    <div class="hero-top">
+      <p class="tagline" data-lines>Backend that talks to old systems.<br />Because the bank still runs on Oracle.</p>
+      <a class="pill dark" href="https://t.me/CustomAnnotation" rel="noopener">WRITE ON TELEGRAM <i>→</i></a>
+    </div>
+    <h1 class="wordmark" aria-label="Pahlavon Numonjonov"><span class="wm" data-fit>NUMONJONOV</span></h1>
+    <div class="hero-foot">
+      <p>Backend engineer in Tashkent</p>
+      <p class="socials"><a href="https://t.me/CustomAnnotation" rel="noopener">TELEGRAM</a> <span>/</span> <a href="https://github.com/numonjonov" rel="noopener">GITHUB</a></p>
+      <p class="clock"><span>UTC+5</span><b id="clock">--:--</b></p>
+    </div>
+  </section>
+
+  <!-- ===== Шаг в сторону ===== -->
+  <section class="aside">
+    <h2 class="big reveal">Most code adds features.<br />I prefer fewer moving parts.</h2>
+    <div class="aside-row">
+      <p class="paren reveal">( The step aside )</p>
+      <p class="aside-text reveal">Most of what I write talks to something older than itself: a core banking system on Oracle, a legacy JavaEE app on WebLogic, a state identity provider without an SDK.</p>
+    </div>
+  </section>
+
+  <!-- ===== Карточка растёт при скролле: внутри 3D-объекты и буквы на орбите ===== -->
+  <section class="reel" id="reel">
+    <div class="reel-sticky">
+      <figure class="reel-card" id="reel-card">
+        <div class="reel-canvas" id="reel-canvas" aria-hidden="true"></div>
+        <div class="reel-fallback" aria-hidden="true"><span>P</span><span>A</span><span>H</span><span>L</span><span>A</span><span>V</span><span>O</span><span>N</span></div>
+        <figcaption><span>( Things I keep in orbit )</span><span class="mono">DRAG TO SPIN</span></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ===== Работы ===== -->
+  <section class="works" id="works">
+    <div class="works-head">
+      <h2 class="label-big">WORKS</h2>
+      <p class="big-right reveal">Good code communicates.<br />Great code goes unnoticed.</p>
+    </div>
+    <ol class="cards">
+      <li class="reveal"><a href="/work/uz-status.html"><small>UZ-STATUS</small><b>Uptime for the services Uzbekistan runs on.</b><span class="tile"><pre>Payme    ● 99.98%
+Click    ● 99.91%
+soliq.uz ◐ 97.40%</pre></span></a></li>
+      <li class="reveal"><a href="/work/exchange.html"><small>EXCHANGE</small><b>Currency rates with zero dependencies.</b><span class="tile"><pre>$ pip freeze | wc -l
+0
+USD/UZS 12 740 ▲</pre></span></a></li>
+      <li class="reveal"><a href="/work/tgagent.html"><small>TGAGENT</small><b>An assistant that falls back gracefully.</b><span class="tile"><pre>[gemini] 429
+[groq]   200 ok
+fallback</pre></span></a></li>
+      <li class="reveal"><a href="/work/tekstlybot.html"><small>TEKSTLYBOT</small><b>Speech to text inside 256 MB.</b><span class="tile"><pre>ffmpeg  → ogg
+whisper → txt
+heap 231/256</pre></span></a></li>
+      <li class="reveal"><a href="/work/plusline.html"><small>PLUSLINE</small><b>Two bots that take payments.</b><span class="tile"><pre>/start → onboarding
+/pay   → invoice
+systemd ● running</pre></span></a></li>
+      <li class="reveal"><a href="/work/downloader.html"><small>DOWNLOADER</small><b>Send a link, get the file.</b><span class="tile"><pre>→ https://…
+████████░░ 80%
+47.2 MB ok</pre></span></a></li>
+      <li class="reveal"><a href="/work/myid.html"><small>MYID · E-KEY</small><b>Identity and signatures inside a bank.</b><span class="tile"><pre>myid  auth
+e-key DVS
+source closed</pre></span></a></li>
+    </ol>
+    <div class="works-foot">
+      <a class="view-all" href="/#home">View all <i>↳</i></a>
+      <span class="count">(07)</span>
+      <span class="years">© 25 . 26</span>
+    </div>
+  </section>
+
+  <!-- ===== Обо мне ===== -->
+  <section class="about" id="about">
+    <p class="paren reveal">( About )</p>
+    <div class="about-text">
+      <p class="reveal">I'm a backend engineer at a commercial bank in Tashkent, working the layer between a core banking system on Oracle and everything that needs to reach it: REST services behind JWT, a wrapper around the state biometric identification provider, and digital-signature support inside a legacy JavaEE application.</p>
+      <p class="reveal">The interesting problems are rarely the framework ones. They are the Oracle driver that breaks Cyrillic without the right encoding library, the vendor daemon whose annotations stopped matching its own API, the job queue that has to stay responsive on 256 MB of heap.</p>
+    </div>
+    <h2 class="huge reveal">Forms follow<br />constraints.</h2>
+    <div class="build">
+      <p class="reveal">I build :</p>
+      <ul class="reveal">
+        <li>REST services</li>
+        <li>Bank integrations</li>
+        <li>Telegram bots</li>
+        <li>Background workers</li>
+        <li>PL/SQL packages</li>
+      </ul>
+      <p class="reveal">Shipping alone teaches the parts a big codebase hides: deployment, retention, what happens at 3 a.m.</p>
+    </div>
+  </section>
+
+  <!-- ===== Инструменты ===== -->
+  <section class="stack" id="stack">
+    <p class="stack-title reveal">Nothing without tools :</p>
+    <div class="stack-cols">
+      <div class="reveal"><small>LANGUAGES</small><p>Java 21 / 17<br />Python 3.11+<br />SQL · PL/SQL<br />JavaScript<br />Bash</p></div>
+      <div class="reveal"><small>BACKEND</small><p>Spring Boot<br />Spring Security · JWT<br />JavaEE / JSP<br />Maven<br />JUnit · Testcontainers</p></div>
+      <div class="reveal"><small>DATA</small><p>Oracle Database<br />PostgreSQL<br />SQLite<br />Flyway<br />HikariCP</p></div>
+      <div class="reveal"><small>OPS</small><p>Docker · Compose<br />Linux · systemd<br />Caddy · Nginx<br />Prometheus<br />GitHub Actions</p></div>
+    </div>
+  </section>
+
+  <!-- ===== Опыт: рваные повторы вокруг главного ===== -->
+  <section class="log" id="log">
+    <div class="echoes" aria-hidden="true">
+      <p data-depth=".25">talks to old systems<br />talks to old systems<br />talks to old systems<br /><s data-glitch>talks to old systems</s></p>
+      <p data-depth=".5">talks to old systems<br />talks to old systems<br />talks to old systems<br /><s data-glitch>talks to old systems</s></p>
+      <p data-depth=".35">talks to old systems<br />talks to old systems<br />talks to old systems<br /><s data-glitch>talks to old systems</s></p>
+      <p data-depth=".6">talks to old systems<br />talks to old systems<br />talks to old systems<br /><s data-glitch>talks to old systems</s></p>
+    </div>
+    <div class="log-core">
+      <p class="mono">2025 — PRESENT</p>
+      <p class="log-text">Backend engineer at a commercial bank in Tashkent. Services around <b>iABS</b>, the core banking system on Oracle; a wrapper for <b>MyID</b>, the state biometric identification provider; digital signatures with <b>e-key</b> inside a legacy JavaEE application on WebLogic; PL/SQL where the logic belongs in the database.</p>
+    </div>
+  </section>
+
+  <!-- ===== Вопросы ===== -->
+  <section class="faq" id="faq">
+    <div class="faq-side">
+      <p class="paren">( Questions I get asked )</p>
+      <p>Not your question? <a href="https://t.me/CustomAnnotation" rel="noopener">Ask me.</a></p>
+    </div>
+    <div class="faq-list">
+      <details class="reveal" open>
+        <summary>What do you actually build?<i>+</i></summary>
+        <p>The layer between a core banking system and everything that needs to reach it: REST services behind JWT, a wrapper around the state biometric identification provider, digital-signature support inside a legacy JavaEE application, and PL/SQL packages where the logic belongs in the database.</p>
+      </details>
+      <details class="reveal">
+        <summary>Can you work with legacy systems?<i>+</i></summary>
+        <p>Most of what I write talks to something older than itself: Oracle, WebLogic, a provider without an SDK. The interesting problems there are rarely the framework ones — encodings, drifting vendor APIs, tight memory.</p>
+      </details>
+      <details class="reveal">
+        <summary>Why so few dependencies?<i>+</i></summary>
+        <p>Because every dependency is something to update at 3 a.m. The currency tracker runs on the standard library only — HTTP, the Telegram client and the chart renderer are hand-written.</p>
+      </details>
+      <details class="reveal">
+        <summary>Are you open to work?<i>+</i></summary>
+        <p>Yes — remote or on site, based in Tashkent (UTC+5). The fastest way to reach me is Telegram; I usually reply within 24 hours.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== Финал ===== -->
+  <footer class="end" id="contact">
+    <div class="end-top">
+      <div>
+        <h2 class="huge reveal">Let's start<br />from scratch</h2>
+        <div class="pills reveal">
+          <a class="pill line" href="https://t.me/CustomAnnotation" rel="noopener">WRITE ON TELEGRAM <i>→</i></a>
+          <a class="pill line" href="mailto:pahlavon@numonjonov.com">DROP AN EMAIL <i>@</i></a>
+          <a class="pill line" href="/resume.html">READ THE RÉSUMÉ <i>→</i></a>
+        </div>
+      </div>
+      <ul class="end-links reveal">
+        <li><a href="https://t.me/CustomAnnotation" rel="noopener">Telegram</a></li>
+        <li><a href="https://github.com/numonjonov" rel="noopener">GitHub</a></li>
+        <li><a href="mailto:pahlavon@numonjonov.com">Email</a></li>
+      </ul>
+    </div>
+    <p class="wordmark end-mark" aria-hidden="true"><span class="wm" data-fit>NUMONJONOV</span></p>
+    <div class="end-foot">
+      <p>©2026 — Pahlavon Numonjonov — Tashkent, UTC+5 — pahlavon@numonjonov.com</p>
+      <nav class="versions mono" aria-label="Site versions">
+        <a href="/">MAIN</a><a href="/v2/">V2</a><a href="/v3/">V3</a><a href="/v4/">V4</a><a href="/v5/">V5</a><a href="/v6/">V6</a><a href="/v7/">V7</a><a href="/v8/">V8</a><a href="/v10/" aria-current="page">V10</a>
+      </nav>
+    </div>
+  </footer>
+
+</main>
+
+<script type="module" src="app.js?v=1"></script>
+</body>
+</html>

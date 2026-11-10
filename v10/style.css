@@ -1,0 +1,255 @@
+/* v10 — по мотивам noth.in: чёрно-белая редакторская подача.
+   Белый hero с гигантским вордмарком → дальше всё на чёрном.
+   Вордмарк — Archivo (wdth 125, wght 900), подгоняется по ширине в app.js.
+   Шапка поверх всего в mix-blend-mode: difference — белая на чёрном,
+   чёрная на белом. 3D-сцена в растущей карточке — three.js (app.js). */
+
+:root {
+  --pad: 20px;
+  --white: #fff;
+  --black: #000;
+  --grey: #8a8a8a;
+  --display: "Archivo", "Arial Black", sans-serif;
+  --sans: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+body { margin: 0; font: 400 16px/1.35 var(--sans); color: var(--white); background: var(--black); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+a { color: inherit; }
+::selection { background: #fff; color: #000; }
+.skip { position: absolute; left: 12px; top: -60px; z-index: 300; padding: 8px 14px; background: #fff; color: #000; }
+.skip:focus { top: 12px; }
+:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+.mono { font-family: var(--mono); }
+
+/* ---------- Прелоадер ---------- */
+.loader { display: none; }
+.js .loader {
+  display: grid; place-items: end center;
+  position: fixed; inset: 0; z-index: 200; padding-bottom: 32px;
+  background: #000; color: #fff;
+  font: 500 18px var(--mono); letter-spacing: .04em;
+  transition: translate .9s cubic-bezier(.7, 0, .2, 1);
+}
+.js .loader.done { translate: 0 -100%; }
+.js .loader.gone { display: none; }
+
+/* ---------- Шапка ---------- */
+.head {
+  position: fixed; inset: 0 0 auto 0; z-index: 100;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 30px var(--pad) 0;
+  color: #fff; mix-blend-mode: difference; pointer-events: none;
+}
+.head a, .head button { pointer-events: auto; }
+.logo { font: 900 21px/1 var(--display); font-stretch: 125%; letter-spacing: -.02em; text-decoration: none; }
+.menu { text-align: right; font: 700 12.5px/1.08 var(--sans); letter-spacing: .01em; }
+.menu-btn { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+.menu-btn i { font-style: normal; margin-left: 4px; }
+.menu ul { list-style: none; margin: 0; padding: 0; }
+.menu a { text-decoration: none; }
+.menu a:hover { text-decoration: underline; text-underline-offset: 2px; }
+
+/* ---------- Кнопки-пилюли ---------- */
+.pill {
+  display: inline-flex; align-items: center; gap: 14px;
+  padding: 16px 22px; border-radius: 999px;
+  font: 500 14px/1 var(--sans); letter-spacing: .01em; text-decoration: none;
+  transition: transform .3s cubic-bezier(.2, .7, .2, 1), background .2s ease, color .2s ease;
+}
+.pill i { font-style: normal; font-size: 16px; transition: translate .3s cubic-bezier(.2, .7, .2, 1); }
+.pill:hover i { translate: 4px 0; }
+.pill.dark { color: #fff; background: #000; }
+.pill.dark:hover { background: #222; }
+.pill.line { color: #fff; border: 1px solid rgba(255, 255, 255, .5); }
+.pill.line:hover { background: #fff; color: #000; }
+
+/* ---------- Hero ---------- */
+.hero {
+  position: relative; min-height: 100vh; min-height: 100svh;
+  display: flex; flex-direction: column;
+  padding: 78px var(--pad) 16px;
+  color: #000; background: #fff;
+}
+.tagline { margin: 0 0 26px; font: 500 clamp(22px, 1.9vw, 34px)/1.04 var(--sans); letter-spacing: -.025em; }
+.hero-top { padding-top: 0; }
+.wordmark { margin: auto 0 0; font-weight: 400; }
+.wm {
+  display: inline-block; white-space: nowrap; vertical-align: top;
+  font: 900 20vw/.8 var(--display); font-stretch: 100%;
+  letter-spacing: -.035em; text-transform: uppercase;
+}
+.hero .wordmark { margin: auto 0 9vh; }
+.hero-foot { display: grid; grid-template-columns: 1fr auto auto; gap: 24px; align-items: center; font-size: 14px; }
+.hero-foot p { margin: 0; }
+.socials { font: 700 13px var(--sans); }
+.socials a { text-decoration: none; }
+.socials span { margin: 0 12px; }
+.clock { display: inline-flex; gap: 8px; align-items: center; padding: 3px 12px; border-radius: 999px; background: #000; color: #fff; font: 600 12px var(--sans); }
+.clock span { opacity: .55; }
+
+/* появление вордмарка и строк */
+.js .wm .ch { display: inline-block; translate: 0 110%; transition: translate 1s cubic-bezier(.2, .8, .2, 1); }
+.js .wm { overflow: hidden; padding-bottom: .02em; }
+.js.ready .wm .ch { translate: 0 0; }
+.reveal { transition: opacity 1s ease, translate 1s cubic-bezier(.2, .8, .2, 1); }
+.js .reveal:not(.in) { opacity: 0; translate: 0 40px; }
+
+/* ---------- Шаг в сторону (ещё белый) ---------- */
+.aside { padding: 22vh var(--pad) 18vh; color: #000; background: #fff; }
+.big { margin: 0 0 12vh; font: 500 clamp(36px, 4.6vw, 86px)/.98 var(--sans); letter-spacing: -.045em; }
+.aside-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--pad); }
+.paren { margin: 0; font: 500 20px var(--sans); letter-spacing: -.01em; }
+.aside-text { margin: 0; max-width: 32em; font: 500 clamp(20px, 1.6vw, 28px)/1.15 var(--sans); letter-spacing: -.02em; }
+
+/* ---------- Растущая карточка с 3D ---------- */
+.reel { height: 230vh; background: #000; }
+.reel-sticky { position: sticky; top: 0; height: 100vh; height: 100svh; display: grid; place-items: center; overflow: hidden; }
+.reel-card {
+  position: relative; margin: 0;
+  width: calc(100vw - var(--pad) * 2); height: calc(100vh - 120px);
+  border-radius: 8px; overflow: hidden;
+  background: radial-gradient(120% 90% at 50% 35%, #1b1b1f, #050505 70%);
+  transform: scale(var(--s, .62)); transform-origin: 50% 50%;
+  will-change: transform;
+}
+.reel-canvas { position: absolute; inset: 0; cursor: grab; touch-action: pan-y; }
+.reel-canvas.drag { cursor: grabbing; }
+.reel-canvas canvas { display: block; width: 100%; height: 100%; }
+.reel-card figcaption {
+  position: absolute; left: 24px; right: 24px; bottom: 20px;
+  display: flex; justify-content: space-between; align-items: center;
+  font: 500 16px var(--sans); pointer-events: none;
+}
+.reel-card figcaption .mono { font-size: 11px; letter-spacing: .08em; opacity: .6; }
+.reel-fallback { position: absolute; inset: 0; display: grid; place-items: center; grid-template-columns: repeat(8, auto); justify-content: center; gap: 2vw; font: 900 8vw/1 var(--display); font-stretch: 125%; }
+.reel-fallback span:nth-child(odd) { translate: 0 -2vw; rotate: -8deg; }
+.reel-fallback span:nth-child(even) { translate: 0 2vw; rotate: 6deg; }
+.has-3d .reel-fallback { display: none; }
+
+/* ---------- Работы ---------- */
+.works { padding: 14vh var(--pad) 10vh; }
+.works-head { display: grid; grid-template-columns: 1fr 1fr; gap: var(--pad); margin-bottom: 8vh; }
+.label-big { margin: 0; font: 600 28px var(--sans); letter-spacing: -.02em; position: sticky; top: 64px; align-self: start; }
+.big-right { margin: 0; font: 500 clamp(30px, 2.9vw, 52px)/1.03 var(--sans); letter-spacing: -.035em; }
+.cards { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 16px; align-items: end; }
+.cards li:nth-child(2n) { translate: 0 -24px; }
+.cards li:nth-child(3n) { translate: 0 12px; }
+.cards a { display: block; text-decoration: none; }
+.cards small { display: block; margin-bottom: 14px; font: 400 11px var(--mono); letter-spacing: .06em; color: var(--grey); }
+.cards b { display: block; margin-bottom: 18px; font: 500 clamp(18px, 1.45vw, 25px)/1.02 var(--sans); letter-spacing: -.03em; }
+.tile {
+  display: block; aspect-ratio: 4 / 5; padding: 14px 12px; border-radius: 4px; overflow: hidden;
+  background: linear-gradient(160deg, #262629, #111 60%, #1a1a1d);
+  transition: transform .5s cubic-bezier(.2, .7, .2, 1), filter .3s ease;
+}
+.tile pre { margin: 0; font: 400 10px/1.5 var(--mono); color: #d9d9d9; white-space: pre-wrap; }
+.cards a:hover .tile { transform: translateY(-6px) rotate(-1.2deg); filter: brightness(1.25); }
+.works-foot { display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline; margin-top: 14vh; }
+.view-all { font: 500 clamp(30px, 2.6vw, 46px) var(--sans); letter-spacing: -.035em; text-decoration: none; }
+.view-all i { font-style: normal; font-size: 16px; margin-left: 10px; }
+.count, .years { font: 500 18px var(--sans); }
+.years { justify-self: end; }
+
+/* ---------- Обо мне ---------- */
+.about { padding: 16vh var(--pad) 12vh; }
+.about .paren { margin-bottom: 4vh; }
+.about-text { margin-left: 43%; max-width: 640px; }
+.about-text p { margin: 0 0 1em; font: 500 clamp(19px, 1.5vw, 26px)/1.2 var(--sans); letter-spacing: -.02em; }
+.huge { margin: 16vh 0 14vh; font: 500 clamp(56px, 8.4vw, 160px)/.9 var(--sans); letter-spacing: -.055em; }
+.build { display: grid; grid-template-columns: 20% 1fr 1fr; gap: var(--pad); margin-left: 20%; font-size: 18px; }
+.build p { margin: 0; }
+.build ul { margin: 0; padding-left: 18px; }
+.build p:last-child { max-width: 22em; }
+
+/* ---------- Инструменты ---------- */
+.stack { display: grid; grid-template-columns: 20% 1fr; gap: var(--pad); padding: 12vh var(--pad) 18vh calc(20% + var(--pad)); }
+.stack-title { margin: 0; font-size: 18px; }
+.stack-cols { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--pad); }
+.stack-cols small { display: block; margin-bottom: 18px; font: 400 11px var(--mono); letter-spacing: .08em; color: var(--grey); }
+.stack-cols p { margin: 0; font-size: 15px; line-height: 1.3; }
+
+/* ---------- Опыт ---------- */
+.log {
+  position: relative; min-height: 120vh; overflow: hidden;
+  display: grid; place-items: center;
+  background: radial-gradient(70% 60% at 50% 50%, #26272b, #0b0b0c 70%, #000);
+}
+.echoes p {
+  position: absolute; margin: 0;
+  font: 500 clamp(14px, 1.15vw, 20px)/1.05 var(--sans); letter-spacing: -.01em; color: #eee;
+  will-change: transform;
+}
+.echoes p:nth-child(1) { left: 8%; top: 12%; }
+.echoes p:nth-child(2) { left: 74%; top: 22%; }
+.echoes p:nth-child(3) { left: 6%; top: 76%; }
+.echoes p:nth-child(4) { left: 72%; top: 82%; }
+.echoes s { text-decoration: none; font-family: var(--sans); }
+.log-core { position: relative; z-index: 1; width: min(100% - 40px, 420px); }
+.log-core .mono { margin: 0 0 14px; font-size: 11px; letter-spacing: .08em; color: var(--grey); }
+.log-text { margin: 0; font: 500 18px/1.2 var(--sans); letter-spacing: -.01em; }
+.log-text b { font-weight: 500; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+
+/* ---------- Вопросы ---------- */
+.faq { display: grid; grid-template-columns: 1fr 2fr; gap: var(--pad); padding: 16vh var(--pad) 18vh; }
+.faq-side { position: sticky; top: 90px; align-self: start; }
+.faq-side .paren { font-size: 18px; }
+.faq-side p { margin: 0; font-size: 15px; }
+.faq-list details { border-bottom: 1px solid rgba(255, 255, 255, .14); padding: 26px 0; }
+.faq-list summary {
+  display: flex; justify-content: space-between; gap: 20px; cursor: pointer; list-style: none;
+  font: 500 clamp(24px, 2vw, 34px)/1.1 var(--sans); letter-spacing: -.03em;
+}
+.faq-list summary::-webkit-details-marker { display: none; }
+.faq-list summary i { font-style: normal; font-weight: 400; transition: rotate .3s ease; }
+.faq-list details[open] summary i { rotate: 45deg; }
+.faq-list details p { margin: 22px 0 0 50%; max-width: 30em; font-size: 15px; line-height: 1.45; color: #ddd; }
+
+/* ---------- Финал ---------- */
+.end { padding: 14vh var(--pad) 16px; }
+.end-top { display: grid; grid-template-columns: 1fr auto; gap: var(--pad); align-items: start; }
+.end .huge { margin: 0 0 30px; }
+.pills { display: flex; flex-wrap: wrap; gap: 10px; }
+.end-links { list-style: none; margin: 0 8vw 0 0; padding: 0; font: 500 clamp(22px, 1.8vw, 30px)/1.15 var(--sans); letter-spacing: -.02em; }
+.end-links a { text-decoration: none; }
+.end-links a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.end-mark { margin: 18vh 0 22px; }
+.end-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 20px; font-size: 13px; }
+.end-foot p { margin: 0; }
+.versions { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 11px; font-weight: 500; letter-spacing: .04em; }
+.versions a { text-decoration: none; opacity: .7; }
+.versions a:hover, .versions a[aria-current] { opacity: 1; }
+
+/* ---------- Узкий экран ---------- */
+@media (max-width: 860px) {
+  :root { --pad: 16px; }
+  .head { padding-top: 18px; }
+  .menu ul { display: none; }
+  .menu.open ul { display: block; margin-top: 8px; font-size: 22px; line-height: 1.2; }
+  .hero { padding-top: 64px; }
+  .hero .wordmark { margin-bottom: 4vh; }
+  .hero-foot { grid-template-columns: 1fr; gap: 10px; }
+  .hero-foot .clock { justify-self: start; }
+  .aside-row, .works-head, .faq, .end-top { grid-template-columns: 1fr; }
+  .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 32px; }
+  .cards li:nth-child(n) { translate: none; }
+  .about-text { margin-left: 0; }
+  .build, .stack { grid-template-columns: 1fr; margin-left: 0; padding-left: var(--pad); }
+  .stack-cols { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 28px; }
+  .faq-list details p { margin-left: 0; }
+  .echoes p:nth-child(2), .echoes p:nth-child(4) { left: 52%; }
+  .reel { height: 180vh; }
+  .reel-card { height: 70vh; }
+  .end-links { margin: 20px 0 0; }
+  .label-big { position: static; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal, .js .wm .ch, .tile, .pill, .pill i { transition: none; }
+  .js .reveal:not(.in) { opacity: 1; translate: none; }
+  .js .wm .ch { translate: none; }
+  .js .loader { display: none; }
+}
