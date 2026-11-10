@@ -121,6 +121,7 @@ a { color: inherit; }
   .talk { padding: 8px 18px; font-size: 12px; }
   .ui-bottom { gap: 20px; bottom: 22px; }
   .ruler { right: 16px; height: 34vh; }
+  .ruler button span { display: none; }   /* подписи наезжают на тексты глав */
   .text-link { bottom: auto; top: 70px; }
   .wave { bottom: 20px; right: 18px; }
 }

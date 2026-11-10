@@ -1,8 +1,9 @@
 /* v12 — по мотивам aboutluca.com. three.js r160 из vendor/, всё остальное своё.
 
-   Сцена: процедурная пустыня из ~150 тыс. песчинок (у каждой — своя
-   неровная форма, псевдоосвещение по нормали рельефа, редкие блики-искры),
-   звёзды, светящаяся сфера-фонарик за курсором, тексты прямо в пространстве.
+   Сцена: процедурная пустыня из ~115 тыс. песчинок — матовые серые
+   «пушинки» (каждая из четырёх мягких долей, своя раскладка), освещение по
+   нормали рельефа без бликов; серый воздух, редкие звёзды, метеор с
+   пунктирным хвостом, сфера-фонарик за курсором, тексты в пространстве.
    Камера едет по пути над дюнами, скролл виртуальный, с инерцией.
 
    Эффекты:
@@ -14,7 +15,8 @@
    - тексты: расшифровка по символам (перебор глифов), дрожь срезов строк,
      RGB-расщепление, обратный глитч, когда камера проехала;
    - bloom: выделение ярких мест → размытие в двух масштабах → сложение,
-     плюс плёночное зерно, виньетка, хроматическая аберрация от скорости. */
+     дымка над горизонтом и еле заметные вертикальные полосы в небе,
+     плёночное зерно, мягкая виньетка, слабая аберрация от скорости. */
 import * as THREE from '../vendor/three.module.min.js';
 
 const doc = document, win = window, root = doc.documentElement;
@@ -136,7 +138,7 @@ void main() {
   vBlur = nearB;
 
   // fog far away, fade at the lens, intro
-  vAlpha = (1.0 - smoothstep(18.0, 58.0, dist)) * smoothstep(0.25, 0.9, dist) * mp;
+  vAlpha = (1.0 - smoothstep(12.0, 50.0, dist)) * smoothstep(0.25, 0.9, dist) * mp;
 
   // the orb lights sand near the cursor
   vec2 sd = gl_Position.xy / gl_Position.w - uMouse; sd.x *= uAspect;
@@ -152,28 +154,31 @@ varying vec3 vN;
 float hash12(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * .1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 mat2 rot(float a){ float s = sin(a), c = cos(a); return mat2(c, -s, s, c); }
 void main() {
-  // irregular grain: rotation + stepped hash warp
+  // fluffy grain: a clump of 4 soft lobes, each grain with its own layout,
+  // plus a faint halo; near the lens it melts into a flat soft disc
   vec2 pp = rot(vRnd * 6.2831853) * (gl_PointCoord - 0.5);
-  vec2 cell = floor(pp * 5.0);
-  pp += (vec2(hash12(cell + vRnd * 31.0), hash12(cell.yx + vRnd2 * 17.0)) - 0.5) * mix(0.1, 0.28, vRnd2) * (1.0 - vBlur);
   float d = length(pp);
-  float coreR = mix(0.24, 0.1, vBlur);
-  float core = 1.0 - smoothstep(coreR * 0.55, coreR, d);
-  float halo = (1.0 - smoothstep(0.0, 0.5, d)) * mix(0.28, 0.75, vBlur);
-  float a = max(core, halo);
-  if (a * vAlpha < 0.012) discard;
+  float lobes = 0.0;
+  for (int i = 0; i < 4; i++) {
+    float fi = float(i);
+    vec2 o = (vec2(hash12(vec2(vRnd * 53.0, fi)), hash12(vec2(vRnd2 * 71.0, fi + 7.0))) - 0.5) * 0.2;
+    float r = mix(0.1, 0.17, hash12(vec2(fi * 3.1, vRnd * 13.0)));
+    vec2 q = pp - o;
+    lobes = max(lobes, exp(-dot(q, q) / (r * r)));
+  }
+  float halo = exp(-d * d * 16.0) * 0.32;
+  float a = max(lobes, halo) * (1.0 - smoothstep(0.4, 0.5, d));
+  a = mix(a, (1.0 - smoothstep(0.18, 0.5, d)) * 0.42, vBlur);
+  if (a * vAlpha < 0.01) discard;
 
-  // fake light: wrapped diffuse, rim, rare glints
+  // matte grey light: the lit side of a dune is only a little brighter
   vec3 N = normalize(vN), L = normalize(uLightDir);
-  float diff = clamp((dot(N, L) + 0.3) / 1.3, 0.0, 1.0);
-  float rim = pow(1.0 - clamp(N.z, 0.0, 1.0), 2.0);
-  float glint = step(0.86, hash12(vec2(vRnd, vRnd2) * 97.0));
-  float spec = pow(max(dot(N, normalize(L + vec3(0.0, 0.0, 1.0))), 0.0), 26.0) * glint * (0.55 + 0.45 * sin(uTime * 2.6 + vRnd * 50.0));
-  vec3 base = mix(vec3(0.74, 0.72, 0.68), vec3(0.96, 0.95, 0.91), vRnd2);
-  vec3 col = base * (0.07 + diff * 0.78 + rim * 0.18) + spec * 1.6;
-  col += vLight * vec3(1.0, 0.98, 0.94) * 0.85;
-  col += vDust * 0.6;
-  gl_FragColor = vec4(col * uExposure, a * vAlpha * mix(0.9, 0.5, vBlur));
+  float diff = clamp((dot(N, L) + 0.4) / 1.4, 0.0, 1.0);
+  float g = mix(0.56, 0.82, vRnd2) * (0.62 + 0.38 * diff);
+  vec3 col = vec3(g, g * 0.995, g * 0.985);
+  col += vLight * 0.7;
+  col += vDust * 0.35;
+  gl_FragColor = vec4(col * uExposure, a * vAlpha * 0.9 * (1.0 - 0.45 * vBlur));
 }`;
 
 const STAR_VS = `
@@ -185,11 +190,27 @@ void main() {
   gl_Position = projectionMatrix * mv;
   float tw = 0.55 + 0.45 * sin(uTime * (0.6 + aRnd * 2.2) + aRnd * 40.0);
   gl_PointSize = clamp((1.0 + aRnd * 1.6) * uPixel / 900.0, 1.0, 4.0);
-  vA = tw * (0.25 + aRnd * 0.5) * smoothstep(0.3, 1.0, uIntro);
+  vA = tw * (0.12 + aRnd * 0.3) * smoothstep(0.3, 1.0, uIntro);
 }`;
 const STAR_FS = `
 varying float vA;
 void main() { float d = length(gl_PointCoord - 0.5); if (d > 0.5) discard; gl_FragColor = vec4(vec3(0.95), vA * (1.0 - d * 2.0)); }`;
+
+// meteor: a head and a dotted tail; aT = 0 at the head, 1 at the end of the tail
+const MET_VS = `
+uniform float uPixel;
+attribute float aT, aVis;
+varying float vA;
+void main() {
+  vec4 mv = modelViewMatrix * vec4(position, 1.0);
+  gl_Position = projectionMatrix * mv;
+  float head = 1.0 - smoothstep(0.0, 0.05, aT);
+  gl_PointSize = clamp((mix(2.6, 1.1, aT) + head * 3.5) * uPixel / 700.0, 1.0, 9.0);
+  vA = aVis * pow(1.0 - aT, 1.6) * (0.5 + head * 0.5);
+}`;
+const MET_FS = `
+varying float vA;
+void main() { vec2 p = gl_PointCoord - 0.5; float a = exp(-dot(p, p) * 18.0) * vA; if (a < 0.004) discard; gl_FragColor = vec4(vec3(0.93), a); }`;
 
 const TEXT_VS = `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
 const TEXT_FS = `
@@ -265,17 +286,25 @@ const COMP_FS = `
 uniform sampler2D tScene, tB1, tB2; uniform float uBloom, uTime, uCA, uFade; uniform vec2 uRes;
 varying vec2 vUv;
 float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+float h1(float x){ return fract(sin(x * 127.1) * 43758.5453); }
+float vn1(float x){ float i = floor(x), f = fract(x); f = f * f * (3.0 - 2.0 * f); return mix(h1(i), h1(i + 1.0), f); }
 void main() {
   vec2 c = vUv - 0.5; float r2 = dot(c, c);
   vec2 ca = c * r2 * uCA;
   vec3 s = vec3(texture2D(tScene, vUv + ca).r, texture2D(tScene, vUv).g, texture2D(tScene, vUv - ca).b);
-  vec3 bl = texture2D(tB1, vUv).rgb * 0.9 + texture2D(tB2, vUv).rgb * 1.3;
-  // atmosphere: grey sky, lighter haze band at the horizon, darker ground
-  float hz = 1.0 - smoothstep(0.0, 0.32, abs(vUv.y - 0.6));
-  vec3 bg = mix(vec3(0.072), vec3(0.105), smoothstep(0.2, 1.0, vUv.y)) + hz * 0.05;
-  vec3 col = bg + s + bl * uBloom;
-  col *= 1.0 - r2 * 0.75;                                     // vignette
-  col += (hash(vUv * uRes + fract(uTime) * 100.0) - 0.5) * 0.045;   // grain
+  vec3 bl = texture2D(tB1, vUv).rgb * 0.7 + texture2D(tB2, vUv).rgb * 1.2;
+  // atmosphere: matte grey, the air is lighter towards the middle of the frame
+  // and in a soft band over the horizon; faint vertical streaks hang in the sky
+  float hz = 1.0 - smoothstep(0.0, 0.3, abs(vUv.y - 0.5));
+  vec3 bg = mix(vec3(0.088), vec3(0.106), smoothstep(0.0, 1.0, vUv.y)) + hz * 0.022;
+  bg += exp(-dot(c * vec2(1.3, 2.2), c * vec2(1.3, 2.2)) * 5.0) * 0.024;
+  float aspect = uRes.x / uRes.y;
+  float streak = vn1(vUv.x * aspect * 14.0 + 3.0) * 0.6 + vn1(vUv.x * aspect * 41.0 + uTime * 0.03) * 0.4;
+  bg += (streak - 0.5) * 0.014 * smoothstep(0.25, 0.95, vUv.y);
+  // the sand is added on top of the air, so far grains sink into the haze
+  vec3 col = bg + s * 0.92 + bl * uBloom;
+  col *= 1.0 - r2 * 0.5;                                      // vignette
+  col += (hash(vUv * uRes + fract(uTime) * 100.0) - 0.5) * 0.032;   // grain
   gl_FragColor = vec4(mix(vec3(0.0824), col, uFade), 1.0);
 }`;
 
@@ -351,7 +380,7 @@ async function start() {
   }
 
   /* ---- песок ---- */
-  const N = coarse ? 90000 : 230000;
+  const N = coarse ? 55000 : 115000;
   const pos = new Float32Array(N * 3), nor = new Float32Array(N * 3), r1 = new Float32Array(N), r2 = new Float32Array(N), sz = new Float32Array(N);
   let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   for (let i = 0; i < N; i++) {
@@ -374,20 +403,20 @@ async function start() {
   sandGeo.setAttribute('aSize', new THREE.BufferAttribute(sz, 1));
   const mouseNdc = new THREE.Vector2(0, 0);
   const sandU = {
-    uTime: { value: 0 }, uSize: { value: .05 }, uPixel: { value: 1 }, uIntro: { value: reduced ? 1 : 0 },
+    uTime: { value: 0 }, uSize: { value: .12 }, uPixel: { value: 1 }, uIntro: { value: reduced ? 1 : 0 },
     uAspect: { value: 1 }, uMouse: { value: mouseNdc }, uMouseR: { value: .2 }, uMouseF: { value: 0 },
-    uCam: { value: new THREE.Vector3() }, uLightDir: { value: new THREE.Vector3(.55, .7, .15).normalize() }, uExposure: { value: .75 },
+    uCam: { value: new THREE.Vector3() }, uLightDir: { value: new THREE.Vector3(.55, .7, .15).normalize() }, uExposure: { value: .6 },
   };
   const sand = new THREE.Points(sandGeo, new THREE.ShaderMaterial({
     vertexShader: SAND_VS, fragmentShader: SAND_FS, uniforms: sandU,
     transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
   }));
   sand.frustumCulled = false;
-  if (location.hostname === "localhost") win.__v12 = { sandU };
+  if (location.hostname === "localhost") win.__v12 = { sandU, met: () => met };
   scene.add(sand);
 
   /* ---- звёзды ---- */
-  const SN = 1600, sp = new Float32Array(SN * 3), sr = new Float32Array(SN);
+  const SN = 420, sp = new Float32Array(SN * 3), sr = new Float32Array(SN);
   for (let i = 0; i < SN; i++) {
     const th = rnd() * Math.PI * 2, ph = rnd() * .45 + .05, R = 90;
     sp.set([Math.cos(th) * Math.cos(ph) * R, Math.sin(ph) * R + 4, Math.sin(th) * Math.cos(ph) * R - 55], i * 3);
@@ -398,6 +427,40 @@ async function start() {
   starGeo.setAttribute('aRnd', new THREE.BufferAttribute(sr, 1));
   const starU = { uTime: sandU.uTime, uPixel: sandU.uPixel, uIntro: sandU.uIntro };
   scene.add(new THREE.Points(starGeo, new THREE.ShaderMaterial({ vertexShader: STAR_VS, fragmentShader: STAR_FS, uniforms: starU, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })));
+
+  /* ---- метеор: раз в 6–14 с через небо, пунктирный хвост ---- */
+  const MN = 56, mPos = new Float32Array(MN * 3), mT = new Float32Array(MN), mVis = new Float32Array(MN);
+  for (let i = 0; i < MN; i++) mT[i] = i / (MN - 1);
+  const metGeo = new THREE.BufferGeometry();
+  metGeo.setAttribute('position', new THREE.BufferAttribute(mPos, 3).setUsage(THREE.DynamicDrawUsage));
+  metGeo.setAttribute('aT', new THREE.BufferAttribute(mT, 1));
+  metGeo.setAttribute('aVis', new THREE.BufferAttribute(mVis, 1).setUsage(THREE.DynamicDrawUsage));
+  const meteor = new THREE.Points(metGeo, new THREE.ShaderMaterial({ vertexShader: MET_VS, fragmentShader: MET_FS, uniforms: { uPixel: sandU.uPixel }, transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending }));
+  meteor.frustumCulled = false; scene.add(meteor);
+  const met = { start: 5, dur: 1.5, x0: 0, y0: 0, vx: 0, vy: 0 };
+  const mO = new THREE.Vector3(), mR = new THREE.Vector3(), mU = new THREE.Vector3(), mF = new THREE.Vector3();
+  function stepMeteor(time, fade) {
+    let tau = time - met.start;
+    if (tau > met.dur + .8) {                       // новый пролёт
+      met.start = time + 6 + Math.random() * 8; met.dur = 1.2 + Math.random() * .8;
+      const s = Math.random() < .5 ? -1 : 1;
+      met.x0 = s * (16 + Math.random() * 22); met.y0 = 15 + Math.random() * 9;
+      met.vx = -s * (22 + Math.random() * 12); met.vy = -(2 + Math.random() * 4);
+      tau = time - met.start;
+    }
+    // дуга в плоскости на 60 м перед камерой, по её горизонту
+    const e = camera.matrixWorld.elements;
+    mR.set(e[0], 0, e[2]).normalize(); mF.set(-e[8], 0, -e[10]).normalize(); mU.set(0, 1, 0);
+    mO.copy(camera.position).addScaledVector(mF, 60);
+    for (let i = 0; i < MN; i++) {
+      const ti = clamp(tau - mT[i] * .55, 0, met.dur);
+      const x = met.x0 + met.vx * ti, y = met.y0 + met.vy * ti - 1.6 * ti * ti;
+      mPos[i * 3] = mO.x + mR.x * x; mPos[i * 3 + 1] = mO.y + y; mPos[i * 3 + 2] = mO.z + mR.z * x;
+      const alive = tau - mT[i] * .55 > 0 && tau - mT[i] * .55 < met.dur;
+      mVis[i] = alive ? fade * smooth(0, .25, tau) * (1 - smooth(met.dur - .35, met.dur, tau - mT[i] * .55)) : 0;
+    }
+    metGeo.attributes.position.needsUpdate = true; metGeo.attributes.aVis.needsUpdate = true;
+  }
 
   /* ---- фонарик ---- */
   const orbU = { uI: { value: 0 } };
@@ -469,7 +532,7 @@ async function start() {
   tri.setAttribute('position', new THREE.BufferAttribute(new Float32Array([-1, -1, 0, 3, -1, 0, -1, 3, 0]), 3));
   const postScene = new THREE.Scene(), postCam = new THREE.Camera();
   const quad = new THREE.Mesh(tri); quad.frustumCulled = false; postScene.add(quad);
-  const brightM = new THREE.ShaderMaterial({ vertexShader: FS_TRI, fragmentShader: BRIGHT_FS, uniforms: { tSrc: { value: null }, uTh: { value: .3 } }, depthTest: false });
+  const brightM = new THREE.ShaderMaterial({ vertexShader: FS_TRI, fragmentShader: BRIGHT_FS, uniforms: { tSrc: { value: null }, uTh: { value: .26 } }, depthTest: false });
   const blurM = new THREE.ShaderMaterial({ vertexShader: FS_TRI, fragmentShader: BLUR_FS, uniforms: { tSrc: { value: null }, uDir: { value: new THREE.Vector2() } }, depthTest: false });
   const compM = new THREE.ShaderMaterial({ vertexShader: FS_TRI, fragmentShader: COMP_FS, depthTest: false,
     uniforms: { tScene: { value: rtScene.texture }, tB1: { value: rtA.texture }, tB2: { value: rtC.texture }, uBloom: { value: 1.1 }, uTime: { value: 0 }, uCA: { value: .02 }, uFade: { value: reduced ? 1 : 0 }, uRes: { value: new THREE.Vector2() } } });
@@ -577,6 +640,7 @@ async function start() {
     orbU.uI.value = mouseOn * ie;
     sandU.uMouseF.value = mouseOn * ie;
     sandU.uTime.value = time;
+    if (!reduced) stepMeteor(time, ie);
 
     // тексты: проявляются на подлёте, глитчем уходят, когда проехали
     texts.forEach(x => {
@@ -588,8 +652,8 @@ async function start() {
 
     // постобработка: сцена → яркое → размытие ×2 масштаба → сложение
     const speed = Math.min(1, Math.abs(vel) * 6);
-    compM.uniforms.uCA.value = .015 + speed * .12;
-    compM.uniforms.uBloom.value = 1.05 + speed * .5;
+    compM.uniforms.uCA.value = .003 + speed * .05;
+    compM.uniforms.uBloom.value = .85 + speed * .3;
     compM.uniforms.uTime.value = time;
     renderer.setRenderTarget(rtScene); renderer.setClearColor(0x000000, 1); renderer.clear(); renderer.render(scene, camera);
     brightM.uniforms.tSrc.value = rtScene.texture; pass(brightM, rtBright);
