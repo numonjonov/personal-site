@@ -18,10 +18,10 @@
 <!-- 3D: пустыня из песчинок, путь камеры по скроллу, тексты в пространстве -->
 <canvas class="gl" id="gl" aria-hidden="true"></canvas>
 
-<!-- вход: LOADING → ENTER -->
+<!-- вход: линия загрузки, затем сцена открывается сама (без кнопки) -->
 <div class="gate" id="gate">
   <i class="gate-line l" id="gate-l"></i>
-  <button class="gate-btn" id="gate-btn" type="button" disabled>LOADING</button>
+  <span class="gate-btn" aria-hidden="true">LOADING</span>
   <i class="gate-line r" id="gate-r"></i>
 </div>
 
@@ -79,6 +79,6 @@
   <p class="text-back"><a href="#" id="text-back">← back to the desert</a></p>
 </main>
 
-<script type="module" src="app.js?v=5"></script>
+<script type="module" src="app.js?v=6"></script>
 </body>
 </html>

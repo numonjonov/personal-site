@@ -344,7 +344,7 @@ function textCanvas(lines, font, size, cellW, lineH, padX = 20, padY = 16) {
 
 /* ================= Запуск ================= */
 async function start() {
-  const gate = $('gate'), gateBtn = $('gate-btn'), gl = $('gate-l'), gr = $('gate-r');
+  const gate = $('gate'), gl = $('gate-l'), gr = $('gate-r');
   const setLoad = p => { gl.style.width = gr.style.width = (p * 28) + 'vw'; };
   setLoad(.05);
 
@@ -594,7 +594,7 @@ async function start() {
   win.addEventListener('touchmove', e => { if (ty === null) return; const y = e.touches[0].clientY; addScroll((ty - y) * .0004); ty = y; }, { passive: true });
   win.addEventListener('touchend', () => { ty = null; });
   doc.addEventListener('keydown', e => {
-    if (!entered) { if (e.key === 'Enter' && !gateBtn.disabled) enter(); return; }
+    if (!entered) return;
     if (root.classList.contains('text-mode')) return;
     const k = { ArrowDown: .03, PageDown: .08, ' ': .08, ArrowUp: -.03, PageUp: -.08 }[e.key];
     if (k) { e.preventDefault(); addScroll(k); }
@@ -621,16 +621,15 @@ async function start() {
   $('text-link').addEventListener('click', e => { e.preventDefault(); root.classList.add('text-mode'); win.scrollTo(0, 0); });
   $('text-back').addEventListener('click', e => { e.preventDefault(); root.classList.remove('text-mode'); });
 
-  /* ---- вход ---- */
+  /* ---- вход: без кнопки — линия загрузки добегает, и сцена открывается сама ---- */
   setLoad(1);
-  gateBtn.textContent = 'ENTER'; gateBtn.disabled = false; gateBtn.classList.add('ready');
-  let introStart = -1;
+  let introStart = -1;                         // ставится на первом видимом кадре (см. frame)
   function enter() {
     if (entered) return;
-    entered = true; introStart = performance.now();
+    entered = true;
     gate.classList.add('out'); root.classList.add('entered');
   }
-  gateBtn.addEventListener('click', enter);
+  win.setTimeout(enter, reduced ? 0 : 550);
 
   /* ---- кадр ---- */
   const camPos = new THREE.Vector3(), look = new THREE.Vector3(), tmp = new THREE.Vector3(), ray = new THREE.Vector3(), camFwd = new THREE.Vector3(), tmpV = new THREE.Vector3();
@@ -656,6 +655,7 @@ async function start() {
     }
 
     // вход: песок поднимается, камера опускается, сцена проявляется
+    if (entered && introStart < 0) introStart = t;   // вступление — с первого видимого кадра
     const intro = introStart < 0 ? 0 : (reduced ? 1 : clamp((t - introStart) / 3600, 0, 1));
     const ie = 1 - Math.pow(1 - intro, 3);
     sandU.uIntro.value = reduced ? 1 : Math.min(1, intro * 1.15);
