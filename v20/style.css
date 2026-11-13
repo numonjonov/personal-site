@@ -171,3 +171,19 @@ p { margin: 0; }
 @media (prefers-reduced-motion: reduce) {
   .loader-dot, .loader-word, .blink { animation: none; }
 }
+
+/* построчные куски заголовков (их по отдельности расшифровывает app.js) */
+.ct h2 span, .ct-sub span { display: block; }
+/* редкое цветовое дёргание светящихся заголовков, как сбой синхронизации */
+.hero-name, .ct h2, .d-name, .ab-t, .work-nav .pix { animation: rgbjit 5.3s steps(1) infinite; }
+.ct h2 { animation-delay: -1.7s; } .d-name { animation-delay: -3.1s; } .ab-t { animation-delay: -.9s; }
+@keyframes rgbjit {
+  0%, 100% { text-shadow: var(--glow); translate: 0 0; }
+  61% { text-shadow: -2px 0 rgba(255, 50, 80, .75), 2px 0 rgba(50, 220, 255, .75), var(--glow); translate: 1px 0; }
+  62% { text-shadow: var(--glow); translate: 0 0; }
+  87% { text-shadow: 2px 0 rgba(255, 50, 80, .6), -2px 0 rgba(50, 220, 255, .6), var(--glow); translate: -1px 0; }
+  88% { text-shadow: var(--glow); translate: 0 0; }
+}
+.work-nav .pix { animation-name: rgbjitdark; }
+@keyframes rgbjitdark { 0%, 100% { text-shadow: none; } 61% { text-shadow: -2px 0 rgba(255, 40, 70, .6), 2px 0 rgba(30, 160, 255, .6); } 62% { text-shadow: none; } }
+@media (prefers-reduced-motion: reduce) { .hero-name, .ct h2, .d-name, .ab-t, .work-nav .pix { animation: none; } }

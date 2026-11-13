@@ -67,6 +67,30 @@ const PROJECTS = [
     log: ['$ python -m downloader', 'link → dispatcher', 'yt-dlp ........ video ok', 'gallery-dl .... images ok', 'extractor broke → ops, not a bug', 'files sent'] },
 ];
 
+/* ============================== расшифровка текста ============================== */
+// текст собирается из мусорных глифов слева направо; только для элементов без вложенной разметки
+const GLY = '!<>-_\\/[]{}=+*^?#%$01ABCDEFXZ';
+function decodeText(el, dur = 650) {
+  if (!el || reduced) return;
+  if (el.dataset.txt === undefined) el.dataset.txt = el.textContent;
+  const txt = el.dataset.txt, n = txt.length || 1, t0 = performance.now(), id = (el._dec = (el._dec || 0) + 1);
+  const step = () => {
+    if (el._dec !== id) return;
+    const k = Math.min(1, (performance.now() - t0) / dur);
+    let s = '';
+    for (let i = 0; i < txt.length; i++) {
+      const c = txt[i];
+      if (c === ' ') s += c;
+      else if (k * 1.3 > i / n + .3) s += c;
+      else if (k * 1.3 > i / n) s += GLY[(Math.random() * GLY.length) | 0];
+      else s += ' ';
+    }
+    el.textContent = s;
+    if (k < 1) setTimeout(step, 33); else el.textContent = txt;
+  };
+  step();
+}
+
 /* ============================== макеты на canvas ============================== */
 const SANS = '"Arial Black", "Helvetica Neue", Arial, sans-serif', MONO = 'ui-monospace, "Cascadia Mono", Consolas, monospace';
 function vizDraw(g, p, x, y, w, h) {
@@ -240,31 +264,44 @@ function quadtreeCanvas(data, GW, GH) {
 const VOX_VS = `
 attribute vec3 aCell;   // x, y, глубина
 attribute vec2 aInfo;   // свет, строка
-uniform float uTime, uCell, uGlitch, uIntro;
-varying float vShade, vFace;
+uniform float uTime, uCell, uGlitch, uIntro, uRows, uPush, uBreak;
+uniform vec2 uMouse;
+varying float vShade, vFace, vHot;
 float h1(float n){ return fract(sin(n * 127.1) * 43758.5453); }
 void main() {
   vec3 p = position;
   p.z = (p.z + 0.5) * aCell.z;
   p.xy *= uCell * 0.86;
-  vec3 wp = vec3(aCell.xy, 0.0) + p;
   float row = aInfo.y, tk = floor(uTime * 9.0);
-  float g = step(0.992 - uGlitch * 0.25, h1(row * 0.731 + tk * 1.37));
-  wp.x += g * (h1(row + tk * 3.1) - 0.5) * 0.9;
   float rr = h1(aCell.x * 13.1 + aCell.y * 7.7);
-  float k = smoothstep(rr * 0.6, rr * 0.6 + 0.4, uIntro);
-  wp.z += (1.0 - k) * (2.0 + rr * 8.0);
-  vShade = aInfo.x * k;
+  // появление развёрткой сверху вниз с разбросом
+  float th = (row / uRows) * 0.72 + rr * 0.22;
+  float k = smoothstep(th, th + 0.07, uIntro * 1.02);
+  // курсор: кубики вдавливаются и светятся
+  float d = length(aCell.xy - uMouse);
+  float f = exp(-d * d / 0.22) * uPush;
+  vec3 wp = vec3(aCell.xy, 0.0) + p;
+  wp.z -= f * (0.55 + rr * 0.6);
+  wp.z += (1.0 - k) * (1.5 + rr * 5.0);
+  // глитч строк, у курсора чаще
+  float g = step(0.992 - uGlitch * 0.25 - f * 0.04, h1(row * 0.731 + tk * 1.37));
+  wp.x += g * (h1(row + tk * 3.1) - 0.5) * 0.9;
+  // распад при уходе со сцены
+  vec3 dir = vec3(h1(rr * 91.0) - 0.5, h1(rr * 57.0) - 0.5 + 0.25, h1(rr * 33.0) * 0.8 + 0.2);
+  wp += dir * uBreak * uBreak * (2.0 + rr * 9.0);
+  vHot = f;
+  vShade = aInfo.x * k * (0.86 + 0.14 * rr) * (1.0 - uBreak * 0.6);
   vec3 n = normalize(normalMatrix * normal);
   vFace = n.z > 0.5 ? 1.0 : (n.x > 0.5 ? 0.62 : (n.y > 0.5 ? 0.78 : 0.4));
   gl_Position = projectionMatrix * modelViewMatrix * vec4(wp, 1.0);
 }`;
 const VOX_FS = `
 uniform vec3 uTint, uDark;
-varying float vShade, vFace;
+varying float vShade, vFace, vHot;
 void main() {
   vec3 col = mix(uDark, uTint, vShade) * vFace;
   col += uTint * pow(vShade, 6.0) * 0.35;
+  col += vec3(0.55, 0.85, 1.0) * vHot * 0.45 * vFace;
   gl_FragColor = vec4(col, 1.0);
 }`;
 const WALL_VS = `varying vec2 vUv; varying vec3 vP; void main(){ vUv = uv; vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
@@ -355,7 +392,7 @@ void main() {
   col += edge * (h(vec2(floor(uv.y * 700.0), tk)) - 0.5) * 0.5;
   gl_FragColor = vec4(col, 1.0);
 }`;
-const BRIGHT_FS = `uniform sampler2D tSrc; varying vec2 vUv; void main(){ vec3 c = texture2D(tSrc, vUv).rgb; float l = dot(c, vec3(.299,.587,.114)); gl_FragColor = vec4(c * smoothstep(.55, .95, l), 1.0); }`;
+const BRIGHT_FS = `uniform sampler2D tSrc; varying vec2 vUv; void main(){ vec3 c = texture2D(tSrc, vUv).rgb; float l = dot(c, vec3(.299,.587,.114)); gl_FragColor = vec4(c * smoothstep(.32, .85, l), 1.0); }`;
 const BLUR_FS = `
 uniform sampler2D tSrc; uniform vec2 uDir; varying vec2 vUv;
 void main(){
@@ -364,30 +401,57 @@ void main(){
   c += texture2D(tSrc, vUv + uDir * 3.2308).rgb * .070270; c += texture2D(tSrc, vUv - uDir * 3.2308).rgb * .070270;
   gl_FragColor = vec4(c, 1.0);
 }`;
+// ЭЛТ/VHS: изгиб кинескопа со скруглёнными углами, рывки строк, бегущая полоса
+// срыва, горизонтальный размыв с расслоением цвета, свечение в два слоя,
+// сканлайны и бегущая светлая полоса, зерно и белые штрихи, «переключение канала»
 const CRT_FS = `
-uniform sampler2D tSrc, tBloom; uniform vec2 uRes; uniform float uTime, uBarrel, uVel, uTear, uFade, uDim, uBloomK;
+uniform sampler2D tSrc, tBloom, tBloom2; uniform vec2 uRes; uniform float uTime, uBarrel, uVel, uTear, uFade, uDim, uBloomK, uSwitch;
 varying vec2 vUv;
 float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
 void main() {
   vec2 c = vUv * 2.0 - 1.0;
   float r2 = dot(c, c);
-  vec2 uv = (c * (1.0 + uBarrel * r2) * (1.0 - uBarrel * 0.35)) * 0.5 + 0.5;
+  vec2 cc = c * (1.0 + uBarrel * r2 + uBarrel * 0.3 * r2 * r2) * (1.0 - uBarrel * 0.38);
+  vec2 uv = cc * 0.5 + 0.5;
+  float t = uTime;
+  // рывки отдельных строк
+  float row = floor(uv.y * 160.0);
+  uv.x += step(0.993, h(vec2(row, floor(t * 18.0)))) * (h(vec2(row * 1.7, floor(t * 18.0))) - 0.5) * 0.035;
   // полоса срыва строк
-  float by = fract(uTime * 0.09 + h(vec2(floor(uTime * 0.6), 3.0)));
-  float inB = smoothstep(0.0, 0.015, uv.y - by) * (1.0 - smoothstep(0.05, 0.075, uv.y - by));
-  float line = floor(uv.y * uRes.y * 0.5);
-  uv.x += inB * uTear * (h(vec2(line, floor(uTime * 30.0))) - 0.5) * 0.09;
-  vec2 dc = (uv - 0.5) * (0.0035 + r2 * 0.004 + uVel * 0.02);
-  vec3 col = vec3(texture2D(tSrc, uv + dc).r, texture2D(tSrc, uv).g, texture2D(tSrc, uv - dc).b);
-  col += texture2D(tBloom, uv).rgb * uBloomK;
-  col += inB * uTear * 0.12;
-  col *= 0.93 + 0.07 * sin(uv.y * uRes.y * 1.3 + uTime * 6.0);
-  col += (h(uv * uRes + fract(uTime) * 91.0) - 0.5) * 0.07;
-  vec2 e = smoothstep(vec2(0.0), vec2(0.01), uv) * (1.0 - smoothstep(vec2(0.99), vec2(1.0), uv));
-  col *= e.x * e.y;
-  col *= 1.0 - 0.42 * r2 * 0.5;
-  col *= uDim;
-  gl_FragColor = vec4(col * uFade, 1.0);
+  float by = fract(t * 0.07 + h(vec2(floor(t * 0.45), 3.0)));
+  float inB = smoothstep(0.0, 0.012, uv.y - by) * (1.0 - smoothstep(0.045, 0.07, uv.y - by));
+  uv.x += inB * uTear * (h(vec2(floor(uv.y * uRes.y * 0.5), floor(t * 30.0))) - 0.5) * 0.11;
+  // переключение канала: кадр уезжает вверх
+  uv.y = fract(uv.y + uSwitch * uSwitch * 0.35 * (0.6 + 0.4 * sin(t * 37.0)));
+  uv.x += sin(uv.y * 90.0 + t * 7.0) * 0.0007;
+  // горизонтальный размыв (VHS) с расслоением цвета
+  vec2 px = vec2(1.5 / uRes.x, 0.0);
+  vec2 ca = vec2(0.0022 + r2 * 0.0055 + uVel * 0.018, 0.0);
+  vec3 col;
+  col.r = texture2D(tSrc, uv + ca).r * 0.5 + texture2D(tSrc, uv + ca + px * 2.0).r * 0.3 + texture2D(tSrc, uv + ca + px * 5.0).r * 0.2;
+  col.g = texture2D(tSrc, uv).g * 0.55 + texture2D(tSrc, uv - px * 1.5).g * 0.3 + texture2D(tSrc, uv + px * 3.0).g * 0.15;
+  col.b = texture2D(tSrc, uv - ca).b * 0.5 + texture2D(tSrc, uv - ca - px * 2.0).b * 0.3 + texture2D(tSrc, uv - ca - px * 5.0).b * 0.2;
+  // свечение люминофора: близкий и широкий слои
+  col += texture2D(tBloom, uv).rgb * uBloomK + texture2D(tBloom2, uv).rgb * uBloomK * 0.9;
+  col += inB * uTear * 0.1;
+  // цвет: чуть бирюзовые тени, приподнятый чёрный
+  col = col * vec3(0.95, 1.0, 1.04) + vec3(0.006, 0.01, 0.014);
+  // сканлайны и бегущая светлая полоса
+  col *= 0.88 + 0.12 * sin(uv.y * uRes.y * 1.25);
+  float rb = fract(uv.y * 0.6 - t * 0.09);
+  col *= 1.0 + 0.07 * smoothstep(0.0, 0.08, rb) * (1.0 - smoothstep(0.08, 0.2, rb));
+  // зерно и белые штрихи
+  col += (h(uv * uRes + fract(t) * 91.0) - 0.5) * 0.085;
+  col += step(0.9988, h(vec2(floor(uv.x * 70.0), floor(uv.y * 240.0)) + floor(t * 11.0))) * 0.55;
+  col *= 0.985 + 0.015 * sin(t * 59.0);
+  // помехи переключения канала
+  col = mix(col, vec3(h(uv * uRes * 0.5 + t * 17.0)) * 0.9, uSwitch * 0.8);
+  // кинескоп: скруглённые углы и виньетка
+  vec2 q = abs(cc) - vec2(1.0 - 0.07);
+  float rr = length(max(q, 0.0)) - 0.07;
+  col *= 1.0 - smoothstep(-0.012, 0.004, rr);
+  col *= 1.0 - 0.32 * r2;
+  gl_FragColor = vec4(col * uDim * uFade, 1.0);
 }`;
 
 /* ============================== геометрия ============================== */
@@ -418,7 +482,7 @@ async function start() {
   /* ---------- мир 1: портрет ---------- */
   const hero = { scene: new THREE.Scene(), cam: new THREE.PerspectiveCamera(32, 1, .1, 100) };
   hero.scene.background = new THREE.Color(0x000000);
-  const GW = small ? 70 : 104, GH = small ? 88 : 130;
+  const GW = small ? 84 : 128, GH = small ? 105 : 160;
   const pdata = await portraitData(GW, GH); setLoad(.35); await tick();
   const cells = []; for (let k = 0; k < GW * GH; k++) if (pdata.mask[k]) cells.push(k);
   const PH = 5.2, cell = PH / GH;
@@ -431,7 +495,7 @@ async function start() {
   const vgeo = new THREE.BoxGeometry(1, 1, 1);
   vgeo.setAttribute('aCell', new THREE.InstancedBufferAttribute(aCell, 3));
   vgeo.setAttribute('aInfo', new THREE.InstancedBufferAttribute(aInfo, 2));
-  const voxU = { uTime: W0.time, uCell: { value: cell }, uGlitch: { value: 0 }, uIntro: { value: reduced ? 1 : 0 }, uTint: { value: new THREE.Color(0.52, 0.74, 0.9) }, uDark: { value: new THREE.Color(0.012, 0.03, 0.05) } };
+  const voxU = { uTime: W0.time, uCell: { value: cell }, uGlitch: { value: 0 }, uIntro: { value: reduced ? 1 : 0 }, uRows: { value: GH }, uPush: { value: 0 }, uBreak: { value: 0 }, uMouse: { value: new THREE.Vector2(99, 99) }, uTint: { value: new THREE.Color(0.52, 0.74, 0.9) }, uDark: { value: new THREE.Color(0.012, 0.03, 0.05) } };
   const vox = new THREE.InstancedMesh(vgeo, new THREE.ShaderMaterial({ vertexShader: VOX_VS, fragmentShader: VOX_FS, uniforms: voxU }), cells.length);
   vox.frustumCulled = false;
   const bust = new THREE.Group(); bust.add(vox); bust.position.set(0, -.35, 0); hero.scene.add(bust);
@@ -444,7 +508,11 @@ async function start() {
 
   /* ---------- мир 2: белая галерея экранов ---------- */
   const gal = { scene: new THREE.Scene(), cam: new THREE.PerspectiveCamera(42, 1, .1, 120) };
-  gal.scene.background = new THREE.Color(0xf1f1f0); gal.scene.fog = new THREE.Fog(0xf1f1f0, 7, 26);
+  // фон галереи: светло-серый сверху, почти белый у горизонта, мягкий низ
+  const gbc = doc.createElement("canvas"); gbc.width = 4; gbc.height = 256; const gbg = gbc.getContext("2d"), gbgr = gbg.createLinearGradient(0, 0, 0, 256);
+  gbgr.addColorStop(0, "#cfcfcc"); gbgr.addColorStop(.48, "#f3f3f1"); gbgr.addColorStop(.62, "#fbfbfa"); gbgr.addColorStop(1, "#dededb");
+  gbg.fillStyle = gbgr; gbg.fillRect(0, 0, 4, 256);
+  gal.scene.background = new THREE.CanvasTexture(gbc); gal.scene.fog = new THREE.Fog(0xf3f3f1, 7, 26);
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(80, 120), new THREE.MeshBasicMaterial({ color: 0xffffff }));
   floor.rotation.x = -Math.PI / 2; floor.position.set(0, -1.9, -30); gal.scene.add(floor);
   const slides = [], screens = [];
@@ -466,7 +534,7 @@ async function start() {
     grp.position.set(side * .55, (i % 3 - 1) * .18, -i * gal.spacing);
     grp.rotation.set(0, -side * .14, side * .03);
     m.userData.i = i; gal.scene.add(grp);
-    screens.push({ mesh: m, grp, u, hover: 0, glitch: 0 });
+    screens.push({ mesh: m, grp, u, hover: 0, burst: 0, rx: 0, ry: -side * .14, rz: side * .03 });
   });
 
   /* ---------- мир 3: синий город сверху (about) ---------- */
@@ -561,12 +629,13 @@ async function start() {
   const rtOpt = { depthBuffer: true, type: THREE.UnsignedByteType };
   const rtA = new THREE.WebGLRenderTarget(1, 1, rtOpt), rtB = new THREE.WebGLRenderTarget(1, 1, rtOpt), rtM = new THREE.WebGLRenderTarget(1, 1, { depthBuffer: false });
   const rtH = new THREE.WebGLRenderTarget(1, 1, { depthBuffer: false }), rtQ1 = new THREE.WebGLRenderTarget(1, 1, { depthBuffer: false }), rtQ2 = new THREE.WebGLRenderTarget(1, 1, { depthBuffer: false });
+  const rtE1 = new THREE.WebGLRenderTarget(1, 1, { depthBuffer: false }), rtE2 = new THREE.WebGLRenderTarget(1, 1, { depthBuffer: false });   // широкий слой свечения, 1/8
   const tri = new THREE.BufferGeometry(); tri.setAttribute('position', new THREE.BufferAttribute(new Float32Array([-1, -1, 0, 3, -1, 0, -1, 3, 0]), 3));
   const post = new THREE.Scene(), postCam = new THREE.Camera(), quad = new THREE.Mesh(tri); quad.frustumCulled = false; post.add(quad);
   const mixM = new THREE.ShaderMaterial({ vertexShader: FS_TRI, fragmentShader: MIX_FS, depthTest: false, uniforms: { tA: { value: null }, tB: { value: null }, uMix: { value: 0 }, uTime: W0.time, uSeed: { value: 1 } } });
   const brightM = new THREE.ShaderMaterial({ vertexShader: FS_TRI, fragmentShader: BRIGHT_FS, depthTest: false, uniforms: { tSrc: { value: null } } });
   const blurM = new THREE.ShaderMaterial({ vertexShader: FS_TRI, fragmentShader: BLUR_FS, depthTest: false, uniforms: { tSrc: { value: null }, uDir: { value: new THREE.Vector2() } } });
-  const crtM = new THREE.ShaderMaterial({ vertexShader: FS_TRI, fragmentShader: CRT_FS, depthTest: false, uniforms: { tSrc: { value: null }, tBloom: { value: rtQ2.texture }, uRes: { value: new THREE.Vector2() }, uTime: W0.time, uBarrel: { value: .06 }, uVel: { value: 0 }, uTear: { value: 0 }, uFade: { value: 0 }, uDim: { value: 1 }, uBloomK: { value: .85 } } });
+  const crtM = new THREE.ShaderMaterial({ vertexShader: FS_TRI, fragmentShader: CRT_FS, depthTest: false, uniforms: { tSrc: { value: null }, tBloom: { value: rtQ2.texture }, tBloom2: { value: rtE2.texture }, uRes: { value: new THREE.Vector2() }, uTime: W0.time, uBarrel: { value: .06 }, uVel: { value: 0 }, uTear: { value: 0 }, uFade: { value: 0 }, uDim: { value: 1 }, uBloomK: { value: .85 }, uSwitch: { value: 0 } } });
   const pass = (mat, target) => { quad.material = mat; renderer.setRenderTarget(target); renderer.render(post, postCam); };
   const worlds = [hero, gal, city, alley, studio];
 
@@ -576,7 +645,7 @@ async function start() {
     worlds.forEach(o => { o.cam.aspect = w / h; o.cam.updateProjectionMatrix(); });
     const W = Math.floor(w * dpr), H = Math.floor(h * dpr);
     rtA.setSize(W, H); rtB.setSize(W, H); rtM.setSize(W, H);
-    rtH.setSize(W >> 1, H >> 1); rtQ1.setSize(W >> 2, H >> 2); rtQ2.setSize(W >> 2, H >> 2);
+    rtH.setSize(W >> 1, H >> 1); rtQ1.setSize(W >> 2, H >> 2); rtQ2.setSize(W >> 2, H >> 2); rtE1.setSize(W >> 3, H >> 3); rtE2.setSize(W >> 3, H >> 3);
     crtM.uniforms.uRes.value.set(W, H);
     // на узком экране портрет и экраны чуть дальше
     const narrow = w / h < .8;
@@ -603,7 +672,8 @@ async function start() {
   /* ============================== состояние и ввод ============================== */
   let target = 0, cur = 0, vel = 0, ready = false, menuOpen = false;
   let detail = -1, dMix = 0, dTarget = 0, mainSlide = 0;
-  const mouse = new THREE.Vector2(), mouseT = new THREE.Vector2(), ndc = new THREE.Vector2(-9, -9);
+  const mouse = new THREE.Vector2(), mouseT = new THREE.Vector2(), ndc = new THREE.Vector2(-9, -9), mouseRaw = new THREE.Vector2(9, 9);
+  let lastMove = -1e9;
   const segs = { h2g: [.1, .15], g2c: [.62, .67], c2a: [.84, .89] };
   const galL = p => clamp((p - .1) / (.67 - .1), 0, 1);
   const stopP = i => .1 + (.1 + i * (.8 / (PROJECTS.length - 1))) * (.67 - .1);
@@ -627,6 +697,7 @@ async function start() {
   addEventListener('pointermove', e => {
     if (e.pointerType !== 'mouse') return;
     mouseT.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); setNdc(e.clientX, e.clientY);
+    mouseRaw.copy(mouseT); lastMove = performance.now();
     label.style.transform = `translate(${e.clientX + 16}px, ${e.clientY + 14}px)`;
   }, { passive: true });
   canvas.addEventListener('click', () => { if (hoverI >= 0 && detail < 0 && !menuOpen) openProject(hoverI); });
@@ -673,7 +744,7 @@ async function start() {
   function openProject(i, push = true) {
     detail = i; dTarget = 1; hoverI = -1; label.classList.remove('on'); canvas.style.cursor = '';
     const p = PROJECTS[i];
-    dName.textContent = p.name; dInfo.textContent = p.info; dRole.innerHTML = p.role.join('<br>'); dStack.textContent = p.stack; dLink.href = p.href;
+    dName.dataset.txt = p.name; dInfo.dataset.txt = p.info; dName.textContent = p.name; dInfo.textContent = p.info; decodeText(dName, 500); decodeText(dInfo, 1100); dRole.innerHTML = p.role.join('<br>'); dStack.textContent = p.stack; dLink.href = p.href;
     dThumbs.innerHTML = '';
     slides[i].thumbs.forEach((u, k) => { const b = doc.createElement('button'); b.type = 'button'; b.style.backgroundImage = `url(${u})`; b.setAttribute('aria-label', `Image ${k + 1}`); b.addEventListener('click', () => setSlide(k)); dThumbs.appendChild(b); });
     setSlide(0);
@@ -721,7 +792,7 @@ async function start() {
   /* ============================== кадр ============================== */
   const uiHero = $('ui-hero'), uiWork = $('work-nav'), uiAbout = $('ui-about'), uiContact = $('ui-contact');
   const aboutPanels = [...uiAbout.querySelectorAll('.about-panel')];
-  const tmpV = new THREE.Vector3();
+  const tmpV = new THREE.Vector3(), pv2 = new THREE.Vector3(), hitP = new THREE.Vector3(), tmp2 = new THREE.Vector2(), bustPlane = new THREE.Plane();
   let last = 0, time = 0, tearT = 0, mixSeed = 1;
   function camGallery(L, t) {
     const n = PROJECTS.length, f = clamp((L - .1) / .8, 0, 1) * (n - 1), i0 = Math.min(n - 2, Math.floor(f)), fr = f - i0;
@@ -770,8 +841,16 @@ async function start() {
       bust.rotation.y = mouse.x * .42 + Math.sin(time * .35) * .06;
       bust.rotation.x = -mouse.y * .16;
       voxU.uGlitch.value = clamp(Math.abs(vel) * 4 + smooth(.3, 1, hl), 0, 1);
+      voxU.uBreak.value = reduced ? 0 : smooth(.25, 1, hl);     // уходим — бюст рассыпается
       hero.cam.position.set(mouse.x * .3, .2 - hl * 1.4, hero.base - hl * 3);
       hero.cam.lookAt(0, -hl * 1.2, 0);
+      // точка курсора в координатах бюста: там кубики вдавливаются и светятся
+      hero.cam.updateMatrixWorld(); bust.updateMatrixWorld();
+      ray.setFromCamera(mouseRaw, hero.cam);
+      bustPlane.set(tmpV.set(0, 0, 1).transformDirection(bust.matrixWorld), 0).translate(bust.getWorldPosition(pv2));
+      const pushOn = !coarse && performance.now() - lastMove < 2500 && !menuOpen;
+      if (ray.ray.intersectPlane(bustPlane, hitP)) { bust.worldToLocal(hitP); voxU.uMouse.value.lerp(tmp2.set(hitP.x, hitP.y), 1 - Math.exp(-dt * 14)); }
+      voxU.uPush.value += ((pushOn ? 1 : 0) - voxU.uPush.value) * (1 - Math.exp(-dt * 4));
     }
     // --- галерея ---
     let stop = 0;
@@ -781,13 +860,18 @@ async function start() {
       const hi = (detail < 0 && !menuOpen && !coarse) ? pick() : -1;
       if (hi !== hoverI) {
         hoverI = hi; canvas.style.cursor = hi >= 0 ? 'pointer' : '';
-        if (hi >= 0) { label.textContent = `${String(hi + 1).padStart(2, '0')} — ${PROJECTS[hi].name} · open`; label.classList.add('on'); } else label.classList.remove('on');
+        if (hi >= 0) screens[hi].burst = 1;   // наведение — всплеск помех на экране
+        if (hi >= 0) { label.dataset.txt = `${String(hi + 1).padStart(2, "0")} — ${PROJECTS[hi].name} · open`; decodeText(label, 380); label.classList.add("on"); } else label.classList.remove("on");
       }
       screens.forEach((s, i) => {
         s.hover += ((i === hoverI ? 1 : 0) - s.hover) * (1 - Math.exp(-dt * 8));
         s.u.uHover.value = s.hover;
         const dz = Math.abs(gal.cam.position.z - gal.base - s.grp.position.z);
-        s.u.uGlitch.value = clamp(Math.abs(vel) * 3 + smooth(1.2, 3.2, dz) * .5, 0, 1);
+        s.burst = Math.max(0, s.burst - dt * 2.2);
+        s.u.uGlitch.value = clamp(Math.abs(vel) * 3 + smooth(1.2, 3.2, dz) * .5 + s.burst * s.burst, 0, 1);
+        // экран под курсором поворачивается к нему
+        s.grp.rotation.set(s.rx - ndc.y * .16 * s.hover, s.ry + ndc.x * .2 * s.hover, s.rz);
+        s.grp.scale.setScalar(1 + s.hover * .035);
         s.grp.position.y = (i % 3 - 1) * .18 + Math.sin(time * .6 + i) * .04;
       });
     } else if (hoverI >= 0) { hoverI = -1; label.classList.remove('on'); canvas.style.cursor = ''; }
@@ -833,17 +917,21 @@ async function start() {
     brightM.uniforms.tSrc.value = src.texture; pass(brightM, rtH);
     blurM.uniforms.tSrc.value = rtH.texture; blurM.uniforms.uDir.value.set(1 / rtQ1.width, 0); pass(blurM, rtQ1);
     blurM.uniforms.tSrc.value = rtQ1.texture; blurM.uniforms.uDir.value.set(0, 1 / rtQ1.height); pass(blurM, rtQ2);
+    blurM.uniforms.tSrc.value = rtQ2.texture; blurM.uniforms.uDir.value.set(1.5 / rtE1.width, 0); pass(blurM, rtE1);
+    blurM.uniforms.tSrc.value = rtE1.texture; blurM.uniforms.uDir.value.set(0, 1.5 / rtE1.height); pass(blurM, rtE2);
     const trans = (B && mixK > .001 && mixK < .999) ? 1 : 0;
     const speed = clamp(Math.abs(vel) * 3, 0, 1);
     tearT += ((trans ? 1 : speed * .8 + .06) - tearT) * (1 - Math.exp(-dt * 6));
     crtM.uniforms.tSrc.value = src.texture;
-    crtM.uniforms.uBarrel.value = .07 + speed * .2 + trans * .18 + (A === gal && B !== studio ? .05 : 0);
+    crtM.uniforms.uBarrel.value = .13 + speed * .22 + trans * .2 + (A === gal && B !== studio ? .07 : 0);
+    // «переключение канала» в середине смены миров: кадр уезжает, вспышка помех
+    crtM.uniforms.uSwitch.value = (B && !reduced) ? (1 - smooth(0, .16, Math.abs(mixK - .5))) * .85 : 0;
     crtM.uniforms.uVel.value = speed; crtM.uniforms.uTear.value = tearT;
     crtM.uniforms.uFade.value = smooth(0, .25, intro);
     crtM.uniforms.uDim.value = menuOpen ? .55 : 1;
     // белая галерея и так светлая — свечение там слабее, иначе всё пересвечено
     const whiteK = (A === gal && B !== studio) ? (B ? 1 - mixK : 1) : (B === gal ? mixK : 0);
-    crtM.uniforms.uBloomK.value = lerp(.85, .18, whiteK);
+    crtM.uniforms.uBloomK.value = lerp(1.05, .22, whiteK);
     pass(crtM, null);
 
     // --- интерфейс поверх ---
@@ -856,6 +944,11 @@ async function start() {
     aboutPanels[0].classList.toggle('on', cL > .16 && cL < .55);
     aboutPanels[1].classList.toggle('on', cL >= .55 && cL < .93);
     show(uiContact, smooth(.92, .97, p) * (1 - det));
+    // расшифровка текстов в момент появления
+    edge("hero", intro > .45 && p < .08, () => { decodeText(heroName, 700); decodeText(heroTag, 1200); });
+    edge("work", p > .15 && p < .62 && det < .5, () => decodeText(workTitle, 500));
+    aboutPanels.forEach((el, i) => edge("ab" + i, el.classList.contains("on"), () => { decodeText(el.querySelector(".ab-k"), 400); decodeText(el.querySelector(".ab-t"), 900); }));
+    edge("ct", p > .93 && det < .5, () => { ctLines.forEach((s, i) => setTimeout(() => decodeText(s, 600), i * 160)); });
     show(uiDetail, det); show(closeBtn, det);
   }
   // прозрачность + скрытие: невидимые ссылки и кнопки не должны ловить клики
@@ -865,7 +958,11 @@ async function start() {
     const s = cur < .1 ? 'home' : cur < .62 ? 'work' : cur < .89 ? 'about' : 'contact';
     if (s !== lastSec) { lastSec = s; menuLinks.forEach(a => a.classList.toggle('on', a.dataset.go === s)); }
   }, 250);
+  const edgePrev = {};
+  function edge(k, cond, fn) { if (cond && !edgePrev[k]) fn(); edgePrev[k] = cond; }
+  const heroName = doc.querySelector(".hero-name"), heroTag = doc.querySelector(".hero-r"), workTitle = doc.querySelector(".work-nav .pix");
+  const ctLines = [...doc.querySelectorAll(".ct h2 span, .ct-sub span")];
   function show(el, o) { el.style.opacity = o.toFixed(3); el.style.visibility = o > .01 ? 'visible' : 'hidden'; }
   requestAnimationFrame(frame);
-  if (location.hostname === 'localhost') win.__v20 = { get cur() { return cur; }, set target(v) { target = v; }, openProject, closeProject, renderer, PROJECTS };
+  if (location.hostname === 'localhost') win.__v20 = { get cur() { return cur; }, set target(v) { target = v; }, jump(v) { target = cur = v; vel = 0; }, openProject, closeProject, renderer, PROJECTS };
 }
