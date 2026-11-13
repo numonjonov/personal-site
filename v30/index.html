@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Pahlavon Numonjonov — v30</title>
+<meta name="description" content="Pahlavon Numonjonov — backend engineer in Tashkent. Java, Spring Boot, Oracle, PL/SQL." />
+<meta name="robots" content="noindex" />
+<meta name="theme-color" content="#fafafa" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23111'/><circle cx='72' cy='30' r='9' fill='%23fff'/></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css?v=1" />
+<script>document.documentElement.classList.replace('no-js', 'js');</script>
+</head>
+
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<!-- загрузка: точка на волнистой орбите вокруг знака -->
+<div class="pre" id="pre" aria-hidden="true">
+  <canvas id="pre-c" width="240" height="240"></canvas>
+  <p class="pre-mark">PN<i>•</i></p>
+  <p class="pre-num" id="pre-num">00</p>
+</div>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<!-- шапка -->
+<header class="top" id="top">
+  <a class="logo" href="#home">PN<i>•</i></a>
+  <nav class="pill" aria-label="Sections">
+    <a href="#home" class="on">Home</a><a href="#about">About me</a><a href="#experience">Experience</a><a href="#projects">Projects</a><a href="#cases">Cases</a><a href="#services">Services</a>
+  </nav>
+  <div class="socials">
+    <a href="https://t.me/CustomAnnotation" rel="noopener" aria-label="Telegram"><svg viewBox="0 0 24 24"><path d="M21.9 4.6 18.7 19.7c-.2 1.1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.4-5 9.1-8.2c.4-.4-.1-.5-.6-.2L6.2 13.4 1.4 11.9c-1-.3-1.1-1 .2-1.5L20.5 3c.9-.3 1.6.2 1.4 1.6z"/></svg></a>
+    <a href="https://github.com/numonjonov" rel="noopener" aria-label="GitHub"><svg viewBox="0 0 24 24"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.4-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg></a>
+    <button type="button" class="copy-mail" aria-label="Copy email"><svg viewBox="0 0 24 24"><path d="M3 5h18v14H3z" fill="none" stroke="currentColor" stroke-width="2"/><path d="m3 6 9 7 9-7" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
+  </div>
+  <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="drawer" aria-label="Menu"><i></i><i></i></button>
+</header>
+<div class="drawer" id="drawer">
+  <nav aria-label="Mobile">
+    <a href="#home">Home</a><a href="#about">About me</a><a href="#experience">Experience</a><a href="#projects">Projects</a><a href="#cases">Cases</a><a href="#services">Services</a><a href="#contact">Contact</a>
+  </nav>
+</div>
+
+<main id="main">
+<!-- первый экран -->
+<section class="hero" id="home">
+  <h1 class="hero-t" aria-label="Backend engineer">
+    <span class="ht-1 rv">BACKEND</span>
+    <span class="ht-2 metal rv">ENGINEER</span>
+  </h1>
+  <canvas class="bust" id="bust" aria-hidden="true"></canvas>
+  <div class="hero-l rv">
+    <p class="est">TASHKENT · SINCE 2025</p>
+    <a class="round" href="#about" aria-label="Scroll to about"><svg viewBox="0 0 24 24"><path d="M7 7l10 10M17 9v8H9" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></a>
+  </div>
+  <div class="hero-r rv">
+    <p>I build services that talk to a core banking system — and keep talking at 3 a.m.</p>
+    <ul><li>JAVA · SPRING</li><li>ORACLE · PL/SQL</li><li class="b">INTEGRATIONS</li></ul>
+  </div>
+</section>
+
+<!-- about: карточка растёт по прокрутке -->
+<section class="about" id="about">
+  <div class="ab-stick">
+    <canvas class="ab-bg" id="ab-bg" aria-hidden="true"></canvas>
+    <div class="ab-card" id="ab-card">
+      <canvas class="ab-media" id="ab-media" aria-hidden="true"></canvas>
+      <div class="ab-text" id="ab-text">
+        <div class="ab-meta"><span>DISCIPLINE &amp; CRAFT</span><span>JAVA · SPRING BOOT · ORACLE · PL/SQL</span></div>
+        <p>I build the layer underneath: REST services around a core banking system, a wrapper for the state identity provider, digital signatures in a legacy JavaEE app — with logs before guesses and PL/SQL where the logic belongs.</p>
+        <div class="ab-btns"><a class="btn-w" href="#contact" data-contact>Get in touch <b>→</b></a><a class="btn-o" href="#services">Services</a></div>
+      </div>
+    </div>
+    <p class="ab-word ab-w1" id="ab-w1">ABOUT</p>
+    <p class="ab-word ab-w2" id="ab-w2">ME</p>
+    <p class="ab-hint" id="ab-hint">SCROLL TO EXPAND</p>
+    <p class="ab-k" id="ab-k">BACKGROUND &amp; VISION</p>
+  </div>
+</section>
+<div class="marq" aria-hidden="true"><div class="marq-in" id="marq">BACKEND ENGINEER · TASHKENT · BACKEND ENGINEER · TASHKENT · </div></div>
+
+<!-- опыт: горизонтальная лента -->
+<section class="exp" id="experience">
+  <div class="exp-stick">
+    <p class="exp-ghost g1" id="g1">BACKEND ENGINEER</p>
+    <p class="exp-ghost g2" id="g2">2025 — NOW</p>
+    <div class="exp-track" id="exp-track">
+      <article class="exp-p exp-title">
+        <p class="tag">ORIGIN &amp; FOUNDATIONS</p>
+        <h2>WHERE<br />I'VE BEEN</h2>
+        <p class="lead">From intern to backend engineer at a commercial bank, with my own systems running after hours.</p>
+      </article>
+      <article class="exp-p">
+        <p class="tag">2025 — NOW · COMMERCIAL BANK, TASHKENT</p>
+        <h3>BACKEND<br />ENGINEER</h3>
+        <p class="lead">Intern from early 2025, full-time since late 2025. The integration layer around a core banking system on Oracle.</p>
+        <div class="ms"><div><b>SERVICES</b><span>REST services for rates and reference data from iABS, behind JWT.</span></div><div><b>IDENTITY</b><span>A wrapper around MyID, the state biometric identification provider.</span></div><div><b>SIGNATURES</b><span>Found why e-key signing failed in a legacy JavaEE / WebLogic app.</span></div></div>
+      </article>
+      <article class="exp-p">
+        <p class="tag">AFTER HOURS · OWN SYSTEMS</p>
+        <h3>BUILD,<br />RUN, KEEP</h3>
+        <p class="lead">Small services designed, built and operated end to end — and kept running.</p>
+        <div class="ms"><div><b>UZ-STATUS</b><span>Public uptime monitor, Java 21 and PostgreSQL.</span></div><div><b>BOTS</b><span>Telegram shops, a media bot in a 256 MB heap, an assistant in plain Java.</span></div><div><b>ZERO DEPS</b><span>A currency tracker on the Python standard library only.</span></div></div>
+      </article>
+      <article class="exp-p">
+        <p class="tag">TOOLBOX</p>
+        <h3>STACK</h3>
+        <p class="lead">Java 17/21 · Spring Boot · Spring Security · Oracle · PL/SQL · PostgreSQL · SQLite · Python · Docker · Linux · Prometheus.</p>
+        <div class="ms"><div><b>DATA</b><span>Logic in the database when it belongs there.</span></div><div><b>OPS</b><span>Logs before guesses, honest timeouts.</span></div><div><b>LANGS</b><span>Uzbek, Russian, English.</span></div></div>
+      </article>
+    </div>
+    <div class="exp-tabs"><span id="tab-a" class="on">BANK</span><span id="tab-b">AFTER HOURS</span><span id="tab-c">STACK</span></div>
+  </div>
+</section>
+
+<!-- избранные проекты: карусель с жидкой линзой (WebGL поверх) -->
+<section class="feat" id="projects">
+  <h2 class="sec-t rv">FEATURED PROJECTS</h2>
+  <div class="fc" id="fc">
+    <canvas class="fc-gl" id="fc-gl" aria-hidden="true"></canvas>
+  </div>
+  <p class="fc-cap" id="fc-cap"></p>
+</section>
+
+<!-- кейсы: 3D-барабан -->
+<section class="cases" id="cases">
+  <h2 class="sec-t rv">CASE STUDIES</h2>
+  <div class="drum-wrap">
+    <div class="drum" id="drum" tabindex="0" aria-label="Case studies wheel. Use arrow keys to rotate, Enter to open.">
+      <div class="ring" id="ring"></div>
+      <div class="drum-c"><p class="drum-k">WORKS '26</p><p class="drum-n" id="drum-n"></p></div>
+    </div>
+    <ol class="drum-list" id="drum-list"></ol>
+  </div>
+  <p class="drum-hint">SCROLL OR DRAG THE WHEEL TO CYCLE · CLICK TO OPEN</p>
+</section>
+
+<!-- услуги: аккордеон -->
+<section class="serv" id="services">
+  <h2 class="sec-t c rv">WHAT I DO</h2>
+  <p class="serv-sub rv">Services that stay up, data that stays consistent, integrations that keep working when the other side does not.</p>
+  <div class="acc" id="acc">
+    <div class="acc-i"><button type="button" class="acc-h" aria-expanded="false"><span class="n">1</span><span>BACKEND SERVICES</span><span class="pl">+</span></button><div class="acc-b"><div><p>REST APIs in Java and Spring Boot with Spring Security and JWT, organised by feature, with integration tests on a real database.</p><div class="acc-f"><span>DELIVERABLES: API, TESTS, DOCKER, METRICS</span><a href="https://t.me/CustomAnnotation" rel="noopener">INQUIRE ↗</a></div></div></div></div>
+    <div class="acc-i"><button type="button" class="acc-h" aria-expanded="false"><span class="n">2</span><span>DATABASES &amp; PL/SQL</span><span class="pl">+</span></button><div class="acc-b"><div><p>Oracle and PostgreSQL schemas, PL/SQL packages where the logic belongs in the database, migrations and retention that keep storage flat.</p><div class="acc-f"><span>DELIVERABLES: SCHEMA, PACKAGES, FLYWAY</span><a href="https://t.me/CustomAnnotation" rel="noopener">INQUIRE ↗</a></div></div></div></div>
+    <div class="acc-i"><button type="button" class="acc-h" aria-expanded="false"><span class="n">3</span><span>INTEGRATIONS</span><span class="pl">+</span></button><div class="acc-b"><div><p>Talking to systems older than the request: core banking, identity providers without an SDK, digital signatures inside legacy JavaEE.</p><div class="acc-f"><span>DELIVERABLES: ADAPTERS, RUNBOOKS, ALERTS</span><a href="https://t.me/CustomAnnotation" rel="noopener">INQUIRE ↗</a></div></div></div></div>
+    <div class="acc-i"><button type="button" class="acc-h" aria-expanded="false"><span class="n">4</span><span>TELEGRAM BOTS &amp; TOOLS</span><span class="pl">+</span></button><div class="acc-b"><div><p>Bots and small tools that run for months: queues instead of blocking handlers, fallbacks between providers, memory limits that hold.</p><div class="acc-f"><span>DELIVERABLES: BOT, DEPLOY, MONITORING</span><a href="https://t.me/CustomAnnotation" rel="noopener">INQUIRE ↗</a></div></div></div></div>
+  </div>
+</section>
+</main>
+
+<!-- контакт -->
+<footer class="foot" id="contact">
+  <p class="foot-big metal-d" aria-label="Let's talk">LET'S TALK</p>
+  <div class="foot-pills">
+    <a href="https://t.me/CustomAnnotation" rel="noopener">Telegram</a><a href="https://github.com/numonjonov" rel="noopener">GitHub</a><button type="button" class="copy-mail">Email</button><a href="/resume.html">Résumé</a><button type="button" class="w" data-contact>Contact me</button>
+  </div>
+  <div class="foot-row"><span>© 2026 Pahlavon Numonjonov — Tashkent</span><span class="vers">versions: <a href="/">main</a> <a href="/v1/">v1</a> <a href="/v2/">v2</a> <a href="/v3/">v3</a> <a href="/v4/">v4</a> <a href="/v5/">v5</a> <a href="/v6/">v6</a> <a href="/v7/">v7</a> <a href="/v8/">v8</a> <a href="/v10/">v10</a> <a href="/v11/">v11</a> <a href="/v12/">v12</a> <a href="/v13/">v13</a> <a href="/v20/">v20</a> <a href="/v30/" aria-current="page">v30</a></span></div>
+</footer>
+
+<!-- окно проекта -->
+<div class="modal" id="pm" role="dialog" aria-modal="true" aria-labelledby="pm-t" hidden>
+  <div class="modal-in">
+    <button class="modal-x" type="button" aria-label="Close">×</button>
+    <div class="pm-img" id="pm-img"></div>
+    <div class="pm-body">
+      <p class="tag" id="pm-k"></p>
+      <h3 id="pm-t"></h3>
+      <p id="pm-d"></p>
+      <dl class="pm-dl"><div><dt>ROLE</dt><dd id="pm-r"></dd></div><div><dt>STACK</dt><dd id="pm-s"></dd></div><div><dt>STATUS</dt><dd id="pm-st"></dd></div></dl>
+      <a class="btn-b" id="pm-a" href="#">Read the case study <b>→</b></a>
+    </div>
+  </div>
+</div>
+<!-- окно контакта -->
+<div class="modal" id="cm" role="dialog" aria-modal="true" aria-labelledby="cm-t" hidden>
+  <div class="modal-in cm-in">
+    <button class="modal-x" type="button" aria-label="Close">×</button>
+    <p class="tag">CONTACT</p>
+    <h3 id="cm-t">Let's build something that keeps running.</h3>
+    <p>The fastest way is Telegram — I reply within 24 hours. Open to work, remote or on site.</p>
+    <div class="cm-list">
+      <a href="https://t.me/CustomAnnotation" rel="noopener"><span>Telegram</span><i>@CustomAnnotation ↗</i></a>
+      <button type="button" class="copy-mail"><span>Email</span><i>pahlavon@numonjonov.com — copy</i></button>
+      <a href="https://github.com/numonjonov" rel="noopener"><span>GitHub</span><i>numonjonov ↗</i></a>
+      <a href="/resume.html"><span>Résumé</span><i>one page →</i></a>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="app.js?v=1"></script>
+</body>
+</html>
