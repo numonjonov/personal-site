@@ -593,6 +593,11 @@ async function start() {
   resize(); addEventListener('resize', resize);
   // все пять миров компилируются под LOADING, иначе первый показ города, улицы и студии даёт кадр 50–66 мс
   worlds.forEach(o => renderer.compile(o.scene, o.cam));
+  // и все проходы постобработки — холостым кадром (смешивание миров иначе собиралось бы на первом переходе)
+  mixM.uniforms.tA.value = rtA.texture; mixM.uniforms.tB.value = rtB.texture; pass(mixM, rtM);
+  brightM.uniforms.tSrc.value = rtM.texture; pass(brightM, rtH);
+  blurM.uniforms.tSrc.value = rtH.texture; pass(blurM, rtQ1);
+  crtM.uniforms.tSrc.value = rtM.texture; pass(crtM, null);
   setLoad(1);
 
   /* ============================== состояние и ввод ============================== */
