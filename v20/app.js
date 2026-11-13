@@ -591,7 +591,8 @@ async function start() {
     gal.scene.fog.near = gal.base + 1.5; gal.scene.fog.far = gal.base + gal.spacing * 2 + 8;
   }
   resize(); addEventListener('resize', resize);
-  renderer.compile(hero.scene, hero.cam); renderer.compile(gal.scene, gal.cam);
+  // все пять миров компилируются под LOADING, иначе первый показ города, улицы и студии даёт кадр 50–66 мс
+  worlds.forEach(o => renderer.compile(o.scene, o.cam));
   setLoad(1);
 
   /* ============================== состояние и ввод ============================== */
