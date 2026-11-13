@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Pahlavon Numonjonov — v20</title>
+<meta name="description" content="Pahlavon Numonjonov — backend engineer in Tashkent. Java, Spring Boot, Oracle, PL/SQL." />
+<meta name="robots" content="noindex" />
+<meta name="theme-color" content="#000000" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'><rect width='8' height='8' fill='%23000'/><rect x='2' y='2' width='4' height='4' fill='%23cfe8ff'/></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Doto:wght@500;700;900&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css?v=1" />
+<!-- Есть WebGL — сразу прячем текстовую версию (до первой отрисовки). app.js снимет класс, если сцена не запустится. -->
+<script>document.documentElement.classList.replace('no-js', 'js'); if (window.WebGLRenderingContext) document.documentElement.classList.add('has-gl');</script>
+</head>
+
+<body>
+<a class="skip" href="#text">Skip to content</a>
+
+<!-- загрузка -->
+<div class="loader" id="loader" aria-hidden="true">
+  <span class="loader-word">Loading</span>
+  <span class="loader-bar"><i class="loader-fill" id="loader-fill"></i><i class="loader-dot"></i></span>
+</div>
+
+<!-- телефон: согласие на гироскоп -->
+<div class="gate" id="gate" hidden>
+  <p>For the full experience<br />allow <em>Motion and Orientation</em></p>
+  <div class="gate-btns">
+    <button type="button" id="gate-yes">Allow</button>
+    <button type="button" id="gate-no">Decline</button>
+  </div>
+</div>
+
+<canvas class="stage" id="gl" aria-hidden="true"></canvas>
+
+<!-- шапка -->
+<header class="top">
+  <a class="name" href="#home" data-go="home">pahlavon numonjonov</a>
+  <div class="top-r">
+    <a class="talk" href="#contact" data-go="contact">let’s talk<i class="blink"></i></a>
+    <button class="menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="menu"><span class="mb-open">menu <b>≡</b></span><span class="mb-close">close – x</span></button>
+  </div>
+</header>
+
+<!-- меню -->
+<nav class="menu" id="menu" aria-label="Menu">
+  <ol class="menu-list">
+    <li><a href="#home" data-go="home">home<span>01</span></a></li>
+    <li><a href="#work" data-go="work">work<span>02</span></a></li>
+    <li><a href="#about" data-go="about">about<span>03</span></a></li>
+    <li><a href="#contact" data-go="contact">contact<span>04</span></a></li>
+    <li><a href="/resume.html">résumé<span>05</span></a></li>
+  </ol>
+  <ul class="menu-social">
+    <li><a href="https://t.me/CustomAnnotation" rel="noopener">Telegram</a></li>
+    <li><a href="https://github.com/numonjonov" rel="noopener">GitHub</a></li>
+    <li><a href="mailto:pahlavon@numonjonov.com">Email</a></li>
+  </ul>
+  <p class="menu-versions">versions: <a href="/">main</a> <a href="/v1/">v1</a> <a href="/v2/">v2</a> <a href="/v3/">v3</a> <a href="/v4/">v4</a> <a href="/v5/">v5</a> <a href="/v6/">v6</a> <a href="/v7/">v7</a> <a href="/v8/">v8</a> <a href="/v10/">v10</a> <a href="/v11/">v11</a> <a href="/v12/">v12</a> <a href="/v13/">v13</a> <a href="/v20/" aria-current="page">v20</a></p>
+</nav>
+
+<!-- главы поверх сцены -->
+<section class="ui ui-hero" id="ui-hero" aria-hidden="true">
+  <div class="hero-l">
+    <p class="glow pix hero-name">pahlavon numonjonov</p>
+    <p class="hero-sub"><span>// portfolio</span><span>©2026</span></p>
+  </div>
+  <p class="hero-r glow">backend engineer building services that talk to a core banking system — and keep talking at 3 a.m.</p>
+</section>
+
+<nav class="ui work-nav" id="work-nav" aria-hidden="true">
+  <p class="pix">selected work</p>
+  <div class="wn-list"><i class="wn-dot" id="wn-dot"></i><ol id="wn-ol"></ol></div>
+</nav>
+<div class="label" id="label" aria-hidden="true"></div>
+
+<section class="ui ui-about" id="ui-about" aria-hidden="true">
+  <div class="about-panel">
+    <p class="ab-k">about me</p>
+    <p class="ab-t glow">I build the layer underneath — services that talk to a core banking system on Oracle, and keep talking at 3 a.m.</p>
+    <p class="ab-p">Backend engineer at a commercial bank in Tashkent since 2025. PL/SQL where the logic belongs in the database, Java everywhere else.</p>
+    <a class="ab-a" href="/resume.html">résumé →</a>
+  </div>
+  <div class="about-panel">
+    <p class="ab-k">what i work with</p>
+    <p class="ab-t glow">Java 21, Spring Boot, Oracle, PL/SQL, PostgreSQL, Docker, Linux.</p>
+    <p class="ab-p">At work: iABS core banking, a MyID wrapper, e-key signatures on WebLogic. After hours: an uptime monitor for Uzbekistan and a handful of Telegram bots.</p>
+    <a class="ab-a" href="https://github.com/numonjonov" rel="noopener">github →</a>
+  </div>
+</section>
+
+<section class="ui ui-contact" id="ui-contact" aria-hidden="true">
+  <i class="cross c1"></i><i class="cross c2"></i><i class="cross c3"></i><i class="cross c4"></i>
+  <div class="ct">
+    <svg class="smile" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1" /><rect x="5" y="5.5" width="1.4" height="1.4" fill="currentColor" /><rect x="9.6" y="5.5" width="1.4" height="1.4" fill="currentColor" /><path d="M4.8 9.6 Q8 12.6 11.2 9.6" fill="none" stroke="currentColor" stroke-width="1" /></svg>
+    <h2 class="pix glow">let’s talk about<br />your next project</h2>
+    <p class="ct-sub">write on telegram — i reply<br />within 24 hours</p>
+    <ul class="ct-links">
+      <li><a href="https://t.me/CustomAnnotation" rel="noopener">telegram</a></li>
+      <li><a href="https://github.com/numonjonov" rel="noopener">github</a></li>
+      <li><a href="mailto:pahlavon@numonjonov.com">mail</a></li>
+      <li><a href="/resume.html">résumé</a></li>
+    </ul>
+  </div>
+  <div class="ct-foot"><span>tashkent · utc+5</span><span>pahlavon numonjonov — built by hand</span><span>©2026</span></div>
+</section>
+
+<!-- открытый проект -->
+<button class="ui close-btn" id="close-btn" type="button" aria-hidden="true" tabindex="-1"><span>&gt;</span> close <span>&lt;</span></button>
+<section class="ui ui-detail" id="ui-detail" aria-hidden="true">
+  <div class="d-col"><p class="d-k">project</p><p class="d-name pix glow" id="d-name"></p></div>
+  <div class="d-col d-info"><p class="d-k">info</p><p id="d-info"></p><a class="d-link" id="d-link" href="#">open case study →</a></div>
+  <div class="d-col"><p class="d-k">role</p><p id="d-role"></p><p class="d-k d-k2">stack</p><p id="d-stack"></p></div>
+  <div class="d-thumbs" id="d-thumbs"></div>
+</section>
+
+<!-- текстовая версия: для читалок и без WebGL -->
+<main class="text" id="text">
+  <h1>Pahlavon Numonjonov — backend engineer</h1>
+  <p>Backend engineer in Tashkent building services that talk to a core banking system — Java, Spring Boot, Oracle, PL/SQL.</p>
+  <h2>Selected work</h2>
+  <ol>
+    <li><a href="/work/uz-status.html">uz-status</a> — public uptime monitor for the services Uzbekistan runs on. Java 21, Spring Boot, PostgreSQL.</li>
+    <li><a href="/work/exchange.html">exchange</a> — currency tracker with zero dependencies, Python standard library only.</li>
+    <li><a href="/work/tgagent.html">tgagent</a> — Telegram Business agent in plain Java with a two-provider fallback.</li>
+    <li><a href="/work/tekstlybot.html">tekstlybot</a> — Telegram media bot on a worker queue inside a 256 MB heap.</li>
+    <li><a href="/work/plusline.html">plusline / keyline</a> — two Telegram shop bots on one codebase.</li>
+    <li><a href="/work/downloader.html">downloader</a> — universal Telegram download bot over yt-dlp and gallery-dl.</li>
+  </ol>
+  <h2>About</h2>
+  <p>Backend engineer at a commercial bank in Tashkent since 2025: iABS core banking, a MyID wrapper, e-key signatures on WebLogic, PL/SQL where the logic belongs.</p>
+  <h2>Contact</h2>
+  <p><a href="https://t.me/CustomAnnotation">Telegram @CustomAnnotation</a> · <a href="mailto:pahlavon@numonjonov.com">pahlavon@numonjonov.com</a> · <a href="https://github.com/numonjonov">GitHub</a> · <a href="/resume.html">Résumé</a></p>
+</main>
+
+<script type="module" src="app.js?v=1" onerror="document.documentElement.classList.remove('has-gl')"></script>
+</body>
+</html>
